@@ -85,7 +85,7 @@ src_unpack() {
 	unpack platform-tegra-t210-abca-rel-30-r2.tar.gz
 
 	cd "${S}"/kernel-4.9
-	unipatch "${FILES}"/l4t-kernel-drop-emc-optimization-flag.patch
+	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
 }
 
 src_configure() {

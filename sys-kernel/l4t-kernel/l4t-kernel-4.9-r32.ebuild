@@ -1,4 +1,5 @@
 # Copyright 1999-2019 Alexander Weber
+# Copyright 1999-2019 Gavin_Darkglider
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
@@ -16,8 +17,7 @@ SRC_URI="https://gitlab.com/switchroot/l4t-kernel-4.9/-/archive/rel30-rel32stack
          https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/soc/t210.git;a=snapshot;h=rel-30-r2;sf=tgz -> soc-tegra-t210-rel-30-r2.tar.gz
          https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/tegra/common.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-common-rel-30-r2.tar.gz
          https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/t210/common.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-t210-common-rel-30-r2.tar.gz
-         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/t210/abca.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-t210-abca-rel-30-r2.tar.gz
-         https://raw.githubusercontent.com/lakka-switch/Lakka-LibreELEC/l4t/projects/Switch/devices/L4T/packages/l4t-kernel/patches/l4t-kernel-drop-emc-optimization-flag.patch"
+         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/t210/abca.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-t210-abca-rel-30-r2.tar.gz"
 
 DEPEND="sys-firmware/jetson-tx1-firmware
         sys-kernel/linux-firmware
@@ -85,7 +85,7 @@ src_unpack() {
 	unpack platform-tegra-t210-abca-rel-30-r2.tar.gz
 
 	cd "${S}"/kernel-4.9
-	unipatch "${DISTDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
+	unipatch "${FILES}"/l4t-kernel-drop-emc-optimization-flag.patch
 }
 
 src_configure() {

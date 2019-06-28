@@ -28,7 +28,7 @@ detect_version
 detect_arch
 
 DESCRIPTION="Nintendo Switch kernel"
-IUSE=""
+IUSE="kali_patches"
 
 pkg_pretend() {
 	ERROR=0
@@ -86,6 +86,9 @@ src_unpack() {
 
 	cd "${S}"/kernel-4.9
 	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
+	use kali_patches && unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
+	use kali_patches && unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
+	use kali_patches && unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches
 }
 
 src_configure() {

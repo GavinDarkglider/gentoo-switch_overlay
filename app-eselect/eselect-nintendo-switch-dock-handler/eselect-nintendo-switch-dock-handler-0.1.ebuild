@@ -25,11 +25,11 @@ src_unpack() {
 src_install() {
 	mkdir -p "${D}/usr/share/"
 	mkdir -p "${D}/usr/share/eselect/modules/"
-        mkdir -p "${D}/etc/udev/rules.d/"
+        mkdir -p "${D}/lib/udev/rules.d"
 	mkdir -p "${D}/usr/bin"
 	cp -r ${S}/dock-handler ${D}/usr/share/
         cp ${S}/dock-handler.eselect ${D}/usr/share/eselect/modules/
-	cp ${S}/100-dp-switch.rules ${D}/etc/udev/rules.d
+	cp ${S}/100-dp-switch.rules ${D}/lib/udev/rules.d
 	for file in ${D}/usr/share/dock-handler/*
 	do
 		chmod +x ${file}

@@ -11,6 +11,7 @@ KEYWORDS="-* arm64"
 IUSE=""
 
 RDEPEND="
+	app-admin/eselect
 	media-libs/nintendo-switch-alsa-configs
 "
 

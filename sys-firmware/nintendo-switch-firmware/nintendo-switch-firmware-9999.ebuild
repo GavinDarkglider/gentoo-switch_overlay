@@ -6,10 +6,6 @@ DESCRIPTION="Nintendo Switch WIFI/Bluetooth Firmware"
 HOMEPAGE=""
 
 SRC_URI="https://github.com/lakka-switch/Lakka-LibreELEC/raw/master/projects/Switch/firmwares/files/brcm/BCM.hcd
-<<<<<<< HEAD
-=======
-	 https://github.com/lakka-switch/Lakka-LibreELEC/raw/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.bin
->>>>>>> cac79f348e100de9ae7c29e0958b21efece2a6d4
 	 https://raw.githubusercontent.com/lakka-switch/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.txt"
 
 SLOT="0"

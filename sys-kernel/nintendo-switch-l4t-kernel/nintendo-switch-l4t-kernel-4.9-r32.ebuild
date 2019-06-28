@@ -88,7 +88,7 @@ src_unpack() {
 	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
 	use kali_patches && unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
 	use kali_patches && unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
-	use kali_patches && unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches
+	use kali_patches && unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
 }
 
 src_configure() {

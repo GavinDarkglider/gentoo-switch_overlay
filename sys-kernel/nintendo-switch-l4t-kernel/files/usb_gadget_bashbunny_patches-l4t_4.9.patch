@@ -13,8 +13,10 @@ diff -Naur kernel-4.9/drivers/usb/gadget/function/f_ecm.c kernel-4.9/drivers/usb
 +* ecm_setup(), which then calls ecm_bitrate(), we just dump the values
 +* in a couple of global variables which we can then access in the ecm_bitrate() function.
 +*/
-+unsigned int ecm_cbitrate=0;
-+bool ecm_usebit = 0;
+
++static unsigned int ecm_cbitrate=0;
++static bool ecm_usebit = 0;
+
  
  enum ecm_notify_state {
  	ECM_NOTIFY_NONE,		/* don't notify */
@@ -150,8 +152,8 @@ diff -Naur kernel-4.9/drivers/usb/gadget/function/f_rndis.c kernel-4.9/drivers/u
 +* rndis_setup(), which then calls bitrate(), we just dump the values
 +* in a couple of global variables which we can then access in the bitrate() function.
 +*/
-+unsigned int rndis_cbitrate=0;
-+bool rndis_usebit = 0;
++static unsigned int rndis_cbitrate=0;
++static rndis_usebit = 0;
 +
  struct f_rndis {
  	struct gether			port;

@@ -20,6 +20,7 @@ SRC_URI="https://gitlab.com/switchroot/l4t-kernel-4.9/-/archive/rel30-rel32stack
          https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/t210/abca.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-t210-abca-rel-30-r2.tar.gz"
 
 DEPEND="sys-firmware/jetson-tx1-firmware
+        sys-firmware/nintendo-switch-firmware
         sys-kernel/linux-firmware
         app-editors/vim-core"
 
@@ -29,28 +30,6 @@ detect_arch
 
 DESCRIPTION="Nintendo Switch kernel"
 IUSE="kali_patches"
-
-pkg_pretend() {
-	ERROR=0
-	if ! [ -e "${ROOT}"/lib/firmware/brcm/BCM.hcd ]; then
-		eerror "${ROOT}/lib/firmware/brcm/BCM.hcd missed"
-		ERROR=1
-	fi
-
-	if ! [ -e "${ROOT}"/lib/firmware/brcm/BCM4356A3.hcd ]; then
-		eerror "${ROOT}/lib/firmware/brcm/BCM4356A3.hcd missed"
-		ERROR=1
-	fi   
-
-	if ! [ -e "${ROOT}"/lib/firmware/brcm/brcmfmac4356-pcie.txt  ]; then
-		eerror "${ROOT}/lib/firmware/brcm/brcmfmac4356-pcie.txt  missed"
-		ERROR=1
-	fi  
-
-	if [ "$ERROR" == 1 ] ; then
-		die "Please get missed files from anywhere and copy them to /lib/firmware/brcm"
-	fi
-}
 
 src_unpack() {
 	S="${WORKDIR}"/kernel

@@ -4,7 +4,7 @@ inherit versionator
 
 DESCRIPTION="Eselect module for Nintendo Switch Dock Profiles"
 HOMEPAGE=""
-SRC_URI="https://github.com/GavinDarkglider/eselect-dockhandler/archive/master.zip"
+SRC_URI="https://github.com/GavinDarkglider/eselect-dockhandler/archive/master.zip -> eselect-ns-dh.zip"
 
 SLOT="0"
 KEYWORDS="-* arm64"

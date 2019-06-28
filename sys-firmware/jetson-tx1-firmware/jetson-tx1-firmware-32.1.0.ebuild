@@ -8,7 +8,7 @@ MY_P="Tegra210_Linux_R${PV}"
 SRC_URI="https://developer.download.nvidia.com/embedded/L4T/r32_Release_v1.0/jetson-nano/BSP/Jetson-Nano-Tegra210_Linux_R32.1.0_aarch64.tbz2"
 
 SLOT="0"
-KEYWORDS="~arm ~arm64"
+KEYWORDS="arm arm64"
 IUSE=""
 
 S="${WORKDIR}/Linux_for_Tegra/nv_tegra"

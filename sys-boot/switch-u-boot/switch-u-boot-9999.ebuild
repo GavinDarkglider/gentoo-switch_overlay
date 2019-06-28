@@ -7,8 +7,8 @@ DESCRIPTION='"Das U-Boot" Source Tree for the Switch'
 
 inherit git-r3
 
-EGIT_REPO_URI="https://gitlab.com/switchroot/switch-uboot/"
-EGIT_BRANCH="android"
+EGIT_REPO_URI="https://github.com/lakka-switch/u-boot"
+EGIT_BRANCH="switch"
 EGIT_CHECKOUT_DIR="${S}"
 
 

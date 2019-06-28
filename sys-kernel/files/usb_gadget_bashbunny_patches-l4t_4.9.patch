@@ -1,0 +1,306 @@
+diff -Naur kernel-4.9/drivers/usb/gadget/function/f_ecm.c kernel-4.9/drivers/usb/gadget/function/f_ecm.c
+--- kernel-4.9/drivers/usb/gadget/function/f_ecm.c	2019-05-30 21:52:21.182717738 -0700
++++ kernel-4.9/drivers/usb/gadget/function/f_ecm.c	2019-05-31 05:59:24.916790228 -0700
+@@ -40,6 +40,16 @@
+  * and also means that a get_alt() method is required.
+  */
+ 
++/*This is a dirty hack, and there is probably a better way.
++* We are going to assign these values to global variables,
++* because I couldnt find an easier way to get them from the struct
++* they are stored in to the function they are needed in, without 
++* modifing a bunch of functions along the way. So, before we run
++* ecm_setup(), which then calls ecm_bitrate(), we just dump the values
++* in a couple of global variables which we can then access in the ecm_bitrate() function.
++*/
+<<<<<<< HEAD
++static unsigned int ecm_cbitrate=0;
++static bool ecm_usebit = 0;
+=======
++unsigned int ecm_cbitrate=0;
++bool ecm_usebit = 0;
+>>>>>>> cac79f348e100de9ae7c29e0958b21efece2a6d4
+ 
+ enum ecm_notify_state {
+ 	ECM_NOTIFY_NONE,		/* don't notify */
+@@ -71,12 +81,15 @@
+ /* peak (theoretical) bulk transfer rate in bits-per-second */
+ static inline unsigned ecm_bitrate(struct usb_gadget *g)
+ {
+-	if (gadget_is_superspeed(g) && g->speed == USB_SPEED_SUPER)
+-		return 13 * 1024 * 8 * 1000 * 8;
+-	else if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
+-		return 13 * 512 * 8 * 1000 * 8;
++	if (ecm_usebit == 0)
++		if (gadget_is_superspeed(g) && g->speed == USB_SPEED_SUPER)
++			return 13 * 1024 * 8 * 1000 * 8;
++		else if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
++			return 13 * 512 * 8 * 1000 * 8;
++		else
++			return 19 * 64 * 1 * 1000 * 8;
+ 	else
+-		return 19 * 64 * 1 * 1000 * 8;
++		return ecm_cbitrate * 1000;
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+@@ -691,7 +704,10 @@
+ 		return -EINVAL;
+ 
+ 	ecm_opts = container_of(f->fi, struct f_ecm_opts, func_inst);
+-
++	
++	ecm_usebit=ecm_opts->usebit;
++	ecm_cbitrate = ecm_opts->cbitrate;
++	
+ 	/*
+ 	 * in drivers/usb/gadget/configfs.c:configfs_composite_bind()
+ 	 * configurations are bound in sequence with list_for_each_entry,
+@@ -836,10 +852,83 @@
+ 
+ /* f_ecm_opts_ifname */
+ USB_ETHERNET_CONFIGFS_ITEM_ATTR_IFNAME(ecm);
++static ssize_t
++ecm_opts_usebit_show(struct config_item *item, char *page)
++{
++	struct f_ecm_opts *opts = to_f_ecm_opts(item);
++	int ret;
++
++	mutex_lock(&opts->lock);
++	ret = sprintf(page, "%d\n", opts->usebit);
++	mutex_unlock(&opts->lock);
++
++	return ret;
++}
++
++static ssize_t
++ecm_opts_usebit_store(struct config_item *item, const char *page,
++				 size_t len)
++{
++	struct f_ecm_opts *opts = to_f_ecm_opts(item);
++	int ret;
++	bool use;
++
++	mutex_lock(&opts->lock);
++	ret = strtobool(page, &use);
++	if (!ret) {
++		opts->usebit = use;
++		ret = len;
++	}
++	mutex_unlock(&opts->lock);
++
++	return ret;
++}
++
++CONFIGFS_ATTR(ecm_opts_, usebit);
++
++static ssize_t
++ecm_opts_cbitrate_show(struct config_item *item, char *page)
++{
++	struct f_ecm_opts *opts = to_f_ecm_opts(item);
++	int ret;
++
++	mutex_lock(&opts->lock);
++	ret = sprintf(page, "%d\n", opts->cbitrate);
++	mutex_unlock(&opts->lock);
++
++	return ret;
++}
++
++static ssize_t
++ecm_opts_cbitrate_store(struct config_item *item, const char *page,
++				 size_t len)
++{
++	struct f_ecm_opts *opts = to_f_ecm_opts(item);
++	int ret;
++	long use;
++
++	mutex_lock(&opts->lock);
++	ret = kstrtol(page,0, &use);
++	if (!ret) {
++		if ( use > 4294967) 
++			//set maximum value.... If you go higher windows has issues.
++			//even this number can be iffy, but it reports at 4.2 Gbps so yay.
++			use = 4294967; 
++		opts->cbitrate = use;
++		ret = len;
++	}
++	mutex_unlock(&opts->lock);
++
++	return ret;
++}
++
++CONFIGFS_ATTR(ecm_opts_, cbitrate);
+ 
+ static struct configfs_attribute *ecm_attrs[] = {
+ 	&ecm_opts_attr_dev_addr,
+ 	&ecm_opts_attr_host_addr,
++	&ecm_opts_attr_usebit,
++	&ecm_opts_attr_cbitrate,
+ 	&ecm_opts_attr_qmult,
+ 	&ecm_opts_attr_ifname,
+ 	NULL,
+diff -Naur kernel-4.9/drivers/usb/gadget/function/f_rndis.c kernel-4.9/drivers/usb/gadget/function/f_rndis.c
+--- kernel-4.9/drivers/usb/gadget/function/f_rndis.c	2019-05-30 21:52:21.258717739 -0700
++++ kernel-4.9/drivers/usb/gadget/function/f_rndis.c	2019-05-31 05:59:42.367790381 -0700
+@@ -70,6 +70,17 @@
+  *   - MS-Windows drivers sometimes emit undocumented requests.
+  */
+ 
++/*This is a dirty hack, and there is probably a better way.
++* We are going to assign these values to global variables,
++* because I couldnt find an easier way to get them from the struct
++* they are stored in to the function they are needed in, without 
++* modifing a bunch of functions along the way. So, before we run
++* rndis_setup(), which then calls bitrate(), we just dump the values
++* in a couple of global variables which we can then access in the bitrate() function.
++*/
+<<<<<<< HEAD
++static unsigned int rndis_cbitrate=0;
++static rndis_usebit = 0;
+=======
++unsigned int rndis_cbitrate=0;
++bool rndis_usebit = 0;
+>>>>>>> cac79f348e100de9ae7c29e0958b21efece2a6d4
++
+ struct f_rndis {
+ 	struct gether			port;
+ 	u8				ctrl_id, data_id;
+@@ -91,12 +102,15 @@
+ /* peak (theoretical) bulk transfer rate in bits-per-second */
+ static unsigned int bitrate(struct usb_gadget *g)
+ {
+-	if (gadget_is_superspeed(g) && g->speed == USB_SPEED_SUPER)
+-		return 13 * 1024 * 8 * 1000 * 8;
+-	else if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
+-		return 13 * 512 * 8 * 1000 * 8;
++	if (rndis_usebit == 0)
++		if (gadget_is_superspeed(g) && g->speed == USB_SPEED_SUPER)
++			return 13 * 1024 * 8 * 1000 * 8;
++		else if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
++			return 13 * 512 * 8 * 1000 * 8;
++		else
++			return 19 * 64 * 1 * 1000 * 8;
+ 	else
+-		return 19 * 64 * 1 * 1000 * 8;
++		return rndis_cbitrate * 1000;
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+@@ -690,6 +704,9 @@
+ 		f->os_desc_n = 1;
+ 		f->os_desc_table[0].os_desc = &rndis_opts->rndis_os_desc;
+ 	}
++	
++	rndis_usebit=rndis_opts->usebit;
++	rndis_cbitrate = rndis_opts->cbitrate;
+ 
+ 	/*
+ 	 * in drivers/usb/gadget/configfs.c:configfs_composite_bind()
+@@ -866,9 +883,82 @@
+ /* f_rndis_opts_ifname */
+ USB_ETHERNET_CONFIGFS_ITEM_ATTR_IFNAME(rndis);
+ 
++static ssize_t
++rndis_opts_usebit_show(struct config_item *item, char *page)
++{
++	struct f_rndis_opts *opts = to_f_rndis_opts(item);
++	int ret;
++
++	mutex_lock(&opts->lock);
++	ret = sprintf(page, "%d\n", opts->usebit);
++	mutex_unlock(&opts->lock);
++	return ret;
++}
++
++static ssize_t
++rndis_opts_usebit_store(struct config_item *item, const char *page,
++				 size_t len)
++{
++	struct f_rndis_opts *opts = to_f_rndis_opts(item);
++	int ret;
++	bool use;
++
++	mutex_lock(&opts->lock);
++	ret = strtobool(page, &use);
++	if (!ret) {
++		opts->usebit = use;
++		ret = len;
++	}
++	mutex_unlock(&opts->lock);
++
++	return ret;
++}
++
++CONFIGFS_ATTR(rndis_opts_, usebit);
++
++static ssize_t
++rndis_opts_cbitrate_show(struct config_item *item, char *page)
++{
++	struct f_rndis_opts *opts = to_f_rndis_opts(item);
++	int ret;
++
++	mutex_lock(&opts->lock);
++	ret = sprintf(page, "%d\n", opts->cbitrate);
++	mutex_unlock(&opts->lock);
++
++	return ret;
++}
++
++static ssize_t
++rndis_opts_cbitrate_store(struct config_item *item, const char *page,
++				 size_t len)
++{
++	struct f_rndis_opts *opts = to_f_rndis_opts(item);
++	int ret;
++	long use;
++
++	mutex_lock(&opts->lock);
++	ret = kstrtol(page,0, &use);
++	if (!ret) {
++		if ( use > 4294967) 
++			//set maximum value.... If you go higher windows has issues.
++			//even this number can be iffy, but it reports at 4.2 Gbps so yay.
++			use = 4294967; 
++		opts->cbitrate = use;
++		ret = len;
++	}
++	mutex_unlock(&opts->lock);
++
++	return ret;
++}
++
++CONFIGFS_ATTR(rndis_opts_, cbitrate);
++
+ static struct configfs_attribute *rndis_attrs[] = {
+ 	&rndis_opts_attr_dev_addr,
+ 	&rndis_opts_attr_host_addr,
++	&rndis_opts_attr_usebit,
++	&rndis_opts_attr_cbitrate,
+ 	&rndis_opts_attr_qmult,
+ 	&rndis_opts_attr_ifname,
+ 	NULL,
+diff -Naur kernel-4.9/drivers/usb/gadget/function/u_ecm.h kernel-4.9/drivers/usb/gadget/function/u_ecm.h
+--- kernel-4.9/drivers/usb/gadget/function/u_ecm.h	2019-05-30 21:52:21.415717740 -0700
++++ kernel-4.9/drivers/usb/gadget/function/u_ecm.h	2019-05-31 05:50:46.340785675 -0700
+@@ -22,6 +22,8 @@
+ 	struct usb_function_instance	func_inst;
+ 	struct net_device		*net;
+ 	bool				bound;
++	bool                usebit;
++	unsigned int		cbitrate;
+ 
+ 	/*
+ 	 * Read/write access to configfs attributes is handled by configfs.
+diff -Naur kernel-4.9/drivers/usb/gadget/function/u_rndis.h kernel-4.9/drivers/usb/gadget/function/u_rndis.h
+--- kernel-4.9/drivers/usb/gadget/function/u_rndis.h	2019-05-30 21:52:21.437717741 -0700
++++ kernel-4.9/drivers/usb/gadget/function/u_rndis.h	2019-05-31 05:51:22.438785992 -0700
+@@ -27,6 +27,8 @@
+ 	bool				borrowed_net;
+ 
+ 	struct config_group		*rndis_interf_group;
++	bool                usebit;
++	unsigned int		cbitrate;
+ 	struct usb_os_desc		rndis_os_desc;
+ 	char				rndis_ext_compat_id[16];
+ 

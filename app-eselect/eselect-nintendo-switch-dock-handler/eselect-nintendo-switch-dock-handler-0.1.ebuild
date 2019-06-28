@@ -11,7 +11,7 @@ KEYWORDS="-* arm64"
 IUSE=""
 
 RDEPEND="
-	
+	media-libs/nintendo-switch-alsa-configs
 "
 
 S="${WORKDIR}/eselect-dockhandler-master/"

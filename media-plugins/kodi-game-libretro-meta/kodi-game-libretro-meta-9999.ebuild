@@ -3,8 +3,8 @@
 
 EAPI="6"
 
-DESCRIPTION="Meta package for various libretro implementations"
-HOMEPAGE="http://www.libretro.com/"
+DESCRIPTION="Meta package for various kodi-game-libretro implementations"
+HOMEPAGE=""
 LICENSE="metapackage"
 SLOT="0"
 IUSE="+2048 +4do +beetle-psx bnes +bsnes bsnes-cpp98 citra craft +desmume dolphin easyrpg +fbalpha fbalpha2012 fceumm +gambatte +genplus \

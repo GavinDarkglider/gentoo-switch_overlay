@@ -12,7 +12,7 @@ How to add the overlay
 To add this overlay to Portage in repos.conf, here is example configuration for it:
 ```
 [switch]
-priority = 1
+priority = 50
 location = /var/lib/gentoo-switch_overlay
 sync-type = git
 sync-uri = https://github.com/GavinDarkglider/gentoo-switch_overlay.git
@@ -23,7 +23,7 @@ See the Gentoo wiki page at https://wiki.gentoo.org/wiki//etc/portage/repos.conf
 
 ### Adding using eselect-repository (not tested)
 
-To add this overlay to Portage using eselect-repository, run eselect repository add gentoo-switch_overlay git https://github.com/GavinDarkglider/gentoo-switch_overlay.git. The repository should be automatically updated when you update your system.
+To add this overlay to Portage using eselect-repository, run eselect repository add switch git https://github.com/GavinDarkglider/gentoo-switch_overlay.git. The repository should be automatically updated when you update your system.
 
 ## Installation of packages
 Should be more simple than it probably is. This is still very much experimental, and most things havnt been tested properly.

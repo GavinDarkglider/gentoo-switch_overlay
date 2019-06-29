@@ -11,9 +11,9 @@ How to add the overlay
 
 To add this overlay to Portage in repos.conf, here is example configuration for it:
 ```
-[gentoo-switch_overlay]
+[switch]
 priority = 1
-location = /var/lib/layman/gentoo-switch_overlay
+location = /var/lib/gentoo-switch_overlay
 sync-type = git
 sync-uri = https://github.com/GavinDarkglider/gentoo-switch_overlay.git
 auto-sync = yes

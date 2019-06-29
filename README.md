@@ -10,7 +10,7 @@ How to add the overlay
 ### Adding using repos.conf
 
 To add this overlay to Portage in repos.conf, here is example configuration for it:
-'''
+```
 [gentoo-switch_overlay]
 priority = 1
 location = /var/lib/layman/gentoo-switch_overlay
@@ -18,7 +18,7 @@ sync-type = git
 sync-uri = https://github.com/GavinDarkglider/gentoo-switch_overlay.git
 auto-sync = yes
 clone-depth = 0
-'''
+```
 See the Gentoo wiki page at https://wiki.gentoo.org/wiki//etc/portage/repos.conf for how to use this. If auto-sync is set to yes, as it is in this example, the repository should be automatically updated when you update your system.
 
 ### Adding using eselect-repository (not tested)

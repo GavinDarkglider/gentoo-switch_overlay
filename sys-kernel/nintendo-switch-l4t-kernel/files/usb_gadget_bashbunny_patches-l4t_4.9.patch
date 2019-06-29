@@ -153,7 +153,7 @@ diff -Naur kernel-4.9/drivers/usb/gadget/function/f_rndis.c kernel-4.9/drivers/u
 +* in a couple of global variables which we can then access in the bitrate() function.
 +*/
 +static unsigned int rndis_cbitrate=0;
-+static rndis_usebit = 0;
++static bool rndis_usebit = 0;
 +
  struct f_rndis {
  	struct gether			port;

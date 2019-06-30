@@ -30,3 +30,8 @@
 >=dev-libs/icu-59
 >=dev-libs/icu-layoutex-59
 >=net-libs/nodejs-8.9.3
+
+#required for nintendo switch drivers
+>=sys-devel/gcc-7.3.0-r7
+>=x11-base/xorg-server-1.19.7
+>=x11-base/xorg-drivers-1.19.7

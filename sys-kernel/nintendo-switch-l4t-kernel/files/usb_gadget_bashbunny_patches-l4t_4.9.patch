@@ -13,10 +13,8 @@ diff -Naur kernel-4.9/drivers/usb/gadget/function/f_ecm.c kernel-4.9/drivers/usb
 +* ecm_setup(), which then calls ecm_bitrate(), we just dump the values
 +* in a couple of global variables which we can then access in the ecm_bitrate() function.
 +*/
-
 +static unsigned int ecm_cbitrate=0;
 +static bool ecm_usebit = 0;
-
  
  enum ecm_notify_state {
  	ECM_NOTIFY_NONE,		/* don't notify */

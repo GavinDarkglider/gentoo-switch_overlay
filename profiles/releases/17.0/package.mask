@@ -22,4 +22,3 @@ dev-java/gcj-jdk
 #Require Certain versions of certain packages for Nintendo Switch Drivers.
 >=x11-base/xorg-server-1.19.7
 >=x11-base/xorg-drivers-1.19.7
->=app-arch/bzip2-1.0.5-r2

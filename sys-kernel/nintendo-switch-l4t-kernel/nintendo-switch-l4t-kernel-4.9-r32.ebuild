@@ -84,11 +84,12 @@ src_configure() {
 }
 
 src_compile() {
+	### Not needed if using gcc < 8.0
 	# Workaround: /usr/bin/ld: unrecognized option '-Wl,-O1'
-	export LDFLAGS=""
+	#export LDFLAGS=""
 
 	# GCC-8 legacy fix
-	export KCFLAGS="-Wno-error=stringop-truncation -Wno-error=stringop-overflow="
+	#export KCFLAGS="-Wno-error=stringop-truncation -Wno-error=stringop-overflow="
 
 	emake tegra-dtstree="../hardware/nvidia/" || die "emake failed"
 }

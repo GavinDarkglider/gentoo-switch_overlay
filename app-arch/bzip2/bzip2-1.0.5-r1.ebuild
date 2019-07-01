@@ -90,7 +90,7 @@ src_install() {
 
 	# move "important" bzip2 binaries to /bin and use the shared libbz2.so
 	dodir /bin
-	mv "${ED}"/usr/bin/b{zip2,zcat,unzip2} "${ED}"/bin/ || die
+	mv "${D}"/usr/bin/b{zip2,zcat,unzip2} "${D}"/bin/ || die
 	dosym bzip2 /bin/bzcat
 	dosym bzip2 /bin/bunzip2
 	into /
@@ -107,7 +107,7 @@ src_install() {
 
 		# on windows, we want to continue using bzip2 from interix.
 		# building bzip2 on windows gives the libraries only!
-		rm -rf "${ED}"/bin "${ED}"/usr/bin
+		rm -rf "${D}"/bin "${D}"/usr/bin
 	fi
 	for v in libbz2$(get_libname) libbz2$(get_libname ${PV%%.*}) libbz2$(get_libname ${PV%.*}) ; do
 		[[ libbz2$(get_libname ${PV}) != ${v} ]] &&

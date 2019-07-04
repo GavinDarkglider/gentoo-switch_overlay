@@ -141,7 +141,10 @@ src_configure() {
 	einfo "Use ${FILESDIR}/gentoo_switch_defconfig configuration"
 	cd "${S}"
 	cp ${FILESDIR}/gentoo_switch_defconfig  .config || die "copy failed"
-
+	if use hid-joycon; then
+		sed -i 's/CONFIG_HID_JOYCON=y/CONFIG_HID_SWITCHCON=y/g' .config
+		echo CONFIG_JOYCON_FF=y >> .config
+	fi
 	einfo "Adjust gentoo version"
 	unpack_set_extraversion
 

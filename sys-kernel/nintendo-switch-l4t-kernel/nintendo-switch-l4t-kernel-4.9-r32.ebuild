@@ -9,27 +9,46 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
+IUSE="+kali_patches +lakka_patches +gentoo_patches"
+
+K_SECURITY_UNSUPPORTED="yes"
+
+K_WANT_GENPATCHES="base extras"
+K_GENPATCHES_VER="189"
+
+DESCRIPTION="Nintendo Switch kernel"
+
+inherit kernel-2
+detect_version
+detect_arch
+
 SRC_URI="https://gitlab.com/switchroot/l4t-kernel-4.9/-/archive/rel30-rel32stack/l4t-kernel-4.9-rel30-rel32stack.tar.bz2
          https://gitlab.com/switchroot/l4t-kernel-nvidia/-/archive/rel32-rel32stack/l4t-kernel-nvidia-rel32-rel32stack.tar.bz2
-         https://gitlab.com/switchroot/l4t-platform-t210-switch/-/archive/l4t/l4t-r32.1-4.9/l4t-platform-t210-switch-l4t-l4t-r32.1-4.9.tar.bz2
+         https://gitlab.com/switchroot/l4t-platform-t210-switch/-/archive/rel-30-r3/l4t-platform-t210-switch-rel-30-r3.tar.bz2
          https://nv-tegra.nvidia.com/gitweb/?p=linux-nvgpu.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> linux-nvgpu-r32.1.tar.gz
-         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/soc/tegra.git;a=snapshot;h=rel-30-r2;sf=tgz -> soc-tegra-rel-30-r2.tar.gz
-         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/soc/t210.git;a=snapshot;h=rel-30-r2;sf=tgz -> soc-tegra-t210-rel-30-r2.tar.gz
-         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/tegra/common.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-common-rel-30-r2.tar.gz
-         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/t210/common.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-t210-common-rel-30-r2.tar.gz
-         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/t210/abca.git;a=snapshot;h=rel-30-r2;sf=tgz -> platform-tegra-t210-abca-rel-30-r2.tar.gz"
+         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/soc/tegra.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> soc-tegra-tegra-l4t-r32.1.tar.gz
+         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/soc/t210.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> soc-tegra-t210-tegra-l4t-r32.1.tar.gz
+         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/tegra/common.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> platform-tegra-common-tegra-l4t-r32.1.tar.gz
+         https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/platform/t210/common.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> platform-tegra-t210-common-tegra-l4t-r32.1.tar.gz
+         ${GENPATCHES_URI}"
 
 DEPEND="sys-firmware/jetson-tx1-firmware
         sys-firmware/nintendo-switch-firmware
         sys-kernel/linux-firmware
         app-editors/vim-core"
 
-inherit kernel-2
-detect_version
-detect_arch
-
-DESCRIPTION="Nintendo Switch kernel"
-IUSE="kali_patches"
+GENTOO_PATCHES="
+1109_linux-4.9.110.patch
+1110_linux-4.9.111.patch
+1111_linux-4.9.112.patch
+1500_XATTR_USER_PREFIX.patch
+1520_security-apparmor-Use-POSIX-compatible-printf.patch
+1701_ia64_fix_ptrace.patch
+2000_BT-Check-key-sizes-only-if-Secure-Simple-Pairing-enabled.patch
+2300_enable-poweroff-on-Mac-Pro-11.patch
+2900_dev-root-proc-mount-fix.patch
+4400_alpha-sysctl-uac.patch
+4567_distro-Gentoo-Kconfig.patch"
 
 src_unpack() {
 	S="${WORKDIR}"/kernel
@@ -39,63 +58,103 @@ src_unpack() {
 	mv l4t-kernel-4.9* kernel-4.9
 
 	cd "${S}"
-	unpack l4t-kernel-nvidia-rel32-rel32stack.tar.bz2 
-	unpack linux-nvgpu-r32.1.tar.gz
+	unpack l4t-kernel-nvidia-rel32-rel32stack.tar.bz2
 	mv l4t-kernel-nvidia* nvidia
+
+	unpack linux-nvgpu-r32.1.tar.gz
 	mv linux-nvgpu nvgpu
 
 	mkdir -p "${S}"/hardware/nvidia/platform/t210/
 	cd "${S}"/hardware/nvidia/platform/t210/
-	unpack l4t-platform-t210-switch-l4t-l4t-r32.1-4.9.tar.bz2
+	unpack l4t-platform-t210-switch-rel-30-r3.tar.bz2
 	mv l4t-platform-t210-switch* switch
 
 	mkdir -p "${S}"/hardware/nvidia/soc/
 	cd "${S}"/hardware/nvidia/soc/
-	unpack soc-tegra-rel-30-r2.tar.gz 
-	unpack soc-tegra-t210-rel-30-r2.tar.gz
+	unpack soc-tegra-tegra-l4t-r32.1.tar.gz
+	unpack soc-tegra-t210-tegra-l4t-r32.1.tar.gz
+
 
 	mkdir -p "${S}"/hardware/nvidia/platform/tegra/
 	cd "${S}"/hardware/nvidia/platform/tegra/
-	unpack platform-tegra-common-rel-30-r2.tar.gz
+	unpack platform-tegra-common-tegra-l4t-r32.1.tar.gz
 
 	mkdir -p "${S}"/hardware/nvidia/platform/t210/
 	cd "${S}"/hardware/nvidia/platform/t210/
-	unpack platform-tegra-t210-common-rel-30-r2.tar.gz
-	unpack platform-tegra-t210-abca-rel-30-r2.tar.gz
+	unpack platform-tegra-t210-common-tegra-l4t-r32.1.tar.gz
 
 	cd "${S}"/kernel-4.9
 	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
-	use kali_patches && unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
-	use kali_patches && unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
-	use kali_patches && unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
+	if use kali_patches; then
+		einfo "Apply Kali patches"
+		unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
+		unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
+		unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
+	fi
+
+	if use lakka_patches; then
+		einfo "Apply Lakka patches"
+		# Source: https://github.com/lakka-switch/Lakka-LibreELEC/tree/master/projects/Switch/devices/L4T/packages/l4t-kernel/patches
+		unipatch "${FILESDIR}"/l4t-kernel-add-serdev_device_write.patch
+		unipatch "${FILESDIR}"/l4t-kernel-0002-input-working-Joy-Con-rails-driver.patch
+		unipatch "${FILESDIR}"/l4t-kernel-0001-tegra-Allow-UART-pins-to-be-inverted.patch
+
+		cd "${S}"/hardware/nvidia/platform/t210/switch
+		unipatch "${FILESDIR}"/l4t-platform-t210-switch-0001-jc-pinmux.patch
+		unipatch "${FILESDIR}"/l4t-platform-t210-switch-0002-jc-driver.patch
+	fi
+
+	if use gentoo_patches; then
+		einfo "Apply Gentoo patches"
+		mkdir "${S}"/genpatches
+		cd "${S}"/genpatches
+		unpack genpatches-4.9-"${K_GENPATCHES_VER}".base.tar.xz
+		unpack genpatches-4.9-"${K_GENPATCHES_VER}".extras.tar.xz
+		cd "${S}"/kernel-4.9
+		for PATCH in ${GENTOO_PATCHES}; do
+			unipatch "${S}"/genpatches/"${PATCH}"
+		done
+	fi
 }
 
 src_configure() {
 	S="${WORKDIR}"/kernel/kernel-4.9
-	einfo "Use provided t210_switch_defconfig"
+	einfo "Use ${FILESDIR}/gentoo_switch_defconfig configuration"
 	cd "${S}"
-	cp arch/arm64/configs/t210_switch_defconfig  .config || die "copy failed"
+	cp ${FILESDIR}/gentoo_switch_defconfig  .config || die "copy failed"
+
+	einfo "Adjust gentoo version"
+	unpack_set_extraversion
+
+	CUSTOM_CONFIGFILE="${PORTAGE_CONFIGROOT}/etc/portage/nintendo-switch-l4t-kernel.config"
+	if [ -f "${CUSTOM_CONFIGFILE}" ]; then
+		einfo "Add custom configuration ${CUSTOM_CONFIGFILE}"
+		cat "${FILESDIR}/switch_gentoo.config" >> .config
+	else
+		einfo "Skip custom configuration. ${CUSTOM_CONFIGFILE} not found"
+	fi
 
 	einfo "Prepare the kernel for build"
-	emake olddefconfig || die "emake olddefconfig failed"
-	unpack_set_extraversion
+	emake olddefconfig 2>/dev/null || die "emake olddefconfig failed"
 	emake prepare || die "emake prepare failed"
 	emake modules_prepare || die "emake modules_prepare failed"
 }
 
 src_compile() {
-	### Not needed if using gcc < 8.0
 	# Workaround: /usr/bin/ld: unrecognized option '-Wl,-O1'
-	#export LDFLAGS=""
+	export LDFLAGS=""
 
 	# GCC-8 legacy fix
-	#export KCFLAGS="-Wno-error=stringop-truncation -Wno-error=stringop-overflow="
+	export KCFLAGS="-Wno-error=stringop-truncation -Wno-error=stringop-overflow="
 
 	emake tegra-dtstree="../hardware/nvidia/" || die "emake failed"
 }
 
 src_install() {
-	mkdir "${D}/boot"
+	dodir /boot
 	INSTALL_PATH="${D}/boot" INSTALL_MOD_PATH="${D}" emake modules_install || die "emake modules_install failed"
 	INSTALL_PATH="${D}/boot" INSTALL_MOD_PATH="${D}" emake install || die "make install failed"
+
+	insinto /boot
+	doins arch/arm64/boot/dts/tegra210-icosa.dtb
 }

@@ -9,7 +9,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="+kali_patches +lakka_patches +gentoo_patches hid-joycon"
+IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -144,6 +144,9 @@ src_configure() {
 	if use hid-joycon; then
 		sed -i 's/CONFIG_HID_JOYCON=y/CONFIG_HID_SWITCHCON=y/g' .config
 		echo CONFIG_JOYCON_FF=y >> .config
+	fi
+	if use lakka_patches; then
+		echo CONFIG_JOYSTICK_JOYCON=y >> .config
 	fi
 	einfo "Adjust gentoo version"
 	unpack_set_extraversion

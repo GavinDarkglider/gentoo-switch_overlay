@@ -1,0 +1,12 @@
+diff --git a/include/linux/leds.h b/include/linux/leds.h
+index 569cb531094c..0258f9c49034 100644
+--- a/include/linux/leds.h
++++ b/include/linux/leds.h
+@@ -27,6 +27,7 @@ struct device;
+
+enum led_brightness {
+LED_OFF = 0,
++ LED_ON,
+LED_HALF = 127,
+LED_FULL = 255,
+};

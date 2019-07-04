@@ -9,7 +9,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="+kali_patches +lakka_patches +gentoo_patches"
+IUSE="+kali_patches +lakka_patches +gentoo_patches hid-joycon"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -92,6 +92,21 @@ src_unpack() {
 		unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
 	fi
 
+	if use hid-joycon; then
+		einfo "Upgrade Joycon Driver"
+		patch -p1 -R < "${FILESDIR}"/hid-switchcon-2.patch
+		patch -p1 -R < "${FILESDIR}"/hid-switchcon-1.patch
+		unipatch "${FILESDIR}"/hid-joycon-1.patch
+		unipatch "${FILESDIR}"/hid-joycon-2.patch
+		unipatch "${FILESDIR}"/hid-joycon-3.patch
+		unipatch "${FILESDIR}"/hid-joycon-4.patch
+		unipatch "${FILESDIR}"/hid-joycon-5.patch
+		ewarn "These patches are untested, and may not work"
+		ewarn "If they do work, you will need to install a special"
+		ewarn "application to pair joycons. I will add this app to"
+		ewarn "the repository soon enough, then will update this"
+	fi
+
 	if use lakka_patches; then
 		einfo "Apply Lakka patches"
 		# Source: https://github.com/lakka-switch/Lakka-LibreELEC/tree/master/projects/Switch/devices/L4T/packages/l4t-kernel/patches
@@ -102,6 +117,10 @@ src_unpack() {
 		cd "${S}"/hardware/nvidia/platform/t210/switch
 		unipatch "${FILESDIR}"/l4t-platform-t210-switch-0001-jc-pinmux.patch
 		unipatch "${FILESDIR}"/l4t-platform-t210-switch-0002-jc-driver.patch
+
+		ewarn "Lakka Patches Break Sleep Mode."
+		ewarn "This will be added to default build"
+		ewarn "when this issue is fixed."
 	fi
 
 	if use gentoo_patches; then

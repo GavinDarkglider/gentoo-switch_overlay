@@ -1,0 +1,32 @@
+From 15980dcb7193f459bafad9ea6ff80a5aee87da69 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Mon, 1 Jul 2019 20:32:26 +0100
+Subject: [PATCH] Revert "Revert "Revert "Revert "Revert "Disable pcsi suspend
+ for now"""""
+
+This reverts commit 74b024febfb6124786cc034fe1e6e5506796ae35.
+---
+ drivers/firmware/psci.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index df2a0c3cf74ba..b834a0c816509 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -473,10 +473,10 @@ static void __init psci_init_system_suspend(void)
+ 	if (!IS_ENABLED(CONFIG_SUSPEND))
+ 		return;
+ 
+-//	ret = psci_features(PSCI_FN_NATIVE(1_0, SYSTEM_SUSPEND));
++	ret = psci_features(PSCI_FN_NATIVE(1_0, SYSTEM_SUSPEND));
+ 
+-//	if (ret != PSCI_RET_NOT_SUPPORTED)
+-//		suspend_set_ops(&psci_suspend_ops);
++	if (ret != PSCI_RET_NOT_SUPPORTED)
++		suspend_set_ops(&psci_suspend_ops);
+ }
+ 
+ static void __init psci_init_cpu_suspend(void)
+-- 
+2.21.0
+

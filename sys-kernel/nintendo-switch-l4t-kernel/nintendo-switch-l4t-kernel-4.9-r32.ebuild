@@ -90,6 +90,7 @@ src_unpack() {
 		unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
 		unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
 		unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
+		unipatch "$${FILESDIR}"/fix-usb0-rndis0-name.patch
 	fi
 
 	if use hid-joycon; then

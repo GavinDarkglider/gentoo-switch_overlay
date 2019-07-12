@@ -62,14 +62,15 @@ diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
 index 170163b41303..8379d5287d9c 100644
 --- a/drivers/hid/Makefile
 +++ b/drivers/hid/Makefile
-@@ -57,6 +57,7 @@ obj-$(CONFIG_HID_HYPERV_MOUSE)	+= hid-hyperv.o
- obj-$(CONFIG_HID_ICADE)		+= hid-icade.o
- obj-$(CONFIG_HID_ITE)		+= hid-ite.o
- obj-$(CONFIG_HID_JABRA)		+= hid-jabra.o
-+obj-$(CONFIG_HID_JOYCON)	+= hid-joycon.o
- obj-$(CONFIG_HID_KENSINGTON)	+= hid-kensington.o
- obj-$(CONFIG_HID_KEYTOUCH)	+= hid-keytouch.o
- obj-$(CONFIG_HID_KYE)		+= hid-kye.o
+@@ -91,6 +91,7 @@
+ obj-$(CONFIG_HID_SPEEDLINK)	+= hid-speedlink.o
+ obj-$(CONFIG_HID_STEELSERIES)	+= hid-steelseries.o
+ obj-$(CONFIG_HID_SUNPLUS)	+= hid-sunplus.o
++obj-$(CONFIG_HID_JOYCON)        += hid-joycon.o
+ obj-$(CONFIG_HID_GREENASIA)	+= hid-gaff.o
+ obj-$(CONFIG_HID_THRUSTMASTER)	+= hid-tmff.o
+ obj-$(CONFIG_HID_TIVO)		+= hid-tivo.o
+
 diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
 index adce58f24f76..a1c262b34c64 100644
 --- a/drivers/hid/hid-ids.h

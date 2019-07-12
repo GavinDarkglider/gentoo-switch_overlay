@@ -139,7 +139,6 @@ src_unpack() {
 		einfo "Applying Experimental Patches from Android Kernel"
 		unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
 		unipatch "${FILESDIR}"/revert-disable-psci-suspend-for-now.patch
-		unipatch "${FILESDIR}"/disable-relative-sleep.patch
 		unipatch "${FILESDIR}"/read-mtc-table-addr-from-atf.patch
 		ewarn "These patches Are Untested with this kernel, could"
 		ewarn "cause unwanted issues."

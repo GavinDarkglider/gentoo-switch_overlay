@@ -85,8 +85,10 @@ src_unpack() {
 
 	cd "${S}"/kernel-4.9
 	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
+	unipatch "${FILESDIR}"/read-mtc-table-addr-from-atf.patch
 	unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
 	unipatch "${FILESDIR}"/fix-usb0-rndis0-name.patch
+
 	if use kali_patches; then
 		einfo "Apply Kali patches"
 		unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
@@ -139,7 +141,6 @@ src_unpack() {
 	if use experimental; then
 		einfo "Applying Experimental Patches from Android Kernel"
 		unipatch "${FILESDIR}"/revert-disable-psci-suspend-for-now.patch
-		unipatch "${FILESDIR}"/read-mtc-table-addr-from-atf.patch
 		ewarn "These patches Are Untested with this kernel, could"
 		ewarn "cause unwanted issues."
 	fi

@@ -85,16 +85,17 @@ src_unpack() {
 
 	cd "${S}"/kernel-4.9
 	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
+	unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
+	unipatch "${FILESDIR}"/fix-usb0-rndis0-name.patch
 	if use kali_patches; then
 		einfo "Apply Kali patches"
 		unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
 		unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
 		unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
-		unipatch "${FILESDIR}"/fix-usb0-rndis0-name.patch
 	fi
 
 	if use hid-joycon; then
-		einfo "Upgrade Joycon Driver"
+		einfo "Upgrade Joycon Driver - Currently broken"
 		patch -p1 -R < "${FILESDIR}"/hid-switchcon-2.patch
 		patch -p1 -R < "${FILESDIR}"/hid-switchcon-1.patch
 		unipatch "${FILESDIR}"/hid-joycon-1.patch
@@ -137,7 +138,6 @@ src_unpack() {
 	fi
 	if use experimental; then
 		einfo "Applying Experimental Patches from Android Kernel"
-		unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
 		unipatch "${FILESDIR}"/revert-disable-psci-suspend-for-now.patch
 		unipatch "${FILESDIR}"/read-mtc-table-addr-from-atf.patch
 		ewarn "These patches Are Untested with this kernel, could"
@@ -151,7 +151,7 @@ src_configure() {
 	cd "${S}"
 	cp ${FILESDIR}/gentoo_switch_defconfig  .config || die "copy failed"
 	if use hid-joycon; then
-		sed -i 's/CONFIG_HID_JOYCON=y/CONFIG_HID_SWITCHCON=y/g' .config
+		sed -i 's/CONFIG_HID_SWITCHCON=y/CONFIG_HID_JOYCON=y/g' .config
 		echo CONFIG_JOYCON_FF=y >> .config
 	fi
 	if use lakka_patches; then

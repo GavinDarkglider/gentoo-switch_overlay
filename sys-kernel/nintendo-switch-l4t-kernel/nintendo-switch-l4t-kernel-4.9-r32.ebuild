@@ -9,7 +9,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon -lp0"
+IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon -lp0 -minerva"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -85,7 +85,6 @@ src_unpack() {
 
 	cd "${S}"/kernel-4.9
 	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
-	unipatch "${FILESDIR}"/read-mtc-table-addr-from-atf.patch
 	unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
 	unipatch "${FILESDIR}"/fix-usb0-rndis0-name.patch
 
@@ -145,6 +144,10 @@ src_unpack() {
 		unipatch "${FILESDIR}"/revert-disable-psci-suspend-for-now.patch
 		ewarn "These patches Are work with this kernel, but LP0 deep sleep"
 		ewarn "freezes video on wake, so support was removed from coreboot/atf for now."
+	fi
+	if use minerva; then
+		einfo "Applying required patches for Minerva T.C."
+		unipatch "${FILESDIR}"/read-mtc-table-addr-from-atf.patch
 	fi
 }
 

@@ -105,10 +105,12 @@ src_unpack() {
 		unipatch "${FILESDIR}"/hid-joycon-3.patch
 		unipatch "${FILESDIR}"/hid-joycon-4.patch
 		unipatch "${FILESDIR}"/hid-joycon-5.patch
-		ewarn "These patches are untested, and may not work"
-		ewarn "If they do work, you will need to install a special"
+		ewarn "These patches are currently broken, and may not work"
+		ewarn "right. If they do work, you will need to install a special"
 		ewarn "application to pair joycons. I will add this app to"
 		ewarn "the repository soon enough, then will update this"
+		ewarn "I am currently working with the developer to get the issue"
+		ewarn "fixed."
 	fi
 
 	if use lakka_patches; then

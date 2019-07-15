@@ -3,5 +3,5 @@ CHOST=aarch64-unknown-linux-gnu
 CPU_FLAGS_ARM="edsp neon thumb vfp vfpv3 vfpv4 vfp-d32 aes sha1 sha2 crc32 v4 v5 v6 v7 v8 thumb2"
 
 # GCC-8
-CFLAGS="-Os -mlittle-endian -mabi=lp64 -march=armv8-a -pipe -fomit-frame-pointer"
+CFLAGS="-march=armv8-a+crypto+crc+simd -mlittle-endian -mabi=lp64 -mtune=cortex-a57 -Os -pipe"
 CXXFLAGS="${CFLAGS}"

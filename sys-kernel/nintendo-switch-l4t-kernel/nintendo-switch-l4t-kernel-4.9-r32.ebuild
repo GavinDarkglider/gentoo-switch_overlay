@@ -9,7 +9,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon experimental"
+IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon -lp0"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -138,11 +138,11 @@ src_unpack() {
 			unipatch "${S}"/genpatches/"${PATCH}"
 		done
 	fi
-	if use experimental; then
-		einfo "Applying Experimental Patches from Android Kernel"
+	if use lp0; then
+		einfo "Applying lp0 Patches from Android Kernel"
 		unipatch "${FILESDIR}"/revert-disable-psci-suspend-for-now.patch
-		ewarn "These patches Are Untested with this kernel, could"
-		ewarn "cause unwanted issues."
+		ewarn "These patches Are work with this kernel, but LP0 deep sleep"
+		ewarn "freezes video on wake, so support was removed from coreboot/atf for now."
 	fi
 }
 

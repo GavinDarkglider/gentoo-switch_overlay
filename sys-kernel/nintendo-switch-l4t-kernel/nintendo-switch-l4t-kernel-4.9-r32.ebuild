@@ -85,6 +85,7 @@ src_unpack() {
 
 	cd "${S}"/kernel-4.9
 	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
+	unipatch "${FILESDIR}"/stmfts-fix-touch-sync.patch
 	unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
 	unipatch "${FILESDIR}"/fix-usb0-rndis0-name.patch
 

@@ -1,0 +1,36 @@
+From 18a0f23bc626044bbf39a6b097ad5aebad4683ef Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Tue, 11 Jun 2019 21:10:08 +0100
+Subject: [PATCH] Fix touch sync
+
+---
+ drivers/input/touchscreen/stmfts.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/input/touchscreen/stmfts.c b/drivers/input/touchscreen/stmfts.c
+index 4391553d02cca..d876884d50a44 100644
+--- a/drivers/input/touchscreen/stmfts.c
++++ b/drivers/input/touchscreen/stmfts.c
+@@ -205,8 +205,8 @@ static void stmfts_report_contact_event(struct stmfts_data *sdata,
+ 	input_report_abs(sdata->input, ABS_MT_PRESSURE, area);
+ 	input_report_abs(sdata->input, ABS_MT_ORIENTATION, orientation);
+ 
++	input_mt_sync_frame(sdata->input);
+ 	input_sync(sdata->input);
+-	input_mt_sync(sdata->input);
+ }
+ 
+ static void stmfts_report_contact_release(struct stmfts_data *sdata,
+@@ -217,8 +217,8 @@ static void stmfts_report_contact_release(struct stmfts_data *sdata,
+ 	input_mt_slot(sdata->input, slot_id);
+ 	input_mt_report_slot_state(sdata->input, MT_TOOL_FINGER, false);
+ 
++	input_mt_sync_frame(sdata->input);
+ 	input_sync(sdata->input);
+-	input_mt_sync(sdata->input);
+ }
+ 
+ static void stmfts_report_hover_event(struct stmfts_data *sdata,
+-- 
+2.21.0
+

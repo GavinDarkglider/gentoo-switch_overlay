@@ -1,6 +1,6 @@
-From 40a4a5c64e2fca49ad6762476d89d9d4442f2baf Mon Sep 17 00:00:00 2001
+From 51086d11566ebe7c6ea571a32e4cd6079f4f57f1 Mon Sep 17 00:00:00 2001
 From: "Daniel J. Ogorchock" <djogorchock@gmail.com>
-Date: Sun, 24 Feb 2019 16:01:00 -0600
+Date: Mon, 3 Jun 2019 01:06:44 -0500
 Subject: [PATCH] HID: joycon: add rumble support
 
 This patch adds support for controller rumble.
@@ -24,10 +24,10 @@ Signed-off-by: Daniel J. Ogorchock <djogorchock@gmail.com>
  2 files changed, 348 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 2ab2fa378eda..d8f7f9b7853a 100644
+index c520ded8aad4..08ec8148dfaa 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -466,6 +466,16 @@ config HID_JOYCON
+@@ -384,6 +384,16 @@ config HID_JOYCON
  	To compile this driver as a module, choose M here: the
  	module will be called hid-joycon.
  
@@ -180,8 +180,8 @@ index 277d706ce5f8..6a298f4470c6 100644
 +	{ 0xc2, 0x8070,  940 }, { 0xc4, 0x0071,  960 }, { 0xc6, 0x8071,  981 },
 +	{ 0xc8, 0x0072, 1003 }
 +};
-+static u16 joycon_max_rumble_amp =
-+ joycon_rumble_amplitudes[ARRAY_SIZE(joycon_rumble_amplitudes) - 1].amp;
++static const u16 joycon_max_rumble_amp =
++joycon_rumble_amplitudes[ARRAY_SIZE(joycon_rumble_amplitudes) - 1].amp;
 +
  /* States for controller state machine */
  enum joycon_ctlr_state {
@@ -517,3 +517,6 @@ index 277d706ce5f8..6a298f4470c6 100644
  	joycon_ctlr_destroy(ctlr);
  }
  
+-- 
+2.21.0
+

@@ -1,6 +1,6 @@
-From a000a52a2bcdce5ec7545f0f90019f0adf600618 Mon Sep 17 00:00:00 2001
+From 7fb49042ca514260ebe207ec3a2e4c88368c4cd9 Mon Sep 17 00:00:00 2001
 From: "Daniel J. Ogorchock" <djogorchock@gmail.com>
-Date: Sun, 6 Jan 2019 23:29:26 -0600
+Date: Mon, 3 Jun 2019 01:06:40 -0500
 Subject: [PATCH] HID: joycon: add nintendo switch controller driver
 
 The joycon driver supports the Nintendo Switch Pro Controllers and the
@@ -14,16 +14,17 @@ Signed-off-by: Daniel J. Ogorchock <djogorchock@gmail.com>
  MAINTAINERS              |   6 +
  drivers/hid/Kconfig      |  11 +
  drivers/hid/Makefile     |   1 +
+ drivers/hid/hid-core.c   |   3 +
  drivers/hid/hid-ids.h    |   3 +
  drivers/hid/hid-joycon.c | 789 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 810 insertions(+)
+ 6 files changed, 813 insertions(+)
  create mode 100644 drivers/hid/hid-joycon.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 2c2fce72e694..3d4789e5d720 100644
+index b292980b11b7..d7a505e92550 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -8331,6 +8331,12 @@ S:	Maintained
+@@ -6779,6 +6779,12 @@ S:	Maintained
  F:	fs/jbd2/
  F:	include/linux/jbd2.h
  
@@ -37,12 +38,12 @@ index 2c2fce72e694..3d4789e5d720 100644
  M:	Mikhail Ulyanov <mikhail.ulyanov@cogentembedded.com>
  L:	linux-media@vger.kernel.org
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 4ca0cdfa6b33..6f89edd89c55 100644
+index 8eed456a67be..086e99e0fd3b 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -452,6 +452,17 @@ config HID_JABRA
- 	mouse button events.
- 	Say M here if you may ever plug in a Jabra USB device.
+@@ -370,6 +370,17 @@ config HID_ICADE
+ 	To compile this driver as a module, choose M here: the
+ 	module will be called hid-icade.
  
 +config HID_JOYCON
 +	tristate "Nintendo Joy-Con and Pro Controller support"
@@ -59,23 +60,36 @@ index 4ca0cdfa6b33..6f89edd89c55 100644
  	tristate "Twinhan IR remote control"
  	depends on HID
 diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
-index 170163b41303..8379d5287d9c 100644
+index 86b2b5785fd2..37a1cab84c9f 100644
 --- a/drivers/hid/Makefile
 +++ b/drivers/hid/Makefile
-@@ -91,6 +91,7 @@
- obj-$(CONFIG_HID_SPEEDLINK)	+= hid-speedlink.o
- obj-$(CONFIG_HID_STEELSERIES)	+= hid-steelseries.o
- obj-$(CONFIG_HID_SUNPLUS)	+= hid-sunplus.o
-+obj-$(CONFIG_HID_JOYCON)        += hid-joycon.o
- obj-$(CONFIG_HID_GREENASIA)	+= hid-gaff.o
- obj-$(CONFIG_HID_THRUSTMASTER)	+= hid-tmff.o
- obj-$(CONFIG_HID_TIVO)		+= hid-tivo.o
-
+@@ -49,6 +49,7 @@ obj-$(CONFIG_HID_HOLTEK)	+= hid-holtek-mouse.o
+ obj-$(CONFIG_HID_HOLTEK)	+= hid-holtekff.o
+ obj-$(CONFIG_HID_HYPERV_MOUSE)	+= hid-hyperv.o
+ obj-$(CONFIG_HID_ICADE)		+= hid-icade.o
++obj-$(CONFIG_HID_JOYCON)	+= hid-joycon.o
+ obj-$(CONFIG_HID_KENSINGTON)	+= hid-kensington.o
+ obj-$(CONFIG_HID_KEYTOUCH)	+= hid-keytouch.o
+ obj-$(CONFIG_HID_KYE)		+= hid-kye.o
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 5f9ed2ff511c..54bf8629e8c0 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -2132,6 +2132,9 @@ static const struct hid_device_id hid_have_special_driver[] = {
+ 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_PRESENTER_8K_BT) },
+ 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NINTENDO, USB_DEVICE_ID_NINTENDO_WIIMOTE) },
+ 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NINTENDO, USB_DEVICE_ID_NINTENDO_WIIMOTE2) },
++    { HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NINTENDO, USB_DEVICE_ID_NINTENDO_JOYCONL) },
++    { HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NINTENDO, USB_DEVICE_ID_NINTENDO_JOYCONR) },
++    { HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NINTENDO, USB_DEVICE_ID_NINTENDO_PROCON) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_RAZER, USB_DEVICE_ID_RAZER_BLADE_14) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_CMEDIA, USB_DEVICE_ID_CM6533) },
+ 	{ }
 diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
-index adce58f24f76..a1c262b34c64 100644
+index 2f20a4b92f6e..c10fcaa5bc2a 100644
 --- a/drivers/hid/hid-ids.h
 +++ b/drivers/hid/hid-ids.h
-@@ -856,6 +856,9 @@
+@@ -784,6 +784,9 @@
  #define USB_VENDOR_ID_NINTENDO		0x057e
  #define USB_DEVICE_ID_NINTENDO_WIIMOTE	0x0306
  #define USB_DEVICE_ID_NINTENDO_WIIMOTE2	0x0330
@@ -880,3 +894,6 @@ index 000000000000..d40e5da0e771
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Daniel J. Ogorchock <djogorchock@gmail.com>");
 +MODULE_DESCRIPTION("Driver for Nintendo Switch Controllers");
+-- 
+2.21.0
+

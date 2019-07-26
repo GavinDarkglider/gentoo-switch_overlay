@@ -1,6 +1,6 @@
-From 911d91149d7dc8fbe65e4a812c2dbbcf1cb8e5a1 Mon Sep 17 00:00:00 2001
+From cb7a2959f291809a9b57de385d83095171758176 Mon Sep 17 00:00:00 2001
 From: "Daniel J. Ogorchock" <djogorchock@gmail.com>
-Date: Sat, 23 Feb 2019 23:03:57 -0600
+Date: Mon, 3 Jun 2019 01:06:43 -0500
 Subject: [PATCH] HID: joycon: add home led support
 
 This patch adds the ability to set the intensity level of the home
@@ -147,3 +147,6 @@ index 0b2cba2a604c..277d706ce5f8 100644
  	if (ret) {
  		hid_err(hdev, "Failed to create leds; ret=%d\n", ret);
  		goto err_close;
+-- 
+2.21.0
+

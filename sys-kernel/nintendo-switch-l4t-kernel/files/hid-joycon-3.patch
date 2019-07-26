@@ -1,6 +1,6 @@
-From 01c84324a22753ece07dcf8ccd76299db7b0becc Mon Sep 17 00:00:00 2001
+From 4443dd6a0ec8972b9cebfa8f93fdd1e0683b7157 Mon Sep 17 00:00:00 2001
 From: "Daniel J. Ogorchock" <djogorchock@gmail.com>
-Date: Sat, 26 Jan 2019 23:14:11 -0600
+Date: Mon, 3 Jun 2019 01:06:42 -0500
 Subject: [PATCH] HID: joycon: add power supply support
 
 This patch adds power_supply functionality to the switch controller
@@ -13,10 +13,10 @@ Signed-off-by: Daniel J. Ogorchock <djogorchock@gmail.com>
  2 files changed, 133 insertions(+)
 
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index cf88bbc54208..2ab2fa378eda 100644
+index fb511a4e4cca..c520ded8aad4 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -457,6 +457,7 @@ config HID_JOYCON
+@@ -375,6 +375,7 @@ config HID_JOYCON
  	depends on HID
  	depends on NEW_LEDS
  	depends on LEDS_CLASS
@@ -219,3 +219,6 @@ index a2ae4bbaffcd..0b2cba2a604c 100644
  	ctlr->ctlr_state = JOYCON_CTLR_STATE_READ;
  
  	hid_dbg(hdev, "probe - success\n");
+-- 
+2.21.0
+

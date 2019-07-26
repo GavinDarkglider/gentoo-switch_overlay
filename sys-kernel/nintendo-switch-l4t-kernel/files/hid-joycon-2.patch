@@ -1,6 +1,6 @@
-From bdcefccb091175658db53ba0f4525a2a962dec89 Mon Sep 17 00:00:00 2001
+From ebe1ae4394ec03694e64806f82159a139f645eeb Mon Sep 17 00:00:00 2001
 From: "Daniel J. Ogorchock" <djogorchock@gmail.com>
-Date: Sat, 26 Jan 2019 21:25:41 -0600
+Date: Mon, 3 Jun 2019 01:06:41 -0500
 Subject: [PATCH] HID: joycon: add player led support
 
 This patch adds led_classdev functionality to the switch controller
@@ -14,10 +14,10 @@ Signed-off-by: Daniel J. Ogorchock <djogorchock@gmail.com>
  2 files changed, 106 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 6f89edd89c55..cf88bbc54208 100644
+index 086e99e0fd3b..fb511a4e4cca 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -455,6 +455,8 @@ config HID_JABRA
+@@ -373,6 +373,8 @@ config HID_ICADE
  config HID_JOYCON
  	tristate "Nintendo Joy-Con and Pro Controller support"
  	depends on HID
@@ -156,8 +156,8 @@ index d40e5da0e771..a2ae4bbaffcd 100644
 +
 +		led = &ctlr->leds[i];
 +		led->name = name;
-+		led->brightness = ((i + 1) <= input_num) ? LED_FULL : LED_OFF;
-+		led->max_brightness = LED_FULL;
++		led->brightness = ((i + 1) <= input_num) ? LED_ON : LED_OFF;
++		led->max_brightness = LED_ON;
 +		led->brightness_set_blocking =
 +					joycon_player_led_brightness_set;
 +		led->flags = LED_CORE_SUSPENDRESUME | LED_HW_PLUGGABLE;
@@ -195,3 +195,6 @@ index d40e5da0e771..a2ae4bbaffcd 100644
  	ctlr->ctlr_state = JOYCON_CTLR_STATE_READ;
  
  	hid_dbg(hdev, "probe - success\n");
+-- 
+2.21.0
+

@@ -1,0 +1,145 @@
+From e6b5971daf0e16aa6b5dee27bcae8f3a189d30c5 Mon Sep 17 00:00:00 2001
+From: Billy Laws <blaws05@gmail.com>
+Date: Thu, 13 Jun 2019 20:56:18 +0100
+Subject: [PATCH] Compile fixes
+
+---
+ drivers/hid/hid-joycon.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/hid/hid-joycon.c b/drivers/hid/hid-joycon.c
+index 6a298f4470c6..822a7c3cb489 100644
+--- a/drivers/hid/hid-joycon.c
++++ b/drivers/hid/hid-joycon.c
+@@ -219,9 +219,9 @@ static const struct joycon_rumble_amp_data joycon_rumble_amplitudes[] = {
+ 	{ 0xc2, 0x8070,  940 }, { 0xc4, 0x0071,  960 }, { 0xc6, 0x8071,  981 },
+ 	{ 0xc8, 0x0072, 1003 }
+ };
+-static const u16 joycon_max_rumble_amp =
+-joycon_rumble_amplitudes[ARRAY_SIZE(joycon_rumble_amplitudes) - 1].amp;
+ 
++#define joycon_max_rumble_amp joycon_rumble_amplitudes[ARRAY_SIZE(joycon_rumble_amplitudes) - 1].amp
++#define LED_ON 1
+ /* States for controller state machine */
+ enum joycon_ctlr_state {
+ 	JOYCON_CTLR_STATE_INIT,
+@@ -358,7 +358,7 @@ static int __joycon_hid_send(struct hid_device *hdev, u8 *data, size_t len)
+ 	ret = hid_hw_output_report(hdev, buf, len);
+ 	kfree(buf);
+ 	if (ret < 0)
+-		hid_dbg(hdev, "Failed to send output report ret=%d\n", ret);
++		hid_err(hdev, "Failed to send output report ret=%d\n", ret);
+ 	return ret;
+ }
+ 
+@@ -373,7 +373,7 @@ static int joycon_hid_send_sync(struct joycon_ctlr *ctlr, u8 *data, size_t len)
+ 	}
+ 
+ 	if (!wait_event_timeout(ctlr->wait, ctlr->received_resp, HZ)) {
+-		hid_dbg(ctlr->hdev, "syncronous send/receive timed out\n");
++		hid_err(ctlr->hdev, "syncronous send/receive timed out\n");
+ 		memset(ctlr->input_buf, 0, JC_MAX_RESP_SIZE);
+ 		return -ETIMEDOUT;
+ 	}
+@@ -392,7 +392,7 @@ static int joycon_send_usb(struct joycon_ctlr *ctlr, u8 cmd)
+ 	ctlr->msg_type = JOYCON_MSG_TYPE_USB;
+ 	ret = joycon_hid_send_sync(ctlr, buf, sizeof(buf));
+ 	if (ret)
+-		hid_dbg(ctlr->hdev, "send usb command failed; ret=%d\n", ret);
++		hid_err(ctlr->hdev, "send usb command failed; ret=%d\n", ret);
+ 	return ret;
+ }
+ 
+@@ -418,7 +418,7 @@ static int joycon_send_subcmd(struct joycon_ctlr *ctlr,
+ 	ret = joycon_hid_send_sync(ctlr, (u8 *)subcmd,
+ 				   sizeof(*subcmd) + data_len);
+ 	if (ret < 0)
+-		hid_dbg(ctlr->hdev, "send subcommand failed; ret=%d\n", ret);
++		hid_err(ctlr->hdev, "send subcommand failed; ret=%d\n", ret);
+ 	else
+ 		ret = 0;
+ 	return ret;
+@@ -434,7 +434,7 @@ static int joycon_set_player_leds(struct joycon_ctlr *ctlr, u8 flash, u8 on)
+ 	req->subcmd_id = JC_SUBCMD_SET_PLAYER_LIGHTS;
+ 	req->data[0] = (flash << 4) | on;
+ 
+-	hid_dbg(ctlr->hdev, "setting player leds\n");
++	hid_err(ctlr->hdev, "setting player leds\n");
+ 	return joycon_send_subcmd(ctlr, req, 1);
+ }
+ 
+@@ -462,7 +462,7 @@ static int joycon_request_calibration(struct joycon_ctlr *ctlr)
+ 	data[3] = 0xFF & (JC_CAL_DATA_START >> 24);
+ 	data[4] = JC_CAL_DATA_SIZE;
+ 
+-	hid_dbg(ctlr->hdev, "requesting cal data\n");
++	hid_err(ctlr->hdev, "requesting cal data\n");
+ 	ret = joycon_send_subcmd(ctlr, req, 5);
+ 	if (ret)
+ 		return ret;
+@@ -501,7 +501,7 @@ static int joycon_request_calibration(struct joycon_ctlr *ctlr)
+ 	cal_y->max = cal_y->center + y_max_above;
+ 	cal_y->min = cal_y->center - y_min_below;
+ 
+-	hid_dbg(ctlr->hdev, "calibration:\n"
++	hid_err(ctlr->hdev, "calibration:\n"
+ 			    "l_x_c=%d l_x_max=%d l_x_min=%d\n"
+ 			    "l_y_c=%d l_y_max=%d l_y_min=%d\n"
+ 			    "r_x_c=%d r_x_max=%d r_x_min=%d\n"
+@@ -531,7 +531,7 @@ static int joycon_set_report_mode(struct joycon_ctlr *ctlr)
+ 	req->subcmd_id = JC_SUBCMD_SET_REPORT_MODE;
+ 	req->data[0] = 0x30; /* standard, full report mode */
+ 
+-	hid_dbg(ctlr->hdev, "setting controller report mode\n");
++	hid_err(ctlr->hdev, "setting controller report mode\n");
+ 	return joycon_send_subcmd(ctlr, req, 1);
+ }
+ 
+@@ -544,7 +544,7 @@ static int joycon_enable_rumble(struct joycon_ctlr *ctlr, bool enable)
+ 	req->subcmd_id = JC_SUBCMD_ENABLE_VIBRATION;
+ 	req->data[0] = enable ? 0x01 : 0x00;
+ 
+-	hid_dbg(ctlr->hdev, "%s rumble\n", enable ? "enabling" : "disabling");
++	hid_err(ctlr->hdev, "%s rumble\n", enable ? "enabling" : "disabling");
+ 	return joycon_send_subcmd(ctlr, req, 1);
+ }
+ 
+@@ -986,7 +986,7 @@ static int joycon_home_led_brightness_set(struct led_classdev *led,
+ 	data[3] = 0x11;
+ 	data[4] = 0x11;
+ 
+-	hid_dbg(hdev, "setting home led brightness\n");
++	hid_err(hdev, "setting home led brightness\n");
+ 	mutex_lock(&ctlr->output_mutex);
+ 	ret = joycon_send_subcmd(ctlr, req, 5);
+ 	mutex_unlock(&ctlr->output_mutex);
+@@ -1262,7 +1262,7 @@ static int joycon_hid_probe(struct hid_device *hdev,
+ 	int ret;
+ 	struct joycon_ctlr *ctlr;
+ 
+-	hid_dbg(hdev, "probe - start\n");
++	hid_err(hdev, "probe - start\n");
+ 
+ 	ctlr = devm_kzalloc(&hdev->dev, sizeof(*ctlr), GFP_KERNEL);
+ 	if (!ctlr) {
+@@ -1361,7 +1361,7 @@ static int joycon_hid_probe(struct hid_device *hdev,
+ 
+ 	ctlr->ctlr_state = JOYCON_CTLR_STATE_READ;
+ 
+-	hid_dbg(hdev, "probe - success\n");
++	hid_err(hdev, "probe - success\n");
+ 	return 0;
+ 
+ err_mutex:
+@@ -1380,7 +1380,7 @@ static void joycon_hid_remove(struct hid_device *hdev)
+ {
+ 	struct joycon_ctlr *ctlr = hid_get_drvdata(hdev);
+ 
+-	hid_dbg(hdev, "remove\n");
++	hid_err(hdev, "remove\n");
+ 	hid_hw_close(hdev);
+ 	hid_hw_stop(hdev);
+ 
+-- 
+2.21.0
+

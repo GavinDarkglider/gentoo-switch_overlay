@@ -1,2 +1,0 @@
->=x11-base/xorg-server-1.19.7
->=sys-devel/gcc-7.3.0-r7

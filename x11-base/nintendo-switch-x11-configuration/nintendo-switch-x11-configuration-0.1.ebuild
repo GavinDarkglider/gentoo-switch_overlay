@@ -2,7 +2,7 @@ EAPI=5
 
 inherit versionator
 
-DESCRIPTION="Eselect module for Nintendo Switch Dock Profiles"
+DESCRIPTION="Nintendo Switch Xorg Configuration"
 HOMEPAGE=""
 SRC_URI="https://github.com/GavinDarkglider/nintendo-switch-x11-configuration/archive/master.zip -> nintendo_switch_xorg_configs.zip"
 

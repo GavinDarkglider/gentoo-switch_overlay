@@ -16,19 +16,14 @@ KEYWORDS="arm64 arm"
 
 IUSE="systemd openrc"
 
-
-DEPEND="sys-kernel/nintendo-switch-l4t-kernel[hid-joycon]"
-
-#S="${WORKDIR}/joycond/"
-
 DISABLE_AUTOFORMATTING="yes"
+
 src_configure() {
 	cmake-utils_src_configure
 }
 
 src_install() {
 	sed -i 's+/var/tmp/portage/media-libs/joycond-9999/work/joycond-9999/joycond+/var/tmp/portage/media-libs/joycond-9999/work/joycond-9999_build/joycond+g' "${WORKDIR}/joycond-9999_build/cmake_install.cmake"
-	#S="${WORKDIR}/joycond-9999_build/"
 	cmake-utils_src_install
 }
 

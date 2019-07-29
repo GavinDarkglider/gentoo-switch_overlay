@@ -35,7 +35,8 @@ SRC_URI="https://gitlab.com/switchroot/l4t-kernel-4.9/-/archive/rel30-rel32stack
 DEPEND="sys-firmware/jetson-tx1-firmware
         sys-firmware/nintendo-switch-firmware
         sys-kernel/linux-firmware
-        app-editors/vim-core"
+        app-editors/vim-core
+	hid-joycon? ( media-libs/joycond )"
 
 GENTOO_PATCHES="
 1109_linux-4.9.110.patch
@@ -106,9 +107,7 @@ src_unpack() {
 		unipatch "${FILESDIR}"/hid-joycon-4.patch
 		unipatch "${FILESDIR}"/hid-joycon-5.patch
 		unipatch "${FILESDIR}"/hid-joycon-l4t-fixes.patch
-		ewarn "You will need to install a special"
-		ewarn "application to pair joycons. I will add this app to"
-		ewarn "the repository soon enough, then will update this"
+		ewarn "These patches are still considered experimental"
 	fi
 
 	if use lakka_patches; then

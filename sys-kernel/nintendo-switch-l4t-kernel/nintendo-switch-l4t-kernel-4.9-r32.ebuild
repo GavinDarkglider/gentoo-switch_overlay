@@ -22,9 +22,9 @@ inherit kernel-2
 detect_version
 detect_arch
 
-SRC_URI="https://gitlab.com/switchroot/l4t-kernel-4.9/-/archive/rel30-rel32stack/l4t-kernel-4.9-rel30-rel32stack.tar.bz2
-         https://gitlab.com/switchroot/l4t-kernel-nvidia/-/archive/rel32-rel32stack/l4t-kernel-nvidia-rel32-rel32stack.tar.bz2
-         https://gitlab.com/switchroot/l4t-platform-t210-switch/-/archive/rel-30-r3/l4t-platform-t210-switch-rel-30-r3.tar.bz2
+SRC_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9/-/archive/rel30-rel32stack/l4t-kernel-4.9-rel30-rel32stack.tar.bz2
+         https://gitlab.com/switchroot/kernel/l4t-kernel-nvidia/-/archive/rel32-rel32stack/l4t-kernel-nvidia-rel32-rel32stack.tar.bz2
+         https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch/-/archive/rel-30-r3/l4t-platform-t210-switch-rel-30-r3.tar.bz2
          https://nv-tegra.nvidia.com/gitweb/?p=linux-nvgpu.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> linux-nvgpu-r32.1.tar.gz
          https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/soc/tegra.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> soc-tegra-tegra-l4t-r32.1.tar.gz
          https://nv-tegra.nvidia.com/gitweb/?p=device/hardware/nvidia/soc/t210.git;a=snapshot;h=tegra-l4t-r32.1;sf=tgz -> soc-tegra-t210-tegra-l4t-r32.1.tar.gz

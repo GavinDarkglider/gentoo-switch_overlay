@@ -1,0 +1,12 @@
+diff -Naur l4t-platform-t210-switch_orig/kernel-dts/switch-platforms/tegra210-icosa-emc.dtsi l4t-platform-t210-switch/kernel-dts/switch-platforms/tegra210-icosa-emc.dtsi
+--- l4t-platform-t210-switch_orig/kernel-dts/switch-platforms/tegra210-icosa-emc.dtsi	2019-07-24 19:41:06.514971336 -0000
++++ l4t-platform-t210-switch/kernel-dts/switch-platforms/tegra210-icosa-emc.dtsi	2019-07-24 19:41:36.974752568 -0000
+@@ -4,7 +4,7 @@
+ 
+ / {
+ 	external-memory-controller@7001b000 {
+-		status = "okay";
++		status = "disabled";
+ 		compatible = "nvidia,tegra21-emc", "nvidia,tegra210-emc";
+ 		reg = <0x0 0x7001b000 0x0 0x1000>,
+ 		      <0x0 0x7001e000 0x0 0x1000>,

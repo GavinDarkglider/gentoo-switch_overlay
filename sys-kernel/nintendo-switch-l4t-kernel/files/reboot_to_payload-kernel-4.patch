@@ -1,0 +1,71 @@
+From 01b97bc94533e6d9d66efc63c14c3d9633334fa0 Mon Sep 17 00:00:00 2001
+From: Ezekiel Bethel <zek@9net.org>
+Date: Sat, 10 Aug 2019 02:17:21 +0100
+Subject: [PATCH] fix up iram copying a bit, add reboot to payload via scratch0
+ bit
+
+---
+ drivers/soc/tegra/pmc-reboot2payload.c | 10 ++++++----
+ drivers/soc/tegra/pmc.c                |  6 +++++-
+ 2 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/soc/tegra/pmc-reboot2payload.c b/drivers/soc/tegra/pmc-reboot2payload.c
+index c0c6525cc346..1442096eacd7 100644
+--- a/drivers/soc/tegra/pmc-reboot2payload.c
++++ b/drivers/soc/tegra/pmc-reboot2payload.c
+@@ -61,7 +61,9 @@ u32 ams_reboot_to_payload(void)
+ 	return (u32)regs.args[0];
+ }
+ 
+-static u8 iram_write_buff[0x1000];
++#define IRAM_CHUNK_SIZE 0x4000
++
++static u8 iram_write_buff[IRAM_CHUNK_SIZE];
+ 
+ static int reboot_to_payload_driver_probe(struct platform_device *pdev)
+ {
+@@ -75,11 +77,11 @@ static int reboot_to_payload_driver_probe(struct platform_device *pdev)
+ 	{
+ 		dev_info(&pdev->dev, "Let's go do some SMCs!");
+ 		size_remaining = reboot_payload_fw->size;
+-		for(i = 0; i < reboot_payload_fw->size; i+=0x1000,size_remaining-=0x1000)
++		for(i = 0; i < reboot_payload_fw->size; i+=IRAM_CHUNK_SIZE,size_remaining-=IRAM_CHUNK_SIZE)
+ 		{
+-			copy_size = size_remaining > 0x1000 ? 0x1000 : size_remaining;
++			copy_size = size_remaining > IRAM_CHUNK_SIZE ? IRAM_CHUNK_SIZE : size_remaining;
+ 			memcpy(iram_write_buff, reboot_payload_fw->data + i, copy_size);
+-			ams_iram_copy(iram_write_buff, iram_payload_base + i, 0x1000, 0);
++			ams_iram_copy(iram_write_buff, iram_payload_base + i, IRAM_CHUNK_SIZE, 0);
+ 		}
+ 	}
+ 	else
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index 9cd40d182ed6..1d8028df2c79 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -105,10 +105,11 @@
+ #define PMC_SCRATCH0			0x50
+ #define  PMC_SCRATCH0_MODE_RECOVERY	(1 << 31)
+ #define  PMC_SCRATCH0_MODE_BOOTLOADER	(1 << 30)
++#define  PMC_SCRATCH0_MODE_PAYLOAD	(1 << 29)
+ #define  PMC_SCRATCH0_MODE_RCM		(1 << 1)
+ #define  PMC_SCRATCH0_MODE_MASK		(PMC_SCRATCH0_MODE_RECOVERY | \
+ 					 PMC_SCRATCH0_MODE_BOOTLOADER | \
+-					 PMC_SCRATCH0_MODE_RCM)
++					 PMC_SCRATCH0_MODE_RCM | PMC_SCRATCH0_MODE_PAYLOAD)
+ 
+ #define PMC_SCRATCH1			0x54
+ 
+@@ -996,6 +997,9 @@ static void tegra_pmc_program_reboot_reason(const char *cmd)
+ 
+ 		if (strcmp(cmd, "forced-recovery") == 0)
+ 			value |= PMC_SCRATCH0_MODE_RCM;
++
++		if (strcmp(cmd, "payload") == 0)
++			value |= PMC_SCRATCH0_MODE_PAYLOAD;
+ 	}
+ 
+ 	tegra_pmc_reg_writel(value, TEGRA_PMC_SCRATCH0);
+-- 
+2.21.0
+

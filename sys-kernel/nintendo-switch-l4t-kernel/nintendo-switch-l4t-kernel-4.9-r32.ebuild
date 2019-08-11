@@ -9,7 +9,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon -lp0 -minerva"
+IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon -lp0 -minerva reboot2payload"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -89,6 +89,23 @@ src_unpack() {
 	unipatch "${FILESDIR}"/stmfts-fix-touch-sync.patch
 	unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
 	unipatch "${FILESDIR}"/fix-usb0-rndis0-name.patch
+	#fix emc bug
+	cd "${S}"/hardware/nvidia/platform/t210/switch
+	unipatch "${FILESDIR}"/switch_disable_emc.patch
+	cd ${S}
+	
+	if use reboot2payload; then
+		einfo "Apply Reboot2Payload Kernel patches"
+		unipatch "${FILESDIR}"/reboot_to_payload-kernel-1.patch
+		unipatch "${FILESDIR}"/reboot_to_payload-kernel-2.patch
+		unipatch "${FILESDIR}"/reboot_to_payload-kernel-3.patch
+		unipatch "${FILESDIR}"/reboot_to_payload-kernel-4.patch
+		unipatch "${FILESDIR}"/reboot_to_payload-kernel-5.patch
+                unipatch "${FILESDIR}"/reboot_to_payload-kernel-6.patch
+		cd "${S}"/hardware/nvidia/platform/t210/switch
+ 		unipatch "${FILESDIR}"/reboot_to_payload-dts.patch
+		cd "${S}"
+	fi
 
 	if use kali_patches; then
 		einfo "Apply Kali patches"

@@ -1,0 +1,26 @@
+#!/sbin/openrc-run
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+depend(){
+	need udev
+	need bluetooth
+}
+
+start() {
+        ebegin "Joycond Userspace Driver"
+        start-stop-daemon --start --exec ${JOYCOND_CMD} --make-pidfile \
+                --user ${JOYCOND_USER} --background \
+                --pidfile /var/run/joycond.pid
+        eend $?
+}
+     
+stop() {
+        ebegin "Stopping Joycond Userspace Driver"
+        start-stop-daemon --stop \
+                --user ${JOYCOND_USER} --pidfile /var/run/joycond.pid
+        eend $?
+}
+
+

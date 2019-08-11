@@ -25,6 +25,12 @@ src_configure() {
 src_install() {
 	sed -i 's+/var/tmp/portage/media-libs/joycond-9999/work/joycond-9999/joycond+/var/tmp/portage/media-libs/joycond-9999/work/joycond-9999_build/joycond+g' "${WORKDIR}/joycond-9999_build/cmake_install.cmake"
 	cmake-utils_src_install
+	if use openrc ; then
+		dodir /etc/init.d
+		insinto /etc/init.d
+		newins "${FILESDIR}/joycond /etc/init.d/joycond
+		doexe /etc/init.d/joycond
+	fi
 }
 
 

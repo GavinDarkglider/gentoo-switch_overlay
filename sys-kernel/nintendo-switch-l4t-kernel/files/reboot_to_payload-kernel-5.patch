@@ -1,0 +1,37 @@
+From 61af38358280a9cc6f54a75d1ada4701b33f02de Mon Sep 17 00:00:00 2001
+From: Ezekiel Bethel <zek@9net.org>
+Date: Sat, 10 Aug 2019 22:02:51 +0100
+Subject: [PATCH] remove debug
+
+---
+ drivers/soc/tegra/pmc-reboot2payload.c | 1 -
+ drivers/soc/tegra/pmc.c                | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/soc/tegra/pmc-reboot2payload.c b/drivers/soc/tegra/pmc-reboot2payload.c
+index 1442096eacd7..c1979b4f547f 100644
+--- a/drivers/soc/tegra/pmc-reboot2payload.c
++++ b/drivers/soc/tegra/pmc-reboot2payload.c
+@@ -75,7 +75,6 @@ static int reboot_to_payload_driver_probe(struct platform_device *pdev)
+ 
+ 	if(request_firmware_direct(&reboot_payload_fw, "reboot_payload.fw", &pdev->dev) == 0)
+ 	{
+-		dev_info(&pdev->dev, "Let's go do some SMCs!");
+ 		size_remaining = reboot_payload_fw->size;
+ 		for(i = 0; i < reboot_payload_fw->size; i+=IRAM_CHUNK_SIZE,size_remaining-=IRAM_CHUNK_SIZE)
+ 		{
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index 1d8028df2c79..c54a98203970 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -105,6 +105,7 @@
+ #define PMC_SCRATCH0			0x50
+ #define  PMC_SCRATCH0_MODE_RECOVERY	(1 << 31)
+ #define  PMC_SCRATCH0_MODE_BOOTLOADER	(1 << 30)
++// switch: reboot-to-payload scratch0 bit. "unofficial"
+ #define  PMC_SCRATCH0_MODE_PAYLOAD	(1 << 29)
+ #define  PMC_SCRATCH0_MODE_RCM		(1 << 1)
+ #define  PMC_SCRATCH0_MODE_MASK		(PMC_SCRATCH0_MODE_RECOVERY | \
+-- 
+2.21.0
+

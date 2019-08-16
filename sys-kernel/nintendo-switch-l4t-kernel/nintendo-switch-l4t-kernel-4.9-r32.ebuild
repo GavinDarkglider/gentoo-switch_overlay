@@ -9,7 +9,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="kali_patches lakka_patches +gentoo_patches hid-joycon -lp0 -minerva reboot2payload"
+IUSE="kali_patches lakka_patches +gentoo_patches +hid-joycon -lp0"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -85,28 +85,6 @@ src_unpack() {
 	unpack platform-tegra-t210-common-tegra-l4t-r32.1.tar.gz
 
 	cd "${S}"/kernel-4.9
-	unipatch "${FILESDIR}"/l4t-kernel-drop-emc-optimization-flag.patch
-	unipatch "${FILESDIR}"/stmfts-fix-touch-sync.patch
-	unipatch "${FILESDIR}"/stmfts-disable-input-tuning.patch
-	unipatch "${FILESDIR}"/fix-usb0-rndis0-name.patch
-	#fix emc bug
-	cd "${S}"/hardware/nvidia/platform/t210/switch
-	unipatch "${FILESDIR}"/switch_disable_emc.patch
-	cd ${S}
-	
-	if use reboot2payload; then
-		einfo "Apply Reboot2Payload Kernel patches"
-		unipatch "${FILESDIR}"/reboot_to_payload-kernel-1.patch
-		unipatch "${FILESDIR}"/reboot_to_payload-kernel-2.patch
-		unipatch "${FILESDIR}"/reboot_to_payload-kernel-3.patch
-		unipatch "${FILESDIR}"/reboot_to_payload-kernel-4.patch
-		unipatch "${FILESDIR}"/reboot_to_payload-kernel-5.patch
-                unipatch "${FILESDIR}"/reboot_to_payload-kernel-6.patch
-		cd "${S}"/hardware/nvidia/platform/t210/switch
- 		unipatch "${FILESDIR}"/reboot_to_payload-dts.patch
-		cd "${S}"
-	fi
-
 	if use kali_patches; then
 		einfo "Apply Kali patches"
 		unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
@@ -115,7 +93,7 @@ src_unpack() {
 	fi
 
 	if use hid-joycon; then
-		einfo "Upgrade Joycon Driver - Currently broken"
+		einfo "Upgraded Joycon Driver"
 		patch -p1 -R < "${FILESDIR}"/hid-switchcon-2.patch
 		patch -p1 -R < "${FILESDIR}"/hid-switchcon-1.patch
 		unipatch "${FILESDIR}"/hid-joycon-1.patch
@@ -124,7 +102,6 @@ src_unpack() {
 		unipatch "${FILESDIR}"/hid-joycon-4.patch
 		unipatch "${FILESDIR}"/hid-joycon-5.patch
 		unipatch "${FILESDIR}"/hid-joycon-l4t-fixes.patch
-		ewarn "These patches are still considered experimental"
 	fi
 
 	if use lakka_patches; then
@@ -159,10 +136,6 @@ src_unpack() {
 		unipatch "${FILESDIR}"/revert-disable-psci-suspend-for-now.patch
 		ewarn "These patches Are work with this kernel, but LP0 deep sleep"
 		ewarn "freezes video on wake, so support was removed from coreboot/atf for now."
-	fi
-	if use minerva; then
-		einfo "Applying required patches for Minerva T.C."
-		unipatch "${FILESDIR}"/read-mtc-table-addr-from-atf.patch
 	fi
 }
 

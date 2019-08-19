@@ -2,7 +2,7 @@ EAPI="6"
 KEYWORDS="~arm64"
 SLOT="0"
 
-HOMEPAGE="https://gitlab.com/switchroot/switch-uboot/"
+HOMEPAGE="https://github.com/lakka-switch/u-boot"
 DESCRIPTION='"Das U-Boot" Source Tree for the Switch'
 
 inherit git-r3
@@ -28,11 +28,12 @@ src_configure() {
 }
 
 src_install() {
-	exeinto "/boot"
+	exeinto "/usr/share/u-boot"
 	doexe u-boot.elf
 }
 
 pkg_postinst() {
-	elog "u-boot.elf is not used automagically, just copied to /boot"
-	elog "Please update the coreboot image using this payload"
+	elog "u-boot.elf installedd to /usr/share/u-boot/u-boot.elf"
+	elog "Please update the coreboot image using update-coreboot.sh"
+	elog "or reinstall sys-boot/nintendo-switch-coreboot-bin"
 }

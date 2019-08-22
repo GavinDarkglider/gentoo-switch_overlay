@@ -1,2 +1,7 @@
-arm64 nintendo_switch/17.0 exp
-
+arm64 nintendo_switch/17.0 stable
+arm64 nintendo_switch/17.0/desktop stable
+arm64 nintendo_switch/17.0/desktop/plasma exp
+arm64 nintendo_switch/17.0/desktop/plasma/systemd exp
+arm64 nintendo_switch/17.0/desktop/systemd exp
+arm64 nintendo_switch/17.0/desktop/gnome exp
+arm64 nintendo_switch/17.0/desktop/gnome/systemd exp

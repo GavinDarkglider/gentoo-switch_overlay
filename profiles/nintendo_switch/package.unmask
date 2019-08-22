@@ -1,1 +1,2 @@
+# required by x11-drivers/jetson-tx1-drivers for egl
 media-libs/libglvnd

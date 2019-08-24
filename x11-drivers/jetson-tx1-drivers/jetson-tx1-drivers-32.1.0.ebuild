@@ -34,6 +34,7 @@ src_unpack() {
 
 src_install() {
     dodir /etc
+    dodir /etc/udev/rules.d
     dodir /var
     dodir /usr/bin
     dodir /usr/sbin
@@ -41,6 +42,11 @@ src_install() {
     cp -R var "${D}/" || die "Install failed!"
     cp -R usr/bin "${D}/usr/" || die "Install failed!"
     cp -R usr/sbin "${D}/usr/" || die "Install failed!"
+    
+    for f in "${FILESDIR}"
+    do
+        cp "$f" "${D}/etc/udev/rules.d/" || die "Install failed!"
+    done
 
     sed -i -e 's:^/usr/lib/:/usr/'"lib64"'/:' "${D}"/etc/ld.so.conf.d/nvidia-tegra.conf
 

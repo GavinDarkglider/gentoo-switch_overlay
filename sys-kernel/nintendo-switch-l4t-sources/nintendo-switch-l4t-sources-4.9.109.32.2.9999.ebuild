@@ -16,9 +16,7 @@ K_SECURITY_UNSUPPORTED="yes"
 K_WANT_GENPATCHES="base extras"
 K_GENPATCHES_VER="189"
 SWITCHROOT_VER="rel30-rel32stack"
-NVIDIA_VER="32.1"
-
-CUSTOM_CONFIGFILE="${PORTAGE_CONFIGROOT}/etc/portage/nintendo-switch-l4t-kernel.config"
+DTSTREE_VER="32.2"
 
 inherit kernel-2
 detect_version
@@ -29,12 +27,9 @@ SRC_URI="${GENPATCHES_URI}"
 
 DESCRIPTION="Nintendo Switch kernel sources for the ${KV_MAJOR}.${KV_MINOR} switchroot ${SWITCHROOT_VER} tree"
 
-RDEPEND="sys-kernel/nintendo-switch-l4t-dtstree:${NVIDIA_VER}"
+RDEPEND="sys-kernel/nintendo-switch-l4t-dtstree:${DTSTREE_VER}"
 
 GENTOO_PATCHES="
-1109_linux-4.9.110.patch
-1110_linux-4.9.111.patch
-1111_linux-4.9.112.patch
 1500_XATTR_USER_PREFIX.patch
 1520_security-apparmor-Use-POSIX-compatible-printf.patch
 1701_ia64_fix_ptrace.patch
@@ -117,17 +112,18 @@ src_configure() {
 		echo CONFIG_JOYSTICK_JOYCON=y >> "${CONFIGFILE}"
 	fi
 
-	einfo "Adjust gentoo version"
+	EXTRAVERSION=".${DTSTREE_VER}-nintendo-switch-l4t"
+	einfo "Adjust extraversion to ${EXTRAVERSION}"
 	unpack_set_extraversion
 
 	einfo ""
-	einfo "Use 'make-with-dts-"${NVIDIA_VER}".sh gentoo_switch_defconfig' to apply prepared nintendo switch optimized configuration"
+	einfo "Use 'make-with-dts-${DTSTREE_VER}.sh gentoo_switch_defconfig' to apply prepared nintendo switch optimized configuration"
 	einfo ""
 }
 
 src_install() {
 	kernel-2_src_install
-	dodir /usr/src/nintendo-switch-l4t-dtstree-"${NVIDIA_VER}"
-	mv "${D}"/usr/src/linux-l4t-"${PVR}"-nintendo "${D}"/usr/src/nintendo-switch-l4t-dtstree-"${NVIDIA_VER}"
-	dosym /usr/src/nintendo-switch-l4t-dtstree-"${NVIDIA_VER}"/linux-l4t-"${PVR}"-nintendo /usr/src/linux-l4t-"${PVR}"-nintendo
+	dodir /usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"
+	mv "${D}"/usr/src/linux-l4t-"${PVR}"-nintendo "${D}"/usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"
+	dosym /usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"/linux-l4t-"${PVR}"-nintendo /usr/src/linux-l4t-"${PVR}"-nintendo
 }

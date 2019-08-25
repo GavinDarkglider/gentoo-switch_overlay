@@ -1,7 +1,11 @@
+# Not compatible to nivida binary blobs
 >=x11-base/xorg-server-1.19.7
 >=sys-devel/gcc-7.3.0-r7
 
-# bell07: kernel cannot compiled with this dtstree atm
+# bell07: 2019-08-30 Does not but with this dts
+=sys-kernel/nintendo-switch-l4t-dtstree-32.1.9999
+=sys-kernel/nintendo-switch-l4t-sources-4.9.109.32.1.9999
+=sys-kernel/nintendo-switch-l4t-sources-4.9.112.32.1.9999
 =sys-kernel/nintendo-switch-l4t-dtstree-32.2.9999
-=sys-kernel/nintendo-switch-l4t-sources-4.9.109.9999-r1
-=sys-kernel/nintendo-switch-l4t-sources-4.9.112.9999-r1
+=sys-kernel/nintendo-switch-l4t-sources-4.9.109.32.2.9999
+=sys-kernel/nintendo-switch-l4t-sources-4.9.112.32.2.9999

@@ -14,6 +14,7 @@ IUSE="+egl vulkan"
 RDEPEND="
 	~sys-firmware/jetson-tx1-firmware-${PV}
 	=x11-base/xorg-server-1.19.6:=
+	>=app-arch/bzip2-1.0.8
 	egl? ( media-libs/libglvnd )
         vulkan? ( media-libs/vulkan-loader )
 "

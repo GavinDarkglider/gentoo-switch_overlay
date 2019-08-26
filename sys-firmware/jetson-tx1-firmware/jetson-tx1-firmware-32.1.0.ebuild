@@ -11,6 +11,8 @@ SLOT="0"
 KEYWORDS="arm arm64"
 IUSE=""
 
+RDEPEND=">=app-arch/bzip2-1.0.8"
+
 S="${WORKDIR}/Linux_for_Tegra/nv_tegra"
 
 src_unpack() {

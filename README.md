@@ -15,7 +15,7 @@ To add this overlay to Portage in repos.conf, here is example configuration for 
 priority = 50
 location = /var/lib/gentoo-switch_overlay
 sync-type = git
-sync-uri = https://github.com/GavinDarkglider/gentoo-switch_overlay.git
+sync-uri = https://gitlab.com/bell07/gentoo-switch_overlay.git
 auto-sync = yes
 clone-depth = 0
 ```

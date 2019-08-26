@@ -1,4 +1,4 @@
-EAPI=5
+EAPI=6
 
 inherit versionator
 
@@ -11,15 +11,14 @@ SLOT="0"
 KEYWORDS="-* arm64"
 IUSE="+egl vulkan"
 
+DEPEND=">=app-arch/bzip2-1.0.8"
+
 RDEPEND="
 	~sys-firmware/jetson-tx1-firmware-${PV}
 	=x11-base/xorg-server-1.19.6:=
-	>=app-arch/bzip2-1.0.8
 	egl? ( media-libs/libglvnd )
         vulkan? ( media-libs/vulkan-loader )
 "
-
-S="${WORKDIR}/Linux_for_Tegra/nv_tegra"
 
 QA_TEXTRELS_arm64="usr/lib64/tegra/libnvidia-eglcore.so.${PV}
 	usr/lib64/tegra/libnvidia-glcore.so.${PV}
@@ -29,44 +28,75 @@ QA_TEXTRELS_arm64="usr/lib64/tegra/libnvidia-eglcore.so.${PV}
 
 src_unpack() {
     unpack ${A}
+    mkdir "${S}" || die "unpack failed"
     cd "${S}"
-    unpack ./nvidia_drivers.tbz2												
+    unpack "${WORKDIR}"/Linux_for_Tegra/nv_tegra/nvidia_drivers.tbz2
+
+    sed -i -e 's:^/usr/lib/:/usr/'"lib64"'/:' "${S}"/etc/ld.so.conf.d/nvidia-tegra.conf
+
+    if use egl 
+    then 
+		einfo "Setup egl"
+        mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/*.so.? "${S}"/usr/lib/aarch64-linux-gnu/tegra/
+        mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json "${S}"/usr/lib/aarch64-linux-gnu/tegra/
+    fi
+    rm -rf "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl
 }
 
+my_do_lib_recursive() {
+	# $1 is the source path
+	# $2 is the target path
+	for f in "$1"/*
+	do
+		if [ -f "${f}" ]
+		then
+			if [ -x "$f" ]
+			then
+				exeinto "$2"
+				doexe "$f"
+			else
+				insinto "$2"
+				doins "$f"
+			fi
+		elif [ -d "${f}" ]
+		then
+			my_do_lib_recursive "${f}" "${2}/$(basename "$f")"
+		else
+			die "not supported file in my_do_lib_recursive"
+		fi
+	done
+}
+
+
 src_install() {
-    dodir /etc
-    dodir /etc/udev/rules.d
-    dodir /var
-    dodir /usr/bin
-    dodir /usr/sbin
-    cp -R etc "${D}/" || die "Install failed!"
-    cp -R var "${D}/" || die "Install failed!"
-    cp -R usr/bin "${D}/usr/" || die "Install failed!"
-    cp -R usr/sbin "${D}/usr/" || die "Install failed!"
-    
-    for f in "${FILESDIR}"
+    doins -r etc
+    doins -r var
+
+    dobin "usr/bin/nvidia-bug-report-tegra.sh"
+    for f in "usr/sbin/"*
     do
-        cp "$f" "${D}/etc/udev/rules.d/" || die "Install failed!"
+        dosbin "${f}"
     done
 
-    sed -i -e 's:^/usr/lib/:/usr/'"lib64"'/:' "${D}"/etc/ld.so.conf.d/nvidia-tegra.conf
+    insinto /lib/udev/rules.d
+    for f in "${FILESDIR}"/*.rules
+    do
+        doins "${f}"
+    done
+
+	my_do_lib_recursive  "usr/lib/aarch64-linux-gnu/" "/usr/lib64/"
 
     exeinto /usr/lib64/xorg/modules/drivers
     doexe usr/lib/xorg/modules/drivers/nvidia_drv.so
 
-    dodir /usr/lib64/opengl/nvidia/extensions
     exeinto /usr/lib64/opengl/nvidia/extensions
     doexe usr/lib/xorg/modules/extensions/libglxserver_nvidia.so
-
-    use egl && mv usr/lib/aarch64-linux-gnu/tegra-egl/*.so.? usr/lib/aarch64-linux-gnu/tegra/
-    use egl && mv usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json usr/lib/aarch64-linux-gnu/tegra/
-    rm -rf usr/lib/aarch64-linux-gnu/tegra-egl
-    cp -R usr/lib/aarch64-linux-gnu/* "${D}/usr/lib64/" || die "Install failed!"
 
     dosym /usr/lib64/tegra /usr/lib64/opengl/nvidia/lib
     #dosym /usr/lib64/tegra/libGLX_nvidia.so.0 /usr/lib64/tegra/libGL.so
     #dosym /usr/lib64/tegra/libGLX_nvidia.so.0 /usr/lib64/tegra/libGL.so.0
     #dosym /usr/lib64/tegra/libGLX_nvidia.so.0 /usr/lib64/tegra/libGL.so.1
+ 
     use egl && dosym /usr/lib64/tegra/nvidia.json /usr/share/glvnd/egl_vendor.d/10-nvidia.json
     use vulkan && dosym /usr/lib64/tegra/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
     #use cuda && dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1

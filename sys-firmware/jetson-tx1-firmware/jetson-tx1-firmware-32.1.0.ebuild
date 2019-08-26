@@ -22,5 +22,5 @@ src_unpack() {
 src_install() {
     dodir /lib/firmware
     cp -R lib/firmware "${D}/lib/" || die "Install failed!"
-    dosym "${D}/lib/firmware/tegra21x" "${D}/lib/firmware/gm20b" || die "Install failed!"
+    dosym "/lib/firmware/tegra21x" "/lib/firmware/gm20b" || die "Install failed!"
 }

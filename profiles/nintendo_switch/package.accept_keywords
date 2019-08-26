@@ -6,3 +6,7 @@
 
 # required by x11-drivers/jetson-tx1-drivers for egl
 =media-libs/libglvnd-1.1.0* **
+
+# Required by x11-drivers/jetson-tx1-drivers for vulkan
+=media-libs/vulkan-loader-9999 **
+=dev-util/vulkan-headers-9999 **

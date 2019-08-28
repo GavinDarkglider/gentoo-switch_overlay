@@ -12,8 +12,8 @@ DTB_FILE="tegra210-icosa.dtb-GavinDarkglider-20190817.rom"
 RESTRICT="mirror"
 SRC_URI="https://github.com/bell07/bashscripts-switch_gentoo/blob/master/crosscompiled/${COREBOOT_FILE}?raw=true -> ${COREBOOT_FILE}"
 
-DEPEND="sys-boot/cbfstool"
-RDEPEND="sys-boot/nintendo-switch-u-boot"
+DEPEND="sys-boot/cbfstool
+		sys-boot/nintendo-switch-u-boot"
 
 src_unpack() {
 	mkdir -p "${S}"

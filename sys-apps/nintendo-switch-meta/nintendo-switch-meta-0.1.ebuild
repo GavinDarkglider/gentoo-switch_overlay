@@ -18,7 +18,7 @@ RDEPEND+=" kernel-sources? ("
 RDEPEND+="      sys-kernel/nintendo-switch-l4t-sources[hid-joycon=,kali_patches=,lakka_patches=,lp0=]" # Working kernel
 RDEPEND+="      sys-firmware/nintendo-switch-firmware sys-kernel/linux-firmware )"                     # Required firmware
 
-REDPEND+=" bluetooth? ( net-wireless/bluez )"                    # Bluetooth
+RDEPEND+=" bluetooth? ( net-wireless/bluez )"                    # Bluetooth
 
 RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant )" # Wifi
 

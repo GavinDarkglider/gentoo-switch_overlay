@@ -6,7 +6,7 @@ EAPI="6"
 KEYWORDS="~arm64"
 SLOT="0"
 
-IUSE="kernel-sources hid-joycon kali_patches lakka_patches -lp0 bluetooth +wifi X vulkan +egl"
+IUSE="kernel-sources hid-joycon kali_patches lakka_patches -lp0 bluetooth +wifi X vulkan +egl pulseaudio"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -23,7 +23,11 @@ RDEPEND+=" bluetooth? ( net-wireless/bluez )"                    # Bluetooth
 RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant )" # Wifi
 
 RDEPEND+=" X? ( x11-base/xorg-x11"                               # Xorg server
+RDEPEND+="      x11-base/nintendo-switch-x11-configuration"      # xorg.conf
 RDEPEND+="      app-accessibility/onboard"                       # Onscreen virtual keyboard
 RDEPEND+="      x11-drivers/jetson-tx1-drivers[vulkan=,egl=] )"  # Jetson Nano xorg drivers
 
 RDEPEND+=" hid-joycon? ( media-libs/joycond )"  # hid-joycon
+
+RDEPEND+=" pulseaudio? ( media-libs/nintendo-switch-alsa-configs"
+RDEPEND+="         X? ( app-eselect/eselect-nintendo-switch-dock-handler ) )" # install if alsa and X is given

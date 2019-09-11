@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+# Copyright 2019 Alexander Weber (bell07)
+# Distributed under the terms of the GNU General Public License v2
+
+depend()
+{
+	need sysfs
+}
+
+start()
+{
+	ebegin "Enable reboot2payload with default_payload"
+	echo 1 > /sys/bus/platform/drivers/tegra-reboot2payload/r2p/default_payload
+	eend $?
+}

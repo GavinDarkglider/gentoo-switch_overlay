@@ -1,0 +1,12 @@
+--- kernel-dts/tegra210-icosa.dts.bak	2019-09-13 21:20:51.619601732 +0200
++++ kernel-dts/tegra210-icosa.dts	2019-09-13 21:21:16.816601552 +0200
+@@ -102,7 +102,7 @@
+ 		default-payload = "reboot_payload.bin";
+ 		// This can be either "bootloader" to boot payload, or "via-payload" to also apply hekate config.
+ 		// Any other string will reboot normally.
+-		normal-reboot-action = "via-payload";
+-		hekate-config-id = "SWANDR";
++		normal-reboot-action = "bootloader";
++		hekate-config-id = "GENTOO";
+ 	};
+ };

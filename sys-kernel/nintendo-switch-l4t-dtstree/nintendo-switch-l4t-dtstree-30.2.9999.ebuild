@@ -73,7 +73,7 @@ src_unpack() {
 		ewarn "This will be added to default build"
 		ewarn "when this issue is fixed."
 	fi
-
+	epatch "${FILESDIR}"/gentoo-reboot-settings.patch
 }
 
 src_install() {

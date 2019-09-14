@@ -1,0 +1,11 @@
+--- drivers/memory/tegra/tegra210-emc.c.bak	2019-09-13 21:34:56.156595693 +0200
++++ drivers/memory/tegra/tegra210-emc.c	2019-09-13 21:35:44.679595346 +0200
+@@ -1490,7 +1490,7 @@
+ static void emc_set_clock(struct emc_table *next_timing,
+ 		struct emc_table *last_timing, int training, u32 clksrc)
+ {
+-	printk("%s - from %d to %d\n", __func__, last_timing->rate, next_timing->rate);
++	/* printk("%s - from %d to %d\n", __func__, last_timing->rate, next_timing->rate); */
+ 	current_clksrc = clksrc;
+ 	seq->set_clock(next_timing, last_timing, training, clksrc);
+

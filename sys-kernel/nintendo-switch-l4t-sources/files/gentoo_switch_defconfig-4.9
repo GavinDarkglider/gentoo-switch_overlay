@@ -378,6 +378,15 @@ CONFIG_NLS_UTF8=m
 CONFIG_TMPFS=y
 CONFIG_TMPFS_POSIX_ACL=y
 
+### Recommended for modem connections over Bluetooth / NetworkManager
+CONFIG_PPP=m
+CONFIG_PPP_ASYNC=m
+CONFIG_PPP_SYNC_TTY=m
+CONFIG_PPP_DEFLATE=m
+CONFIG_PPP_BSDCOMP=m
+CONFIG_PPP_MPPE=m
+CONFIG_PPPOE=m
+
 ### Disable some unused or not supported stuff
 # CONFIG_ANDROID_PARANOID_NETWORK is not set
 # CONFIG_ARM64_ERRATUM_1024718 is not set

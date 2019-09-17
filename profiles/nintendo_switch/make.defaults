@@ -6,3 +6,7 @@ CFLAGS="-march=armv8-a+crypto+crc+simd -mlittle-endian -mabi=lp64 -mtune=cortex-
 CXXFLAGS="${CFLAGS}"
 
 USE="pulseaudio" # Without them the sound switch between TV and handheld mode is difficult
+
+# evdev supports x11-misc/twofing
+# Joystick = mouse emulation?
+INPUT_DEVICES="evdev joystick -keyboard -mouse"

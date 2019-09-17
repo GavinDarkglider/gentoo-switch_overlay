@@ -13,6 +13,7 @@ IUSE=""
 RDEPEND="
 	app-admin/eselect
 	media-libs/nintendo-switch-alsa-configs
+	app-admin/sudo
 "
 
 S="${WORKDIR}/eselect-dockhandler-master/"

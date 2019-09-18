@@ -1,5 +1,5 @@
 # gentoo-switch_overlay
-
+# This Project has been moved to: https://gitlab.com/bell07/gentoo-switch_overlay where bell07 and I have merged our repos, and are continuing to update it together. 
 ## Info
 
 Repoman status: Build Status

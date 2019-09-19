@@ -20,6 +20,13 @@ DEPEND="x11-libs/libX11
 	x11-base/xorg-proto"
 
 src_install() {
-	insinto /usr/bin
 	dobin "${PN}"
+	insinto /usr/share/X11/xorg.conf.d
+	doins "${FILESDIR}"/41-evdev-touchscreen.conf
+
+	insinto /lib/udev/rules.d
+	doins "${FILESDIR}"/89-touchscreen-twofing.rules
+
+	insinto /etc/xdg/autostart
+	doins "${FILESDIR}"/twofing.desktop
 }

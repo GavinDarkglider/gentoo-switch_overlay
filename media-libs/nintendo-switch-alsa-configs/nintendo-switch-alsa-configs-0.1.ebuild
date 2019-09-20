@@ -26,13 +26,11 @@ src_unpack() {
 }
 
 src_install() {
-	mkdir -p "${D}"/usr/share/alsa/ucm/t210ref-mobile-rt565x"
-	mkdir -p "${D}"/etc"
-	mkdir -p "${D}"/var/lib/alsa"
-	cp ${S}/* ${D}/usr/share/alsa/ucm/t210ref-mobile-rt565x
+	mkdir -p "${D}"/usr/share/alsa/ucm/tegra-snd-t210ref-mobile-rt565x
+	mkdir -p "${D}"/etc
+	mkdir -p "${D}"/var/lib/alsa
+	cp "${S}"/* "${D}"/usr/share/alsa/ucm/tegra-snd-t210ref-mobile-rt565x
         cp "${FILESDIR}"/asound.state "${D}"/var/lib/alsa
 	mv "${D}"/usr/share/alsa/ucm/t210ref-mobile-rt565x/asound.conf.* "${D}"/etc/
 	ln -s "${D}"/etc/asound.conf.tegra210ref "${D}"/etc/asound.conf
 }
-
-

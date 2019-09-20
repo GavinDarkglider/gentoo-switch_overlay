@@ -21,16 +21,18 @@ S="${WORKDIR}/switch-l4t-configs-master/switch-alsa-ucm/"
 src_unpack() {
     unpack ${A}
     cd "${S}"
-    cp ${DISTDIR}/asound.conf.tegrahda ./
-    cp ${DISTDIR}/asound.conf.tegrasndt210ref ./
+    cp "${DISTDIR}"/asound.conf.tegrahda ./
+    cp "${DISTDIR}"/asound.conf.tegrasndt210ref ./
 }
 
 src_install() {
-	mkdir -p "${D}/usr/share/alsa/ucm/t210ref-mobile-rt565x"
-	mkdir -p "${D}/etc"
+	mkdir -p "${D}"/usr/share/alsa/ucm/t210ref-mobile-rt565x"
+	mkdir -p "${D}"/etc"
+	mkdir -p "${D}"/var/lib/alsa"
 	cp ${S}/* ${D}/usr/share/alsa/ucm/t210ref-mobile-rt565x
-        mv ${D}/usr/share/alsa/ucm/t210ref-mobile-rt565x/asound.conf.* ${D}/etc/
-	ln -s ${D}/etc/asound.conf.tegra210ref ${D}/etc/asound.conf
+        cp "${FILESDIR}"/asound.state "${D}"/var/lib/alsa
+	mv "${D}"/usr/share/alsa/ucm/t210ref-mobile-rt565x/asound.conf.* "${D}"/etc/
+	ln -s "${D}"/etc/asound.conf.tegra210ref "${D}"/etc/asound.conf
 }
 
 

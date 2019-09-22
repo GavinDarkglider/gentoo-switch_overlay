@@ -1,2 +1,3 @@
 # required by x11-drivers/jetson-tx1-drivers for egl
-media-libs/libglvnd
+=media-libs/libglvnd-1.1.0*
+# media-libs/libglvnd-1.1.1 after https://bugs.gentoo.org/695026 is fixed

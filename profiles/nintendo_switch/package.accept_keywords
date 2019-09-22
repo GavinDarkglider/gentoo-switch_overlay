@@ -5,7 +5,7 @@
 =app-arch/bzip2-1.0.8 ~arm64
 
 # required by x11-drivers/jetson-tx1-drivers for egl
-media-libs/libglvnd ~*
+=media-libs/libglvnd-1.1.0.20190213 ~*
 
 # Required by x11-drivers/jetson-tx1-drivers for vulkan
 =media-libs/vulkan-loader-9999 **

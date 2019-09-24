@@ -19,6 +19,8 @@ DEPEND="x11-libs/libX11
 	x11-libs/libXrandr
 	x11-base/xorg-proto"
 
+RDEPEND="x11-drivers/xf86-input-evdev"
+
 src_install() {
 	dobin "${PN}"
 	insinto /usr/share/X11/xorg.conf.d

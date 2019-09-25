@@ -22,4 +22,13 @@ src_install() {
 
 	insinto /etc
 	doins "${FILESDIR}"/dock-script.env
+
+	insinto /etc/xdg/autostart
+	doins "${FILESDIR}"/dock-script.desktop
+}
+
+pkg_postinst() {
+	elog "To get right setting in lightdm on logout please set"
+	elog "    display-setup-script=/usr/bin/dock-script.sh"
+	elog "to the /etc/lightdm/lightdm.conf"
 }

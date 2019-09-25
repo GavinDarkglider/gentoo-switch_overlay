@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Sleep if parameter given
+[[ "$1" == "-delay" ]] && sleep "$2"
+
 logger  "Run /usr/bin/dock-script.sh"
 source "/etc/dock-script.env" || exit 1
 
@@ -17,8 +20,8 @@ fi
 HANDHELD_VIDEO="HANDHELD"
 HANDHELD_AUDIO="HANDHELD"
 
-
 function get_display() {
+	[[ "$(ls -1 /tmp/.X11-unix/X* | wc -w)" != "1" ]] && return
 	x="$(basename /tmp/.X11-unix/X*)"
 	[[ -z "$x" ]] && return
 	echo ":${x#X}" # Return value
@@ -58,77 +61,92 @@ function get_pulse_server() {
 	# echo "127.0.0.1"
 }
 
-while true; do
-	DISPLAY="$(get_display)"
-	[[ -z "$DISPLAY" ]] && sleep1 && continue
-	export DISPLAY
-
-	USER_NAME="$(get_session_user "$DISPLAY")"
-
-	XAUTHORITY="$(get_xauthority "$USER_NAME")"
-	[[ -z "$XAUTHORITY" ]] && sleep 1 && continue
-	export XAUTHORITY
-
-	export PULSE_SERVER="$(get_pulse_server)"
-
-	if [[ "$(whoami)" == "$USER_NAME" ]]; then
-		PACTL_COMMAND="pactl"
-	else
-		PACTL_COMMAND="sudo -u "$USER_NAME" pactl"
-	fi
-
-	if [[ -n "$(xrandr | grep 'DP-0 connected')" ]]; then
-		VIDEO="$DOCKED_VIDEO"
-		AUDIO="$DOCKED_AUDIO"
-	else
-		VIDEO="$HANDHELD_VIDEO"
-		AUDIO="$HANDHELD_AUDIO"
-	fi
-
-	logger "dock-script.sh: Set Video to $VIDEO"
-	# Connected mode
-	case "$VIDEO" in
+function set_video() {
+	#$1 is the mode
+	case "$1" in
 		HANDHELD)
 			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
 			xrandr --output DP-0 --off || continue
 			xrandr --fb 1280x720 || continue
 			xinput enable 6
-			;;
+		;;
 		TV)
 			xrandr --output DP-0 --auto --primary --scale 1x1 || continue
 			xrandr --output DSI-0 --off || continue
 			xinput disable 6
-			;;
+		;;
 		TVLEFT)
 			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
 			xrandr --output DP-0 --auto --left-of DSI-0 --scale 1x1 || continue
 			xinput enable 6
-			;;
+		;;
 		TVRIGHT)
 			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
 			xrandr --output DP-0 --auto --right-of DSI-0 --scale 1x1 || continue
 			xinput enable 6
-			;;
+		;;
 		MIRROR)
 			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
 			xrandr --output DP-0 --auto --same-as DSI-0  --scale-from 1280x720 || continue
 			xinput enable 6
-			;;
+		;;
 	esac
+}
 
-	if [ -n "$PULSE_SERVER" ]; then
-		case "$AUDIO" in
-			HDMI)
-				$PACTL_COMMAND set-card-profile 1 off
-				$PACTL_COMMAND set-card-profile 0 output:hdmi-stereo
-				;;
-			HANDHELD)
-				$PACTL_COMMAND set-card-profile 1 HiFi
-				$PACTL_COMMAND set-card-profile 0 off
-				;;
-	   esac
-	fi
+function set_audio() {
+	# $1 is mode
+	# $2 is pactl command
+	PACTL_COMMAND="$2"
+	case "$1" in
+		HDMI)
+			$PACTL_COMMAND set-card-profile 1 off
+			$PACTL_COMMAND set-card-profile 0 output:hdmi-stereo
+		;;
+		HANDHELD)
+			$PACTL_COMMAND set-card-profile 1 HiFi
+			$PACTL_COMMAND set-card-profile 0 off
+		;;
+	esac
+}
 
-	break # exit while loop
-done
+function do_background() {
+	while true; do
+		DISPLAY="$(get_display)"
+		[[ -z "$DISPLAY" ]] && sleep 1 && continue
+		export DISPLAY
 
+		USER_NAME="$(get_session_user "$DISPLAY")"
+
+		XAUTHORITY="$(get_xauthority "$USER_NAME")"
+		[[ -z "$XAUTHORITY" ]] && sleep 1 && continue
+		export XAUTHORITY
+
+		export PULSE_SERVER="$(get_pulse_server)"
+
+		if [[ "$(whoami)" == "$USER_NAME" ]]; then
+			PACTL_COMMAND="pactl"
+		else
+			PACTL_COMMAND="sudo -u "$USER_NAME" pactl"
+		fi
+
+		if [[ -n "$(xrandr | grep 'DP-0 connected')" ]]; then
+			VIDEO="$DOCKED_VIDEO"
+			AUDIO="$DOCKED_AUDIO"
+		else
+			VIDEO="$HANDHELD_VIDEO"
+			AUDIO="$HANDHELD_AUDIO"
+		fi
+
+		logger "dock-script.sh: Set Video to $VIDEO"
+		# Connected mode
+		set_video "$VIDEO"
+		if [ -n "$PULSE_SERVER" ]; then
+			set_audio "$AUDIO" "$PACTL_COMMAND"
+		fi
+
+		break # exit while loop
+	done
+}
+
+do_background &
+disown

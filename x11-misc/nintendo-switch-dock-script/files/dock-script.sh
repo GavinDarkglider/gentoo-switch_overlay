@@ -59,16 +59,14 @@ function get_pulse_server() {
 }
 
 while true; do
-	sleep 1
-
 	DISPLAY="$(get_display)"
-	[[ -z "$DISPLAY" ]] && return
+	[[ -z "$DISPLAY" ]] && sleep1 && continue
 	export DISPLAY
 
 	USER_NAME="$(get_session_user "$DISPLAY")"
 
 	XAUTHORITY="$(get_xauthority "$USER_NAME")"
-	[[ -z "$XAUTHORITY" ]] && return
+	[[ -z "$XAUTHORITY" ]] && sleep 1 && continue
 	export XAUTHORITY
 
 	export PULSE_SERVER="$(get_pulse_server)"
@@ -91,29 +89,29 @@ while true; do
 	# Connected mode
 	case "$VIDEO" in
 		HANDHELD)
-			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary
-			xrandr --output DP-0 --off
-			xrandr --fb 1280x720
+			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
+			xrandr --output DP-0 --off || continue
+			xrandr --fb 1280x720 || continue
 			xinput enable 6
 			;;
 		TV)
-			xrandr --output DP-0 --auto --primary --scale 1x1
-			xrandr --output DSI-0 --off
+			xrandr --output DP-0 --auto --primary --scale 1x1 || continue
+			xrandr --output DSI-0 --off || continue
 			xinput disable 6
 			;;
 		TVLEFT)
-			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary
-			xrandr --output DP-0 --auto --left-of DSI-0 --scale 1x1
+			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
+			xrandr --output DP-0 --auto --left-of DSI-0 --scale 1x1 || continue
 			xinput enable 6
 			;;
 		TVRIGHT)
-			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary
-			xrandr --output DP-0 --auto --right-of DSI-0 --scale 1x1
+			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
+			xrandr --output DP-0 --auto --right-of DSI-0 --scale 1x1 || continue
 			xinput enable 6
 			;;
 		MIRROR)
-			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary
-			xrandr --output DP-0 --auto --same-as DSI-0  --scale-from 1280x720
+			xrandr --output DSI-0 --mode 720x1280 --rotate left --primary || continue
+			xrandr --output DP-0 --auto --same-as DSI-0  --scale-from 1280x720 || continue
 			xinput enable 6
 			;;
 	esac

@@ -30,6 +30,6 @@ RDEPEND+="      x11-drivers/jetson-tx1-drivers[vulkan=,egl=] )"  # Jetson Nano x
 RDEPEND+=" hid-joycon? ( media-libs/joycond )"  # hid-joycon
 
 RDEPEND+=" pulseaudio? ( media-libs/nintendo-switch-alsa-configs"
-RDEPEND+="         X? ( app-eselect/eselect-nintendo-switch-dock-handler ) )" # install if alsa and X is given
+RDEPEND+="         X? ( || ( app-eselect/eselect-nintendo-switch-dock-handler x11-misc/nintendo-switch-dock-script ) ) )" # install if alsa and X is given
 
 RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )" # Install hekate to /lib/firmware/reboot_payload.bin

@@ -31,7 +31,7 @@ src_install() {
     doins "${FILESDIR}"/tegra-snd-t210r.conf
     doins "${FILESDIR}"/tegra-alc5632.conf
 
-    insinto /usr/share/alsa/ucm/t210ref-mobile-rt565x
+    insinto /usr/share/alsa/ucm/tegra-snd-t210ref-mobile-rt565x
     for file in "${S}"/*; do
         doins "$file" 
     done
@@ -40,7 +40,7 @@ src_install() {
 
 pkg_postinst() {
 	if ! [[ -f /etc/asound.conf ]]; then
-		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegra210ref"
-		ln -s /etc/asound.conf.tegra210ref /etc/asound.conf
+		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
+		ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
 	fi
 }

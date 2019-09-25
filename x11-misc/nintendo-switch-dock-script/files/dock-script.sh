@@ -73,6 +73,12 @@ while true; do
 
 	export PULSE_SERVER="$(get_pulse_server)"
 
+	if [[ "$(whoami)" == "$USER_NAME" ]]; then
+		PACTL_COMMAND="pactl"
+	else
+		PACTL_COMMAND="sudo -u "$USER_NAME" pactl"
+	fi
+
 	if [[ -n "$(xrandr | grep 'DP-0 connected')" ]]; then
 		VIDEO="$DOCKED_VIDEO"
 		AUDIO="$DOCKED_AUDIO"
@@ -80,7 +86,7 @@ while true; do
 		VIDEO="$HANDHELD_VIDEO"
 		AUDIO="$HANDHELD_AUDIO"
 	fi
-xrandr
+
 	logger "dock-script.sh: Set Video to $VIDEO"
 	# Connected mode
 	case "$VIDEO" in
@@ -115,12 +121,12 @@ xrandr
 	if [ -n "$PULSE_SERVER" ]; then
 		case "$AUDIO" in
 			HDMI)
-				sudo -u "$USER_NAME" pactl set-card-profile 1 off
-				sudo -u "$USER_NAME" pactl set-card-profile 0 output:hdmi-stereo
+				$PACTL_COMMAND set-card-profile 1 off
+				$PACTL_COMMAND set-card-profile 0 output:hdmi-stereo
 				;;
 			HANDHELD)
-				sudo -u "$USER_NAME" pactl set-card-profile 1 HiFi
-				sudo -u "$USER_NAME" pactl set-card-profile 0 off
+				$PACTL_COMMAND set-card-profile 1 HiFi
+				$PACTL_COMMAND set-card-profile 0 off
 				;;
 	   esac
 	fi

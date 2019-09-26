@@ -5,7 +5,9 @@ CPU_FLAGS_ARM="edsp neon thumb vfp vfpv3 vfpv4 vfp-d32 aes sha1 sha2 crc32 v4 v5
 CFLAGS="-march=armv8-a+crypto+crc+simd -mlittle-endian -mabi=lp64 -mtune=cortex-a57 -Os -pipe"
 CXXFLAGS="${CFLAGS}"
 
-USE="pulseaudio" # Without them the sound switch between TV and handheld mode is difficult
-USE="$USE -gpm"  # gpm does not sense without tty/framebuffer console
+USE="pulseaudio"    # Without them the sound switch between TV and handheld mode is difficult
+USE="$USE libglvnd" # required by x11-drivers/jetson-tx1-drivers for egl
+USE="$USE -gpm"     # gpm does not sense without tty/framebuffer console
+
 
 INPUT_DEVICES="-keyboard -mouse" # Keyboards and mouses are handled by evdev or libinput in 2019

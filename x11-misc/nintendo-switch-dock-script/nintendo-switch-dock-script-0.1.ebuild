@@ -10,7 +10,8 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="arm64"
 
-RDEPEND="!app-eselect/eselect-nintendo-switch-dock-handler"
+RDEPEND="!app-eselect/eselect-nintendo-switch-dock-handler
+         app-admin/sudo"
 
 S="${WORKDIR}"
 

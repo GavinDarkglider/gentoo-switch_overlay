@@ -83,6 +83,7 @@ CDEPEND="!libressl? ( dev-libs/openssl:0= )
 DEPEND="${CDEPEND}
 	sys-devel/flex
 	>=x11-base/xorg-proto-2018.3
+	sys-devel/automake:1.15
 	dmx? (
 		doc? (
 			|| (
@@ -115,6 +116,8 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.12-unloadsubmodule.patch
 	"${FILESDIR}"/${PN}-1.18-support-multiple-Files-sections.patch
 	"${FILESDIR}"/${PN}-1.19.4-sysmacros.patch #633530
+	"${FILESDIR}"/${PN}-1.19.6-fix-gl-version.patch
+	"${FILESDIR}"/${PN}-1.19.6-CVE-2018-14665.patch
 )
 
 pkg_pretend() {

@@ -7,7 +7,7 @@ ETYPE="sources"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="kali_patches lakka_patches hid-joycon lp0"
+IUSE="kali_patches lakka_patches hid-joycon"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -65,13 +65,6 @@ src_prepare() {
 		ewarn "Lakka Patches Break Sleep Mode."
 		ewarn "This will be added to default build"
 		ewarn "when this issue is fixed."
-	fi
-
-	if use lp0; then
-		einfo "Applying lp0 Patches from Android Kernel"
-		unipatch "${FILESDIR}"/revert-disable-psci-suspend-for-now.patch
-		ewarn "These patches Are work with this kernel, but LP0 deep sleep"
-		ewarn "freezes video on wake, so support was removed from coreboot/atf for now."
 	fi
 
 	einfo "Apply Gentoo patches"

@@ -9,7 +9,7 @@ S="${WORKDIR}"
 COREBOOT_FILE="coreboot-GavinDarkglider-20191015.rom"
 
 RESTRICT="mirror"
-SRC_URI="https://github.com/bell07/bashscripts-switch_gentoo/blob/master/crosscompiled/${COREBOOT_FILE}?raw=true -> ${COREBOOT_FILE}"
+SRC_URI="https://github.com/bell07/bashscripts-switch_gentoo/blob/master/distfiles/${COREBOOT_FILE}?raw=true -> ${COREBOOT_FILE}"
 
 DEPEND="sys-boot/cbfstool
 		sys-boot/nintendo-switch-u-boot"

@@ -12,10 +12,10 @@ if [[ ${PV} == 9999 ]]; then
 	inherit git-r3
 	EGIT_REPO_URI="https://github.com/hrydgard/ppsspp.git"
 	SRC_URI=""
-	KEYWORDS=""
+	KEYWORDS="arm arm64"
 else
 	SRC_URI="https://github.com/hrydgard/ppsspp/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS=""
+	KEYWORDS="arm arm64"
 	S=${WORKDIR}/ppsspp-${PV}
 fi
 

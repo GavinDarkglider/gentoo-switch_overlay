@@ -9,7 +9,7 @@ inherit libretro-core
 DESCRIPTION="libretro implementation of Genesis Plus GX. \
 (Sega Genesis/Sega CD)"
 HOMEPAGE="https://github.com/libretro/Genesis-Plus-GX"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPGX"
 SLOT="0"

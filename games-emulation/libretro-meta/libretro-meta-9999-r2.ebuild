@@ -13,7 +13,7 @@ IUSE="+2048 +4do +beetle-psx bnes +bsnes bsnes-cpp98 citra craft +desmume dolphi
 openlara pcsx-rearmed +mednafen-supergrafx parallel-n64 picodrive +ppsspp +prboom +prosystem px68k quicknes redream +reicast sameboy +scummvm \
 snes9x snes9x2002 snes9x2010 +stella tgbdual +tyrquake vba-next vbam yabause"
 
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 RDEPEND="2048? ( >=games-emulation/2048-libretro-9999 )
 		4do? ( >=games-emulation/4do-libretro-9999 )

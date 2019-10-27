@@ -16,7 +16,7 @@ HOMEPAGE="http://www.retroarch.com"
 if [[ ${PV} = 9999 ]]; then
 	# Inherit and EGIT_REPO_URI already set by eclass
 	SRC_URI=""
-	KEYWORDS=""
+	KEYWORDS="arm arm64"
 else
 	SRC_URI="https://github.com/${LIBRETRO_REPO_NAME}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 	RESTRICT="primaryuri"

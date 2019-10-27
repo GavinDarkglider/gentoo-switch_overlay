@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="Standalone port of Mednafen Saturn to the libretro"
 HOMEPAGE="https://github.com/libretro/beetle-saturn-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

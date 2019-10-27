@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Mednafen VB. (Virtual Boy)"
 HOMEPAGE="https://github.com/libretro/beetle-vb-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

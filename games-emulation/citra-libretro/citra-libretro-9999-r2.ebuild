@@ -10,7 +10,7 @@ inherit libretro-core cmake-utils
 
 DESCRIPTION="libretro implementation of Citra. (Nintendo 3DS)"
 HOMEPAGE="https://github.com/libretro/citra"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

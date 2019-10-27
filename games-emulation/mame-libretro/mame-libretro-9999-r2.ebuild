@@ -8,7 +8,7 @@ inherit flag-o-matic check-reqs versionator libretro-core
 
 DESCRIPTION="libretro implementation of MAME 2015. (Arcade)"
 HOMEPAGE="https://github.com/libretro/mame"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2+"
 SLOT="0"

@@ -7,7 +7,7 @@ inherit libretro
 
 DESCRIPTION="RetroArch Assets files"
 HOMEPAGE="https://github.com/libretro/retroarch-assets"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

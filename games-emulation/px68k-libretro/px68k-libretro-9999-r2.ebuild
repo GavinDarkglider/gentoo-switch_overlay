@@ -7,7 +7,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of PX68K. (Sharp X68000)"
 HOMEPAGE="https://github.com/libretro/px68k-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

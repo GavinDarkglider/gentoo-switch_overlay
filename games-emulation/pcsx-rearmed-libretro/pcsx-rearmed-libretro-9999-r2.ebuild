@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of PCSX ReARMed. (PlayStation)"
 HOMEPAGE="https://github.com/libretro/pcsx_rearmed"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

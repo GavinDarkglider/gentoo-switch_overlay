@@ -9,7 +9,7 @@ inherit libretro-core
 DESCRIPTION="libretro implementation of PicoDrive. \
 (Sega GameGear/Sega CD/32X)"
 HOMEPAGE="https://github.com/libretro/picodrive"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="PD"
 SLOT="0"

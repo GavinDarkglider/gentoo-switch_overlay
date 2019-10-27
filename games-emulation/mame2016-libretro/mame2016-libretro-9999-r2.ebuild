@@ -7,7 +7,7 @@ inherit libretro-core
 
 DESCRIPTION="MAME (0.174) for libretro."
 HOMEPAGE="https://github.com/libretro/mame2016-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="MAME-GPL"
 SLOT="0"

@@ -7,7 +7,7 @@ inherit libretro
 
 DESCRIPTION="Collection of commonly used Cg shaders."
 HOMEPAGE="https://github.com/libretro/common-shaders"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

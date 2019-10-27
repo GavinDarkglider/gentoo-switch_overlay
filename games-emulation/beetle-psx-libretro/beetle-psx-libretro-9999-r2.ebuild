@@ -7,7 +7,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Mednafen PSX. (PlayStation, beetle version)"
 HOMEPAGE="https://github.com/libretro/beetle-psx-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

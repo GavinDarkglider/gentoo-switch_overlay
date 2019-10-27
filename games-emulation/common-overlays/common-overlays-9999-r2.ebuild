@@ -7,7 +7,7 @@ inherit libretro
 
 DESCRIPTION="Collection of overlay files for use with libretro frontends."
 HOMEPAGE="https://github.com/libretro/common-overlays"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

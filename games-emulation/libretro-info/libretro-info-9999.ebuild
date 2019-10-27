@@ -8,7 +8,7 @@ inherit libretro
 
 DESCRIPTION="Libretro info files required for libretro cores"
 HOMEPAGE="https://github.com/libretro/libretro-super"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

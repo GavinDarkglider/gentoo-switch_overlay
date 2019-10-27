@@ -7,7 +7,7 @@ inherit libretro-core
 
 DESCRIPTION="MAME2000 (0.37b5) for libretro."
 HOMEPAGE="https://github.com/libretro/mame2000-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="MAME-GPL"
 SLOT="0"

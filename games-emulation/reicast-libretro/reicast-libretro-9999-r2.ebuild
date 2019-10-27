@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Reicast. (Sega Dreamcast )"
 HOMEPAGE="https://github.com/libretro/reicast-emulator"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

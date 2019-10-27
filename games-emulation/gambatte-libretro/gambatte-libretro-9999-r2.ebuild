@@ -7,7 +7,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Gambatte. (Game Boy/Game Boy Color)"
 HOMEPAGE="https://github.com/libretro/gambatte-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

@@ -7,7 +7,7 @@ inherit libretro-core
 
 DESCRIPTION="An unofficial libretro port of the EasyRPG/Player."
 HOMEPAGE="https://github.com/libretro/easyrpg-libretro"
-KEYWORDS=""
+KEYWORDS="arm arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

@@ -14,7 +14,7 @@ HOMEPAGE="http://www.libretro.com/"
 SRC_URI=""
 EGIT_REPO_URI="https://github.com/${LIBRETRO_REPO_NAME}.git"
 EGIT_COMMIT="${LIBRETRO_COMMIT_SHA}"
-KEYWORDS="amd64 x86"
+KEYWORDS="amd64 x86 arm64 arm"
 
 LICENSE="GPL-3"
 SLOT="0"

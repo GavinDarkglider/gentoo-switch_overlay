@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Mednafen PCE Fast. (SuperGrafx TG-16)"
 HOMEPAGE="https://github.com/libretro/beetle-supergrafx-libretro"
-KEYWORDS="amd64 x86"
+KEYWORDS="amd64 x86 arm64 arm"
 
 LICENSE="GPL-2"
 SLOT="0"

@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Handy. (Atari Lynx)"
 HOMEPAGE="https://github.com/libretro/libretro-handy"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 LICENSE="ZLIB"
 SLOT="0"

@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of mupen64plus (Nintendo64)"
 HOMEPAGE="https://github.com/libretro/mupen64plus-libretro"
-KEYWORDS="amd64 x86"
+KEYWORDS="amd64 x86 arm64 arm"
 
 LICENSE="GPL-2"
 SLOT="0"

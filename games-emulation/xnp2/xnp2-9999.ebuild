@@ -25,7 +25,7 @@ if [[ ${PV} == 9999 ]]; then
 	KEYWORDS=""
 else
 	SRC_URI="http://www.nonakap.org/np2/release/${P}.tar.bz2"
-	KEYWORDS="amd64 x86"
+	KEYWORDS="amd64 x86 arm64 arm"
 fi
 
 src_prepare(){

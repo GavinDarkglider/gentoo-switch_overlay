@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="An unofficial libretro port of the EasyRPG/Player."
 HOMEPAGE="https://github.com/libretro/easyrpg-libretro"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
 
 LICENSE="GPL-3"
 SLOT="0"

@@ -28,7 +28,7 @@ src_compile() {
 	mycmakeargs=(
 		$(usex opengl "-DHAVE_OPENGL_CORE=1" "-DHAVE_OPENGL_CORE=0")
 		$(usex vulkan "-DHAVE_VULKAN=1" "=-DHAVE_VULKAN=0")
-		$(usex clang  "-DCLANG=0" "=DCLANG=0")
+		$(usex clang  "-DCLANG=0" "-DCLANG=0")
 		-DLIBRETRO=1
 		-DSTATIC_LINKING=0
 	)

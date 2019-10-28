@@ -12,7 +12,7 @@ EGIT_REPO_URI="https://github.com/RetroPie/es-theme-carbon-nometa.git"
 
 LICENSE="CC-BY-NC-SA-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
+KEYWORDS="~amd64 ~x86 ~arm"
 IUSE=""
 
 RDEPEND=""

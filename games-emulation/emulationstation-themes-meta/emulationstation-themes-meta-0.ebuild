@@ -9,7 +9,7 @@ SRC_URI=""
 
 LICENSE="metapackage"
 SLOT="0"
-KEYWORDS="~amd64 ~x86 ~arm64 ~arm"
+KEYWORDS="~amd64 ~x86 ~arm"
 IUSE="+carbon +carbon-centered +carbon-nometa +clean-look +color-pi +nbba +pixel +simple +simple-dark +simplified-static-canela +turtle-pi +zoid"
 
 RDEPEND="

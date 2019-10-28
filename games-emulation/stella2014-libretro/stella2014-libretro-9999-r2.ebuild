@@ -9,6 +9,8 @@ DESCRIPTION="libretro implementation of Stella. (Atari 2600)"
 HOMEPAGE="https://github.com/libretro/stella-libretro"
 KEYWORDS="arm arm64"
 
+LIBRETRO_CORE_LIB_FILE="${S}/stella2014_libretro.so"
+
 LICENSE="GPL-2"
 SLOT="0"
 

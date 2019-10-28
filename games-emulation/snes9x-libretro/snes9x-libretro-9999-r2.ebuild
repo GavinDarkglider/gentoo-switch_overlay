@@ -20,8 +20,14 @@ RDEPEND="${DEPEND}
 MY_S="${S}"
 S="${S}/libretro"
 
+# @ECLASS-VARIABLE: LIBRETRO_CORE_LIB_FILE
+# @DESCRIPTION:
+# Absolute path of this Libretro core's shared library. Defaults to
+# "${S}/${LIBRETRO_CORE_NAME}_libretro.so".
+#LIBRETRO_CORE_LIB_FILE="${MY_S}/libretro/${LIBRETRO_CORE_NAME}_libretro.so"
+
 src_install() {
-	insinto "${LIBRETRO_DATA_DIR}"/snes9x_libretro
-	doins "${MY_S}"/docs/snes9x-license.txt
+	#insinto "${LIBRETRO_DATA_DIR}"/snes9x_libretro
+	#doins "${MY_S}"/docs/snes9x-license.txt
 	libretro-core_src_install
 }

@@ -13,7 +13,7 @@ IUSE="+2048 +4do +beetle-psx bnes +bsnes bsnes-cpp98 citra craft +desmume dolphi
 openlara pcsx-rearmed +mednafen-supergrafx parallel-n64 picodrive +ppsspp +prboom +prosystem px68k quicknes redream +reicast sameboy +scummvm \
 snes9x snes9x2002 snes9x2010 +stella tgbdual +tyrquake vba-next vbam yabause"
 
-KEYWORDS="arm arm64"
+KEYWORDS="arm64 arm x86 x86_x64"
 
 RDEPEND="2048? ( >=games-emulation/2048-libretro-9999 )
 		4do? ( >=games-emulation/4do-libretro-9999 )
@@ -68,7 +68,7 @@ RDEPEND="2048? ( >=games-emulation/2048-libretro-9999 )
 		scummvm? ( >=games-emulation/scummvm-libretro-9999 )
 		snes9x? ( >=games-emulation/snes9x-libretro-9999 )
 		snes9x2010? ( >=games-emulation/snes9x2010-libretro-9999 )
-		stella? ( >=games-emulation/stella-libretro-9999 )
+		stella? ( >=games-emulation/stella2014-libretro-9999 )
 		tgbdual? ( >=games-emulation/tgbdual-libretro-9999 )
 		tyrquake? ( >=games-emulation/tyrquake-libretro-9999 )
 		vba-next? ( >=games-emulation/vba-next-libretro-9999 )

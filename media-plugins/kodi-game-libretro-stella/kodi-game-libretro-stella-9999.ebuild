@@ -24,8 +24,8 @@ SLOT="0"
 IUSE=""
 
 DEPEND="
-	~media-tv/kodi-9999
-	games-emulation/stella-libretro
+	media-tv/kodi
+	games-emulation/stella2014-libretro
 	"
 RDEPEND="
 	media-plugins/kodi-game-libretro

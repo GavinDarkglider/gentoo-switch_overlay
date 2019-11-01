@@ -24,7 +24,7 @@ SLOT="0"
 IUSE=""
 
 DEPEND="
-	~media-tv/kodi-9999
+	media-tv/kodi
 	games-emulation/mupen64plus-libretro
 	"
 RDEPEND="

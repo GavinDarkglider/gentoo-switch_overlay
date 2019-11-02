@@ -6,7 +6,7 @@
 
 # required by x11-drivers/jetson-tx1-drivers for egl
 =media-libs/libglvnd-1.2.0 ~*
-=media-libs/mesa-19.2.0 ~arm64
+=media-libs/mesa-19.2.1 ~arm64
 
 # Required by x11-drivers/jetson-tx1-drivers for vulkan
 =media-libs/vulkan-loader-9999 **

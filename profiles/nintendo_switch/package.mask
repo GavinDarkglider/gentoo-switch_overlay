@@ -1,6 +1,8 @@
 # Not compatible to nivida binary blobs
 >x11-base/xorg-server-1.19.6
->=x11-drivers/xf86-input-libinput-0.29.0
+>media-libs/mesa-19.2.1
+>media-libs/libglvnd-1.2.0
+>x11-drivers/xf86-input-libinput-0.28.2
 >sys-devel/gcc-7.3.0-r6
 
 # bell07: 2019-08-30 Not supported yet

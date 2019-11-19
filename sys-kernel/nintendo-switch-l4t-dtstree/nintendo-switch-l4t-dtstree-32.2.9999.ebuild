@@ -5,17 +5,15 @@
 EAPI="6"
 
 SLOT="32.2"
-NVIDIA_VER="l4t/l4t-r32.2"
-NVIDIA_NVGPU_VER="l4t/l4t-r32.2"
-SWITCHROOT_NVIDIA_VER="rel32-android"
-SWITCHROOT_PLATFORM_VER="r32.2"
+CMSHIELD_VER="lineage-16.0"
+SWITCHROOT_VER="linux-rel32"
 
 KEYWORDS="~arm64"
 
 HOMEPAGE="https://gitlab.com/switchroot/
 	https://nv-tegra.nvidia.com/gitweb"
 
-IUSE="lakka_patches"
+IUSE=""
 
 DESCRIPTION="Nintendo Switch Linux kernel DTS-Tree"
 
@@ -27,52 +25,39 @@ inherit epatch
 
 src_unpack() {
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-nvidia"
-	EGIT_BRANCH="${SWITCHROOT_NVIDIA_VER}"
+	EGIT_BRANCH="${SWITCHROOT_VER}"
 	EGIT_CHECKOUT_DIR="${S}/nvidia"
 	git-r3_src_unpack
 
-	EGIT_REPO_URI="git://nv-tegra.nvidia.com/linux-nvgpu.git"
-	EGIT_BRANCH="${NVIDIA_NVGPU_VER}"
+	EGIT_REPO_URI="https://gitlab.incom.co/CM-Shield/android_kernel_nvidia_linux-4.9_kernel_nvgpu"
+	EGIT_BRANCH="${CMSHIELD_VER}"
 	EGIT_CHECKOUT_DIR="${S}/nvgpu"
 	git-r3_src_unpack
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch"
-	EGIT_BRANCH="${SWITCHROOT_PLATFORM_VER}"
-	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/t210/switch"
+	EGIT_BRANCH="${SWITCHROOT_VER}"
+	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/t210/icosa"
 	git-r3_src_unpack
 
-	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/soc/tegra.git"
-	EGIT_BRANCH="${NVIDIA_VER}"
+	EGIT_REPO_URI="https://gitlab.incom.co/CM-Shield/android_kernel_nvidia_linux-4.9_hardware_nvidia_soc_tegra"
+	EGIT_BRANCH="${CMSHIELD_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/soc/tegra"
 	git-r3_src_unpack
 
-	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/soc/t210.git"
-	EGIT_BRANCH="${NVIDIA_VER}"
+	EGIT_REPO_URI="https://gitlab.incom.co/CM-Shield/android_kernel_nvidia_linux-4.9_hardware_nvidia_soc_t210"
+	EGIT_BRANCH="${CMSHIELD_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/soc/t210/"
 	git-r3_src_unpack
 
-	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/platform/tegra/common.git"
-	EGIT_BRANCH="${NVIDIA_VER}"
+	EGIT_REPO_URI="https://gitlab.incom.co/CM-Shield/android_kernel_nvidia_linux-4.9_hardware_nvidia_platform_tegra_common"
+	EGIT_BRANCH="${CMSHIELD_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/tegra/common/"
 	git-r3_src_unpack
 
-	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/platform/t210/common.git"
-	EGIT_BRANCH="${NVIDIA_VER}"
+	EGIT_REPO_URI="https://gitlab.incom.co/CM-Shield/android_kernel_nvidia_linux-4.9_hardware_nvidia_platform_t210_common"
+	EGIT_BRANCH="${CMSHIELD_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/t210/common/"
 	git-r3_src_unpack
-
-# Patches to /hardware/nvidia/platform/t210/switch
-	cd "${S}"/hardware/nvidia/platform/t210/switch
-	if use lakka_patches; then
-		einfo "Apply Lakka patches"
-		# Source: https://github.com/lakka-switch/Lakka-LibreELEC/tree/master/projects/Switch/devices/L4T/packages/l4t-kernel/patches
-		epatch "${FILESDIR}"/l4t-platform-t210-switch-0001-jc-pinmux.patch
-		epatch "${FILESDIR}"/l4t-platform-t210-switch-0002-jc-driver.patch
-
-		ewarn "Lakka Patches Break Sleep Mode."
-		ewarn "This will be added to default build"
-		ewarn "when this issue is fixed."
-	fi
 }
 
 src_install() {

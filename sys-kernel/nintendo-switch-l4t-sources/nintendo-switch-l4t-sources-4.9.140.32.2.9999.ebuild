@@ -5,13 +5,10 @@
 EAPI="6"
 KEYWORDS="~arm64"
 
-SWITCHROOT_VER="rel30-rel32stack"
+SWITCHROOT_VER="linux-rel32"
 DTSTREE_VER="32.2"
 
 GENTOO_PATCHES="
-1109_linux-4.9.110.patch
-1110_linux-4.9.111.patch
-1111_linux-4.9.112.patch
 1500_XATTR_USER_PREFIX.patch
 1520_security-apparmor-Use-POSIX-compatible-printf.patch
 1701_ia64_fix_ptrace.patch
@@ -20,5 +17,4 @@ GENTOO_PATCHES="
 2900_dev-root-proc-mount-fix.patch
 4400_alpha-sysctl-uac.patch
 4567_distro-Gentoo-Kconfig.patch"
-
 inherit l4t-sources

@@ -89,9 +89,10 @@ src_prepare() {
 }
 
 src_configure() {
-	einfo "Use ${FILESDIR}/gentoo_switch_defconfig-${KV_MAJOR}.${KV_MINOR} configuration"
-	CONFIGFILE="${S}"/arch/arm64/configs/gentoo_switch_defconfig
-	cp "${FILESDIR}"/gentoo_switch_defconfig-"${KV_MAJOR}.${KV_MINOR}"  "${CONFIGFILE}" || die "copy failed"
+	SRC_CONFIGFILE="${FILESDIR}"/gentoo_switch_defconfig-"${KV_MAJOR}.${KV_MINOR}"-"$(echo "${DTSTREE_VER}" | cut -d. -f1)"
+	DST_CONFIGFILE="${S}"/arch/arm64/configs/gentoo_switch_defconfig
+	einfo "Use ${SRC_CONFIGFILE} configuration"
+	cp "${SRC_CONFIGFILE}"  "${DST_CONFIGFILE}" || die "copy failed"
 
 	if [ "${SWITCHROOT_VER}" == "rel30-rel32stack" ]; then
 		if use hid-joycon; then

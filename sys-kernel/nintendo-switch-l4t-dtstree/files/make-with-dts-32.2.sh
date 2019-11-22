@@ -19,8 +19,8 @@ if [ -x /usr/bin/distcc ]; then
 fi
 
 ## Be more tollerant
-export KCFLAGS+="-Wno-error=unused-variable"
-echo Use KCFLAGS="$KCFLAGS"
+export KCFLAGS+="-Wno-error=unused-variable -Wno-error=memset-elt-size"
+echo "Use KCFLAGS='$KCFLAGS'"
 
 ## Note: the source needs to be in /usr/src/nintendo-switch-l4t-dtstree-"$NVIDIA_VER"
 ## /usr/src contain a symlink to the kernel to be selecteable with eselect krenel

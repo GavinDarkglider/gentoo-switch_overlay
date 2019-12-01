@@ -2,26 +2,45 @@
 
 NVIDIA_VER="32.2"
 
-## GCC-8 fix - The Set the new GCC-8 errors to warnings (Gcc-7 does not search for this bugs)
+## GCC-7 fix - The Set the new GCC-7 errors to warnings
 ## Check if known at the first
-MY_CFLAGS="-Wno-error=stringop-truncation -Wno-error=stringop-overflow "
-MY_ERROR="$(LC_ALL=C gcc -E ${MY_CFLAGS} - < /dev/null 2>&1 >/dev/null| grep error)"
-
-if [ -z "$MY_ERROR" ]; then
-	export KCFLAGS+=${MY_CFLAGS}
-	echo "Use KCFLAGS=\"$MY_CFLAGS\" for GCC-8 compatibility"
+GCC7_CFLAGS="-Wno-error=unused-variable -Wno-error=memset-elt-size "
+GCC7_ERROR="$(LC_ALL=C gcc -E ${MY_CFLAGS} - < /dev/null 2>&1 >/dev/null| grep error)"
+if [ -z "$GCC7_ERROR" ]; then
+	export KCFLAGS+=${GCC7_CFLAGS}
+	echo "Use KCFLAGS=\"$GCC7_CFLAGS\" for GCC-7 compatibility"
 fi
 
-## use distcc if found
-if [ -x /usr/bin/distcc ]; then
-	MY_DISTCC="CC=distcc gcc"
-	echo "Use CC='distcc gcc'"
+## GCC-8 fix - The Set the new GCC-8 errors to warnings
+## Check if known at the first
+GCC8_CFLAGS="-Wno-error=stringop-truncation -Wno-error=stringop-overflow "
+GCC8_ERROR="$(LC_ALL=C gcc -E ${MY_CFLAGS} - < /dev/null 2>&1 >/dev/null| grep error)"
+if [ -z "$GCC8_ERROR" ]; then
+	export KCFLAGS+=${GCC8_CFLAGS}
+	echo "Use KCFLAGS=\"$GCC8_CFLAGS\" for GCC-8 compatibility"
 fi
 
-## Be more tollerant
-export KCFLAGS+="-Wno-error=unused-variable -Wno-error=memset-elt-size"
-echo "Use KCFLAGS='$KCFLAGS'"
+## GCC-9 fix - The Set the new GCC-9 errors to warnings
+## Check if known at the first
+GCC9_CFLAGS="-Wno-error=packed-not-aligned -Wno-error=missing-attributes -Wno-error=address-of-packed-member -Wno-error=sizeof-pointer-memaccess -Wno-error=tautological-compare -Wno-error=maybe-uninitialized "
+GCC9_ERROR="$(LC_ALL=C gcc -E ${MY_CFLAGS} - < /dev/null 2>&1 >/dev/null| grep error)"
+if [ -z "$GCC9_ERROR" ]; then
+	export KCFLAGS+=${GCC9_CFLAGS}
+	echo "Use KCFLAGS=\"$GCC9_CFLAGS\" for GCC-9 compatibility"
+fi
+
+if [ "$1" == "emake" ]; then
+## Called from portage Ebuild
+	shift
+	emake tegra-dtstree="../hardware/nvidia/" $@
+else
+	## use distcc if found
+	if [ -x /usr/bin/distcc ]; then
+		MY_DISTCC="CC=distcc gcc"
+		echo "Use CC='distcc gcc'"
+	fi
 
 ## Note: the source needs to be in /usr/src/nintendo-switch-l4t-dtstree-"$NVIDIA_VER"
 ## /usr/src contain a symlink to the kernel to be selecteable with eselect krenel
-make tegra-dtstree="/usr/src/nintendo-switch-l4t-dtstree-"$NVIDIA_VER"/hardware/nvidia/" "$MY_DISTCC" "$@"
+	make tegra-dtstree="/usr/src/nintendo-switch-l4t-dtstree-"$NVIDIA_VER"/hardware/nvidia/" "$MY_DISTCC" $@
+fi

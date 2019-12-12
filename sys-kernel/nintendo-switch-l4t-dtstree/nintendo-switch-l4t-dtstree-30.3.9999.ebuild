@@ -30,36 +30,43 @@ src_unpack() {
 	EGIT_BRANCH="${SWITCHROOT_NVIDIA_VER}"
 	EGIT_CHECKOUT_DIR="${S}/nvidia"
 	git-r3_src_unpack
+	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="git://nv-tegra.nvidia.com/linux-nvgpu.git"
 	EGIT_BRANCH="${NVIDIA_NVGPU_VER}"
 	EGIT_CHECKOUT_DIR="${S}/nvgpu"
 	git-r3_src_unpack
+	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch"
 	EGIT_BRANCH="${SWITCHROOT_PLATFORM_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/t210/switch"
 	git-r3_src_unpack
+	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/soc/tegra.git"
 	EGIT_BRANCH="${NVIDIA_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/soc/tegra"
 	git-r3_src_unpack
+	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/soc/t210.git"
 	EGIT_BRANCH="${NVIDIA_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/soc/t210/"
 	git-r3_src_unpack
+	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/platform/tegra/common.git"
 	EGIT_BRANCH="${NVIDIA_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/tegra/common/"
 	git-r3_src_unpack
+	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="git://nv-tegra.nvidia.com/device/hardware/nvidia/platform/t210/common.git"
 	EGIT_BRANCH="${NVIDIA_VER}"
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/t210/common/"
 	git-r3_src_unpack
+	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 # Patches to /hardware/nvidia/platform/t210/switch
 	cd "${S}"/hardware/nvidia/platform/t210/switch

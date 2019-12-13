@@ -9,6 +9,7 @@ SRC_URI="https://developer.nvidia.com/embedded/r32-2-3_Release_v1.0/t210ref_rele
 SLOT="0"
 KEYWORDS="-* ~arm64"
 IUSE="+egl vulkan"
+RESTRICT="preserve-libs"
 
 DEPEND=">=app-arch/bzip2-1.0.8"
 

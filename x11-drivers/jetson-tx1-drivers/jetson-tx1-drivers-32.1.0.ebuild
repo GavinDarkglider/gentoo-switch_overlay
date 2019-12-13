@@ -10,6 +10,7 @@ SRC_URI="https://developer.download.nvidia.com/embedded/L4T/r32_Release_v1.0/jet
 SLOT="0"
 KEYWORDS="-* arm64"
 IUSE="+egl vulkan"
+RESTRICT="preserve-libs"
 
 DEPEND=">=app-arch/bzip2-1.0.8"
 

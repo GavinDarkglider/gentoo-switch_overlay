@@ -7,12 +7,15 @@ ETYPE="sources"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE=""
+IUSE="kali_patches lakka_patches hid-joycon"
 
 K_SECURITY_UNSUPPORTED="yes"
 
 K_WANT_GENPATCHES="base extras"
 K_GENPATCHES_VER="189"
+
+SWITCHROOT_VER="rel30-rel32stack"
+DTSTREE_VER="30.3"
 
 inherit kernel-2
 detect_version
@@ -35,43 +38,38 @@ src_unpack() {
 	rm -Rf "${S}"/.git*
 }
 
-if [ "${SWITCHROOT_VER}" == "rel30-rel32stack" ]; then
-	IUSE="${IUSE} kali_patches lakka_patches hid-joycon"
-fi
-
 src_prepare() {
-	if [ "${SWITCHROOT_VER}" == "rel30-rel32stack" ]; then
-		if use kali_patches; then
-			einfo "Apply Kali patches"
-			unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
-			unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
-			unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
-		fi
-
-		if use hid-joycon; then
-			einfo "Upgrade Joycon Driver"
-			patch -p1 -R < "${FILESDIR}"/hid-switchcon-2.patch
-			patch -p1 -R < "${FILESDIR}"/hid-switchcon-1.patch
-			unipatch "${FILESDIR}"/hid-joycon-1.patch
-			unipatch "${FILESDIR}"/hid-joycon-2.patch
-			unipatch "${FILESDIR}"/hid-joycon-3.patch
-			unipatch "${FILESDIR}"/hid-joycon-4.patch
-			unipatch "${FILESDIR}"/hid-joycon-5.patch
-			unipatch "${FILESDIR}"/hid-joycon-l4t-fixes.patch
-		fi
-
-		if use lakka_patches; then
-			einfo "Apply Lakka patches"
-			# Source: https://github.com/lakka-switch/Lakka-LibreELEC/tree/master/projects/Switch/devices/L4T/packages/l4t-kernel/patches
-			unipatch "${FILESDIR}"/l4t-kernel-add-serdev_device_write.patch
-			unipatch "${FILESDIR}"/l4t-kernel-0002-input-working-Joy-Con-rails-driver.patch
-			unipatch "${FILESDIR}"/l4t-kernel-0001-tegra-Allow-UART-pins-to-be-inverted.patch
-
-			ewarn "Lakka Patches Break Sleep Mode."
-			ewarn "This will be added to default build"
-			ewarn "when this issue is fixed."
-		fi
+	if use kali_patches; then
+		einfo "Apply Kali patches"
+		unipatch "${FILESDIR}"/kali-wifi-injection-4.9.patch
+		unipatch "${FILESDIR}"/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
+		unipatch "${FILESDIR}"/usb_gadget_bashbunny_patches-l4t_4.9.patch
 	fi
+
+	if use hid-joycon; then
+		einfo "Upgrade Joycon Driver"
+		patch -p1 -R < "${FILESDIR}"/hid-switchcon-2.patch
+		patch -p1 -R < "${FILESDIR}"/hid-switchcon-1.patch
+		unipatch "${FILESDIR}"/hid-joycon-1.patch
+		unipatch "${FILESDIR}"/hid-joycon-2.patch
+		unipatch "${FILESDIR}"/hid-joycon-3.patch
+		unipatch "${FILESDIR}"/hid-joycon-4.patch
+		unipatch "${FILESDIR}"/hid-joycon-5.patch
+		unipatch "${FILESDIR}"/hid-joycon-l4t-fixes.patch
+	fi
+
+	if use lakka_patches; then
+		einfo "Apply Lakka patches"
+		# Source: https://github.com/lakka-switch/Lakka-LibreELEC/tree/master/projects/Switch/devices/L4T/packages/l4t-kernel/patches
+		unipatch "${FILESDIR}"/l4t-kernel-add-serdev_device_write.patch
+		unipatch "${FILESDIR}"/l4t-kernel-0002-input-working-Joy-Con-rails-driver.patch
+		unipatch "${FILESDIR}"/l4t-kernel-0001-tegra-Allow-UART-pins-to-be-inverted.patch
+
+		ewarn "Lakka Patches Break Sleep Mode."
+		ewarn "This will be added to default build"
+		ewarn "when this issue is fixed."
+	fi
+
 	einfo "Apply Gentoo patches"
 	mkdir "${WORKDIR}"/genpatches
 	cd "${WORKDIR}"/genpatches
@@ -82,9 +80,8 @@ src_prepare() {
 		unipatch "${WORKDIR}"/genpatches/"${PATCH}"
 	done
 
-	if [ "${SWITCHROOT_VER}" == "rel30-rel32stack" ]; then
-		unipatch "${FILESDIR}"/remove-emc_set_clock-spam.patch
-	fi
+	unipatch "${FILESDIR}"/remove-emc_set_clock-spam.patch
+
 	eapply_user
 }
 
@@ -94,14 +91,12 @@ src_configure() {
 	einfo "Use ${SRC_CONFIGFILE} configuration"
 	cp "${SRC_CONFIGFILE}"  "${DST_CONFIGFILE}" || die "copy failed"
 
-	if [ "${SWITCHROOT_VER}" == "rel30-rel32stack" ]; then
-		if use hid-joycon; then
-			sed -i 's/CONFIG_HID_SWITCHCON=/CONFIG_HID_JOYCON=/g' "${CONFIGFILE}"
-			echo CONFIG_JOYCON_FF=y >> "${CONFIGFILE}"
-		fi
-		if use lakka_patches; then
-			echo CONFIG_JOYSTICK_JOYCON=y >> "${CONFIGFILE}"
-		fi
+	if use hid-joycon; then
+		sed -i 's/CONFIG_HID_SWITCHCON=/CONFIG_HID_JOYCON=/g' "${DST_CONFIGFILE}"
+		echo CONFIG_JOYCON_FF=y >> "${DST_CONFIGFILE}"
+	fi
+	if use lakka_patches; then
+		echo CONFIG_JOYSTICK_JOYCON=y >> "${DST_CONFIGFILE}"
 	fi
 
 	EXTRAVERSION=".${DTSTREE_VER}-nintendo-switch-l4t"

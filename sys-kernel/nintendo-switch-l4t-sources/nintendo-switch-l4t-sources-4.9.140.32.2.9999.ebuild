@@ -5,9 +5,6 @@
 EAPI="6"
 KEYWORDS="~arm64"
 
-SWITCHROOT_VER="linux-rel32"
-DTSTREE_VER="32.2"
-
 GENTOO_PATCHES="
 1500_XATTR_USER_PREFIX.patch
 1520_security-apparmor-Use-POSIX-compatible-printf.patch
@@ -17,4 +14,5 @@ GENTOO_PATCHES="
 2900_dev-root-proc-mount-fix.patch
 4400_alpha-sysctl-uac.patch
 4567_distro-Gentoo-Kconfig.patch"
-inherit l4t-sources
+
+inherit l4t-sources-r32

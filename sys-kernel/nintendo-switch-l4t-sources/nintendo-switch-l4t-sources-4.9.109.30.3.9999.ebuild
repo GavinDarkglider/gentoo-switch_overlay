@@ -5,9 +5,6 @@
 EAPI="6"
 KEYWORDS="~arm64"
 
-SWITCHROOT_VER="rel30-rel32stack"
-DTSTREE_VER="30.3"
-
 GENTOO_PATCHES="
 1500_XATTR_USER_PREFIX.patch
 1520_security-apparmor-Use-POSIX-compatible-printf.patch

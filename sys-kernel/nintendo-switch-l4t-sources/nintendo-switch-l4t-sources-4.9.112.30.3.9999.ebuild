@@ -5,9 +5,6 @@
 EAPI="6"
 KEYWORDS="~arm64"
 
-SWITCHROOT_VER="rel30-rel32stack"
-DTSTREE_VER="30.3"
-
 GENTOO_PATCHES="
 1109_linux-4.9.110.patch
 1110_linux-4.9.111.patch

@@ -10,6 +10,11 @@ depend()
 start()
 {
 	ebegin "Enable reboot2payload with default_payload"
-	echo 1 > /sys/bus/platform/drivers/tegra-reboot2payload/r2p/default_payload
+	#Check kernel version, then poke sysfs
+	if [ "x$(uname -r | grep 4.9.140)" != "x" ]; then
+		echo 1 > /sys/bus/platform/drivers/tegra-reboot2payload/r2p/default_payload_ready
+	else
+		echo 1 > /sys/bus/platform/drivers/tegra-reboot2payload/r2p/default_payload
+	fi
 	eend $?
 }

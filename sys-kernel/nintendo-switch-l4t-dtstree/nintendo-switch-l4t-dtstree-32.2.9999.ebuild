@@ -13,7 +13,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://gitlab.com/switchroot/
 	https://nv-tegra.nvidia.com/gitweb"
 
-IUSE=""
+IUSE="+cypress_wifi"
 
 DESCRIPTION="Nintendo Switch Linux kernel DTS-Tree"
 
@@ -37,7 +37,11 @@ src_unpack() {
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch"
-	EGIT_BRANCH="${SWITCHROOT_VER}"
+	if use cypress_wifi; then
+		EGIT_BRANCH="${SWITCHROOT_VER}"-cypress-wifi
+	else
+		EGIT_BRANCH="${SWITCHROOT_VER}"
+	fi
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/t210/icosa"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*

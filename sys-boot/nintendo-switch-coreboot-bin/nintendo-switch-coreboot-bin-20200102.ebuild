@@ -6,7 +6,7 @@ HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 DESCRIPTION="Updater Scripts for Nintendo Switch boot chain"
 S="${WORKDIR}"
 
-COREBOOT_FILE="coreboot-GavinDarkglider-20191015.rom"
+COREBOOT_FILE="coreboot-GavinDarkglider-${PV}.rom"
 
 RESTRICT="mirror"
 SRC_URI="https://github.com/bell07/bashscripts-switch_gentoo/blob/master/distfiles/${COREBOOT_FILE}?raw=true -> ${COREBOOT_FILE}"

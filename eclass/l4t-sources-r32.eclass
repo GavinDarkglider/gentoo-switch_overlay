@@ -7,7 +7,7 @@ ETYPE="sources"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
          https://gitlab.com/switchroot/l4t-kernel-4.9"
 
-IUSE="+cypress_wifi"
+IUSE=""
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -26,20 +26,16 @@ SRC_URI="${GENPATCHES_URI}"
 
 DESCRIPTION="Nintendo Switch kernel sources for the ${KV_MAJOR}.${KV_MINOR} switchroot ${SWITCHROOT_VER} tree"
 
-RDEPEND="sys-kernel/nintendo-switch-l4t-dtstree:${DTSTREE_VER}[cypress_wifi=]"
+RDEPEND="sys-kernel/nintendo-switch-l4t-dtstree:${DTSTREE_VER}"
 
 S="${WORKDIR}"/linux-l4t-"${PVR}"-nintendo
 
 src_unpack() {
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-${KV_MAJOR}.${KV_MINOR}"
-	if use cypress_wifi; then
-		EGIT_BRANCH="${SWITCHROOT_VER}-integrated-backports"
-	else
-		EGIT_BRANCH="${SWITCHROOT_VER}"
-	fi
+	EGIT_BRANCH="${SWITCHROOT_VER}"
 	EGIT_CHECKOUT_DIR="${S}"
 	git-r3_src_unpack
-	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
+	rm -Rf "${S}"/.git*
 }
 
 

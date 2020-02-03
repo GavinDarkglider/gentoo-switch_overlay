@@ -7,7 +7,7 @@ DESCRIPTION="Install hekate as reboot2payload"
 
 NYX_VER="0.8.4"
 
-RESTRICT="mirror"
+RESTRICT="mirror strip"
 SRC_URI="https://github.com/CTCaer/hekate/releases/download/v${PV}/hekate_ctcaer_${PV}_Nyx_${NYX_VER}.zip"
 S="${WORKDIR}"
 

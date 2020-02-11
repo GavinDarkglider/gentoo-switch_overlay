@@ -1,9 +1,9 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
-inherit git-2 cmake-utils
+inherit git-r3 cmake-utils
 
 DESCRIPTION="Joycon pairing daemon to be used with hid-joycon driver"
 HOMEPAGE="https://github.com/DanielOgorchock/joycond/"

@@ -5,9 +5,9 @@ SLOT="0"
 HOMEPAGE="https://github.com/CTCaer/hekate https://gitlab.com/bell07/gentoo-switch_overlay"
 DESCRIPTION="Install hekate as reboot2payload"
 
-NYX_VER="0.8.3"
+NYX_VER="0.8.5"
 
-RESTRICT="mirror"
+RESTRICT="mirror strip"
 SRC_URI="https://github.com/CTCaer/hekate/releases/download/v${PV}/hekate_ctcaer_${PV}_Nyx_${NYX_VER}.zip"
 S="${WORKDIR}"
 

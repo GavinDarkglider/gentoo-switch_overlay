@@ -1,4 +1,4 @@
-x_kernel_version="4.9.112.30.3-nintendo-switch-l4t"
+x_kernel_version="4.9.140.32.2-nintendo-switch-l4t"
 x_root="/dev/mmcblk0p2"
 
 x_params="rootwait"

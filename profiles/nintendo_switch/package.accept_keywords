@@ -2,7 +2,7 @@
 =sys-devel/gcc-7.3.0-r6 ~arm64
 
 # required to unpack sys-firmware/jetson-tx1-firmware
-=app-arch/bzip2-1.0.8 ~arm64
+=app-arch/bzip2-1.0.8-r1 ~arm64
 
 # required by x11-drivers/jetson-tx1-drivers for egl
 =media-libs/libglvnd-1.2.0 ~*

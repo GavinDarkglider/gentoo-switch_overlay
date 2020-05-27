@@ -440,7 +440,7 @@ CONFIG_DM_CRYPT=m
 CONFIG_CRYPTO_CBC=m
 
 ### Recommended for kodi
-IP_MULTICAST=y
+CONFIG_IP_MULTICAST=y
 
 ### Kernel does not compile if not set
 CONFIG_ARCH_TEGRA_19x_SOC=y

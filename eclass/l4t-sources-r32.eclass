@@ -5,7 +5,7 @@
 ETYPE="sources"
 
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
-         https://gitlab.com/switchroot/l4t-kernel-4.9"
+          https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
 
 IUSE=""
 

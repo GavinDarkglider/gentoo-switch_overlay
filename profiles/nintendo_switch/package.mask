@@ -9,3 +9,8 @@
 # bell07: 2019-08-30 Not supported yet
 =sys-kernel/nintendo-switch-l4t-dtstree-32.2.9999
 =sys-kernel/nintendo-switch-l4t-sources-4.9.140.32.2.9999
+
+
+# bell07 2020-06-16 does not build
+# host/arch/arm/lib/crossystem_arch.c:294:36: error: ‘%s’ directive output may be truncated writing up to 255 bytes into a region of size 25 [-Werror=format-truncation=]
+=sys-boot/cbfstool-4.12

@@ -22,6 +22,6 @@ src_unpack() {
 }
 
 src_install() {
-    insinto /lib/firmware
+    insinto /lib
     doins -r lib/firmware || die "Install failed!"
 }

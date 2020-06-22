@@ -6,7 +6,7 @@ CFLAGS="-march=armv8-a+crypto+crc+simd -mlittle-endian -mabi=lp64 -mtune=cortex-
 CXXFLAGS="${CFLAGS}"
 
 USE="pulseaudio"    # Without them the sound switch between TV and handheld mode is difficult
-USE="$USE libglvnd" # required by x11-drivers/jetson-tx1-drivers for egl
+USE="$USE libglvnd" # required by sys-libs/jetson-tx1-drivers for egl
 USE="$USE -gpm"     # gpm does not sense without tty/framebuffer console
 
 

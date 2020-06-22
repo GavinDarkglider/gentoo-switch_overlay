@@ -1,0 +1,1 @@
+move x11-drivers/jetson-tx1-drivers sys-libs/jetson-tx1-drivers

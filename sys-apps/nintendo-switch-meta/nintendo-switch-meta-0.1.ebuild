@@ -24,8 +24,8 @@ RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant )" # Wifi
 
 RDEPEND+=" X? ( x11-base/xorg-x11"                               # Xorg server
 RDEPEND+="      x11-base/nintendo-switch-x11-configuration"      # xorg.conf
-RDEPEND+="      app-accessibility/onboard"                       # Onscreen virtual keyboard
-RDEPEND+="      x11-drivers/jetson-tx1-drivers[vulkan=,egl=] )"  # Jetson Nano xorg drivers
+RDEPEND+="      app-accessibility/onboard )"                     # Onscreen virtual keyboard
+RDEPEND+=" sys-libs/jetson-tx1-drivers[X=,vulkan=,egl=]"         # Jetson Nano drivers
 
 RDEPEND+=" hid-joycon? ( media-libs/joycond )"  # hid-joycon
 

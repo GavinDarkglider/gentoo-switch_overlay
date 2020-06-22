@@ -1,0 +1,11 @@
+diff -Naur l4t-platform-t210-switch/kernel-dts/tegra210-icosa-common.dtsi l4t-platform-t210-switch-patched/kernel-dts/tegra210-icosa-common.dtsi
+--- l4t-platform-t210-switch/kernel-dts/tegra210-icosa-common.dtsi	2020-04-21 18:53:47.703999811 -0700
++++ l4t-platform-t210-switch-patched/kernel-dts/tegra210-icosa-common.dtsi	2020-04-21 18:54:45.563999789 -0700
+@@ -140,7 +140,7 @@
+                         <&tegra_car TEGRA210_CLK_PLL_C4_OUT2>,
+                         <&tegra_car TEGRA210_CLK_SDMMC_LEGACY>;
+                 clock-names = "sdmmc", "pll_p", "pll_c4_out2", "sdmmc_legacy_tm";
+-                status = "disabled";
++                status = "okay";
+         };
+

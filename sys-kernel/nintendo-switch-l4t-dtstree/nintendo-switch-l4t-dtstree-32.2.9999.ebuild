@@ -13,7 +13,7 @@ KEYWORDS="~arm64"
 HOMEPAGE="https://gitlab.com/switchroot/
 	https://nv-tegra.nvidia.com/gitweb"
 
-IUSE=""
+IUSE="emmc_access"
 
 DESCRIPTION="Nintendo Switch Linux kernel DTS-Tree"
 
@@ -65,6 +65,18 @@ src_unpack() {
 	EGIT_CHECKOUT_DIR="${S}/hardware/nvidia/platform/t210/common/"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
+}
+
+src_prepare() {
+	if use emmc_access; then
+		ewarn "**** emms access is enabled, the emms will be mmcblk0 and the SD-card moves to mmcblk1 so you need to update your config files"
+		ewarn "**** Be careful and do not break your device. Do it on your own risk-"
+		cd "${S}/hardware/nvidia/platform/t210/icosa"
+		eapply "${FILESDIR}/emmc_enable-${SLOT}.patch"
+		
+	fi
+	cd "${S}"
+	eapply_user
 }
 
 src_install() {

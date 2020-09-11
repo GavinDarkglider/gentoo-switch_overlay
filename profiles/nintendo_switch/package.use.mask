@@ -1,2 +1,6 @@
 # required by sys-libs/jetson-tx1-drivers for egl
 media-libs/mesa -libglvnd
+#dev-qt/qtwayland -vulkan
+#dev-qt/qtgui -vulkan
+x11-base/xorg-server -libglvnd
+media-vidio/mpv -dvd

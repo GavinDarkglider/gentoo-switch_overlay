@@ -13,8 +13,9 @@ if [[ ${PV} == *9999 ]]; then
 	SRC_URI=""
 	EGIT_REPO_URI="https://github.com/kodi-game/game.libretro.4do.git"
 	inherit git-r3
+	KEYWORDS="~amd64 ~x86 ~arm64"
 else
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="~amd64 ~x86 ~arm64"
 	SRC_URI="https://github.com/kodi-game/game.libretro.4do/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 	S="${WORKDIR}/game.libretro.4do-${PV}"
 fi
@@ -25,13 +26,13 @@ IUSE=""
 
 DEPEND="
 	media-tv/kodi
-	games-emulation/4do-libretro
+	games-emulation/opera-libretro
 	"
 RDEPEND="
 	media-plugins/kodi-game-libretro
 	${DEPEND}
 	"
 src_prepare() {
-	echo 'find_library(4DO_LIB NAMES 4do_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)' > "${S}/Findlibretro-4do.cmake" || die
+	echo 'find_library(4DO_LIB NAMES opera_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)' > "${S}/Findlibretro-4do.cmake" || die
 	default
 }

@@ -3,11 +3,12 @@
 
 EAPI=6
 
-LIBRETRO_REPO_NAME="libretro/${PN//-libretro}"
+LIBRETRO_REPO_NAME="snes9xgit/snes9x"
+
 inherit libretro-core
 
 DESCRIPTION="libretro implementation of SNES9x. (Super Nintendo Entertainment System)"
-HOMEPAGE="https://github.com/libretro/snes9x"
+HOMEPAGE="https://github.com/snes9xgit/snes9x"
 KEYWORDS="arm arm64"
 
 LICENSE="snes9x"

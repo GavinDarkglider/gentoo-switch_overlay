@@ -1,6 +1,6 @@
 # Not compatible to nivida binary blobs
->x11-base/xorg-server-1.19.6
->x11-base/xorg-drivers-1.19
+>x11-base/xorg-server-1.20.9
+>x11-base/xorg-drivers-1.20-r2
 >media-libs/mesa-19.2.1
 >media-libs/libglvnd-1.2.0
 >x11-drivers/xf86-input-libinput-0.28.2

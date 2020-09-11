@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>menelkir@itroll.org</email>
+		<name>Daniel Menelkir</name>
+	</maintainer>
+	<longdescription lang="en">3D Engine for libretro GL with additional features (camera/location/etc). Should be compatible from libretro 3D/GLES 2.0 and up.
+	</longdescription>
+</pkgmetadata>

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-  <maintainer type="person">
-    <email>stefan.gert.r@gmail.com</email>
-    <description>Primary maintainer</description>
-  </maintainer>
+	<maintainer type="person">
+		<email>menelkir@itroll.org</email>
+		<name>Daniel Menelkir</name>
+	</maintainer>
+	<use>
+		<flag name="gles2">Enable support for GLES2</flag>
+	</use>
+	<longdescription lang="en">
+	</longdescription>
 </pkgmetadata>

@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-  <maintainer type="person">
-    <email>stefan.gert.r@gmail.com</email>
-    <name>stefan-gr</name>
-  </maintainer>
-  <upstream>
-    <bugs-to>https://github.com/libretro/libretro-ppsspp/issues</bugs-to>
-  </upstream>
-  <use>
-    <flag name='gles2'>Enable GLES2 instead of OpenGL</flag>
-  </use>
+	<maintainer type="person">
+		<email>menelkir@itroll.org</email>
+		<name>Daniel Menelkir</name>
+	</maintainer>
+	<use>
+		<flag name="gles2">Enable GLES2 support</flag>
+	</use>
+	<longdescription lang="en">
+	</longdescription>
 </pkgmetadata>

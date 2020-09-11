@@ -1,0 +1,13 @@
+--- redream-3dfea38c8200152e53a228df9bc5c2d0dc146516/deps/libretro/Makefile	2020-05-08 19:22:22.494690415 +1000
++++ redream-3dfea38c8200152e53a228df9bc5c2d0dc146516/deps/libretro/Makefile	2020-05-08 23:23:12.324754941 +1000
+@@ -19,8 +19,8 @@
+ UNAME=$(shell uname -a)
+ 
+ # Dirs
+-ROOT_DIR := ../..
+-CORE_DIR := ../..
++ROOT_DIR := .
++CORE_DIR := .
+ LIBRETRO_DIR := $(ROOT_DIR)/deps/libretro
+ 
+ ifeq ($(platform),)

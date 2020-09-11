@@ -13,8 +13,9 @@ if [[ ${PV} == *9999 ]]; then
 	SRC_URI=""
 	EGIT_REPO_URI="https://github.com/kodi-game/game.libretro.beetle-bsnes.git"
 	inherit git-r3
+        KEYWORDS="~amd64 ~x86 ~arm64"
 else
-	KEYWORDS="~amd64 ~x86"
+        KEYWORDS="~amd64 ~x86 ~arm64"
 	SRC_URI="https://github.com/kodi-game/game.libretro.beetle-bsnes/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 	S="${WORKDIR}/game.libretro.bsnes-${PV}"
 fi
@@ -33,6 +34,6 @@ RDEPEND="
 	"
 
 src_prepare() {
-	echo 'find_library(BEETLE-BSNES_LIB NAMES bsnes_balanced_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)' > "${S}/Findlibretro-bsnes.cmake" || die
+	echo 'find_library(BEETLE-BSNES_LIB NAMES bsnes2014_balanced_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)' > "${S}/Findlibretro-bsnes.cmake" || die
 	default
 }

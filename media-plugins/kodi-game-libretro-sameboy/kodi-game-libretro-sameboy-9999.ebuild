@@ -13,8 +13,9 @@ if [[ ${PV} == *9999 ]]; then
 	SRC_URI=""
 	EGIT_REPO_URI="https://github.com/kodi-game/game.libretro.sameboy.git"
 	inherit git-r3
+        KEYWORDS="~amd64 ~x86 ~arm64"
 else
-	KEYWORDS="~amd64 ~x86"
+        KEYWORDS="~amd64 ~x86 ~arm64"
 	SRC_URI="https://github.com/kodi-game/game.libretro.sameboy/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 	S="${WORKDIR}/game.libretro.sameboy-${PV}"
 fi

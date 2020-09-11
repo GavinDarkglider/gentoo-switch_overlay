@@ -8,7 +8,7 @@ MY_P="Tegra210_Linux_R${PV}"
 SRC_URI="https://developer.nvidia.com/embedded/L4T/r32_Release_v4.2/t210ref_release_aarch64/Tegra210_Linux_R32.4.2_aarch64.tbz2"
 SLOT="0"
 KEYWORDS="-* arm64"
-IUSE="+egl +firmware gstreamer vulkan wayland X"
+IUSE="+egl +firmware gstreamer vulkan wayland +X"
 RESTRICT="preserve-libs mirror"
 
 DEPEND=">=app-arch/bzip2-1.0.8"

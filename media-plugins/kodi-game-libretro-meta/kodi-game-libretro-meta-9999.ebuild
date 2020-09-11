@@ -7,18 +7,18 @@ DESCRIPTION="Meta package for various kodi-game-libretro implementations"
 HOMEPAGE=""
 LICENSE="metapackage"
 SLOT="0"
-IUSE="+2048 +4do +beetle-psx bnes +bsnes bsnes-cpp98 citra craft +desmume dolphin easyrpg +fbalpha fbalpha2012 fceumm +gambatte +genplus \
+IUSE="+2048 +opera +beetle-psx bnes +bsnes bsnes-cpp98 citra craft +desmume dolphin easyrpg +fbalpha fbalpha2012 fceumm +gambatte +genplus \
 +handy mame mame2000 +mame2003 mame2016 mednafen-gba +mednafen-ngp +mednafen-pce-fast \
 +mednafen-saturn mednafen-snes +mednafen-vb +mednafen-wswan melonds meowpc98 meteor +mgba mrboom +mupen64plus +nestopia +nxengine \
 openlara pcsx-rearmed +mednafen-supergrafx parallel-n64 picodrive +ppsspp +prboom +prosystem px68k quicknes redream +reicast sameboy +scummvm \
 snes9x snes9x2002 snes9x2010 +stella tgbdual +tyrquake vba-next vbam yabause"
 
-KEYWORDS=""
+KEYWORDS="arm64"
 
 RDEPEND="2048? ( >=media-plugins/kodi-game-libretro-twentyfortyeight-9999 )
-		4do? ( >=media-plugins/kodi-game-libretro-4do-9999 )
+		opera? ( >=media-plugins/kodi-game-libretro-4do-9999 )
 		bnes? ( >=media-plugins/kodi-game-libretro-bnes-9999 )
-		bsnes? ( >=media-plugins/kodi-game-libretro-bsnes-9999 )
+		bsnes? ( >=media-plugins/kodi-game-libretro-beetle-bsnes-9999 )
 		fbalpha? ( >=media-plugins/kodi-game-libretro-fbalpha-9999 )
 		fbalpha2012? ( >=media-plugins/kodi-game-libretro-fbalpha2012-9999 )
 		fceumm? ( >=media-plugins/kodi-game-libretro-fceumm-9999 )

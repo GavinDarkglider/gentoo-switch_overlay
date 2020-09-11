@@ -1,14 +1,14 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-LIBRETRO_REPO_NAME="libretro/${PN//-libretro}"
+LIBRETRO_REPO_NAME="libretro/ppsspp"
 inherit libretro-core
 
 DESCRIPTION="libretro implementation of PPSSPP. (PlayStation Portable/PSP)"
 HOMEPAGE="https://github.com/libretro/ppsspp"
-KEYWORDS="arm arm64"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -24,6 +24,8 @@ DEPEND="x11-libs/libICE
 	!games-emulation/psp-assets"
 RDEPEND="${DEPEND}
 		games-emulation/libretro-info"
+
+EGIT_SUBMODULES=( '*' )
 
 S=${S}/libretro
 

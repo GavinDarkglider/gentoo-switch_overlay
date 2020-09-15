@@ -1,13 +1,12 @@
-diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index fc0935fa21..1ab4d48d38 100644
---- a/include/config_distro_bootcmd.h
-+++ b/include/config_distro_bootcmd.h
-@@ -417,7 +417,7 @@
+--- a/include/config_distro_bootcmd.h	2020-08-12 17:21:54.698169156 -0000
++++ b/include/config_distro_bootcmd.h	2020-08-12 17:22:35.856168861 -0000
+@@ -331,7 +331,7 @@
+ 	BOOTENV_SHARED_IDE \
  	BOOTENV_SHARED_UBIFS \
  	BOOTENV_SHARED_EFI \
- 	BOOTENV_SHARED_VIRTIO \
--	"boot_prefixes=/ /boot/\0" \
+-	"boot_prefixes=/ /switchroot_android/\0" \
 +	"boot_prefixes=/gentoo/\0" \
  	"boot_scripts=boot.scr.uimg boot.scr\0" \
  	"boot_script_dhcp=boot.scr.uimg\0" \
  	BOOTENV_BOOT_TARGETS \
+

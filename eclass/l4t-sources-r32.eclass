@@ -1,5 +1,5 @@
-# Copyright 1999-2019 Alexander Weber
-# Copyright 1999-2019 Gavin_Darkglider
+# Copyright 1999-2020 Alexander Weber
+# Copyright 1999-2020 Gavin_Darkglider
 # Distributed under the terms of the GNU General Public License v2
 
 ETYPE="sources"
@@ -7,7 +7,7 @@ ETYPE="sources"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo
           https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
 
-IUSE=""
+IUSE="+genpatches kali_patches"
 
 K_SECURITY_UNSUPPORTED="yes"
 
@@ -22,7 +22,8 @@ detect_version
 detect_arch
 inherit git-r3
 
-SRC_URI="${GENPATCHES_URI}"
+SRC_URI="https://dev.gentoo.org/~mpagano/genpatches/tarballs/genpatches-4.9-${K_GENPATCHES_VER}.base.tar.xz
+		https://dev.gentoo.org/~mpagano/genpatches/tarballs/genpatches-4.9-${K_GENPATCHES_VER}.extras.tar.xz"
 
 DESCRIPTION="Nintendo Switch kernel sources for the ${KV_MAJOR}.${KV_MINOR} switchroot ${SWITCHROOT_VER} tree"
 
@@ -40,16 +41,23 @@ src_unpack() {
 
 
 src_prepare() {
-	einfo "Apply Gentoo patches"
-	mkdir "${WORKDIR}"/genpatches
-	cd "${WORKDIR}"/genpatches
-	unpack genpatches-4.9-"${K_GENPATCHES_VER}".base.tar.xz
-	unpack genpatches-4.9-"${K_GENPATCHES_VER}".extras.tar.xz
-	cd "${S}"
-	for PATCH in ${GENTOO_PATCHES}; do
-		unipatch "${WORKDIR}"/genpatches/"${PATCH}"
-	done
-
+	if use genpatches ]]; then
+		einfo "Apply Gentoo patches"
+		mkdir "${WORKDIR}"/genpatches
+		cd "${WORKDIR}"/genpatches
+		unpack genpatches-4.9-"${K_GENPATCHES_VER}".base.tar.xz
+		unpack genpatches-4.9-"${K_GENPATCHES_VER}".extras.tar.xz
+		cd "${S}"
+		for PATCH in ${GENTOO_PATCHES}; do
+			unipatch "${WORKDIR}"/genpatches/"${PATCH}"
+		done
+	fi
+	if use kali_patches; then
+		einfo "Apply Kali wifi injection patches, and BashBunny patches"
+		eapply ${FILESDIR}/kali-wifi-injection-4.9.patch
+		eapply ${FILESDIR}/0001-wireless-carl9170-Enable-sniffer-mode-promisx-flag-t.patch
+			eapply ${FILESDIR}/usb_gadget_bashbunny_patches-l4t_4.9.patch
+	fi
 	eapply_user
 }
 

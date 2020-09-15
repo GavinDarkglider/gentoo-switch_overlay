@@ -1,5 +1,5 @@
-# Copyright 1999-2019 Alexander Weber
-# Copyright 1999-2019 Gavin_Darkglider
+# Copyright 1999-2020 Alexander Weber
+# Copyright 1999-2020 Gavin_Darkglider
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"

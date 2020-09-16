@@ -5,8 +5,10 @@ inherit versionator
 DESCRIPTION="Nintendo Switch WIFI/Bluetooth Firmware"
 HOMEPAGE=""
 
-SRC_URI="https://github.com/lakka-switch/Lakka-LibreELEC/raw/master/projects/Switch/firmwares/files/brcm/BCM.hcd
-	 https://raw.githubusercontent.com/lakka-switch/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.txt"
+SRC_URI="https://github.com/azkali/Lakka-LibreELEC/raw/master/projects/Switch/firmwares/files/brcm/BCM.hcd
+	 https://raw.githubusercontent.com/azkali/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.txt
+         https://raw.githubusercontent.com/azkali/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.bin"
+
 
 SLOT="0"
 KEYWORDS="~arm ~arm64"

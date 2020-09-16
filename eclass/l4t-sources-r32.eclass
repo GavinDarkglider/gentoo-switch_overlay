@@ -22,8 +22,9 @@ detect_version
 detect_arch
 inherit git-r3
 
-SRC_URI="https://dev.gentoo.org/~mpagano/genpatches/tarballs/genpatches-4.9-${K_GENPATCHES_VER}.base.tar.xz
-		https://dev.gentoo.org/~mpagano/genpatches/tarballs/genpatches-4.9-${K_GENPATCHES_VER}.extras.tar.xz"
+SRC_URI="
+genpatches? ( https://dev.gentoo.org/~mpagano/genpatches/tarballs/genpatches-4.9-${K_GENPATCHES_VER}.base.tar.xz
+              https://dev.gentoo.org/~mpagano/genpatches/tarballs/genpatches-4.9-${K_GENPATCHES_VER}.extras.tar.xz )"
 
 DESCRIPTION="Nintendo Switch kernel sources for the ${KV_MAJOR}.${KV_MINOR} switchroot ${SWITCHROOT_VER} tree"
 

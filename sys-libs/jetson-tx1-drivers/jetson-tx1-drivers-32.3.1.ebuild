@@ -80,9 +80,9 @@ my_do_lib_recursive() {
 }
 
 src_install() {
-    insinto "/etc" && doins "/etc/nv_tegra_release"
+    insinto "/etc" && doins "${S}/etc/nv_tegra_release"
 
-    insinto "/etc/ld.so.conf.d" && doins "/etc/ld.so.conf.d/nvidia-tegra.conf"
+    insinto "/etc/ld.so.conf.d" && doins "${S}/etc/ld.so.conf.d/nvidia-tegra.conf"
 
     dobin "/usr/bin/nvidia-bug-report-tegra.sh"
 

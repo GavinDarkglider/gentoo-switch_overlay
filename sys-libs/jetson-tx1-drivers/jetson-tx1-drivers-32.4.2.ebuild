@@ -17,7 +17,7 @@ RDEPEND="
 	X? ( =x11-base/xorg-server-1.19.6 )
 	egl? ( media-libs/libglvnd )
 	firmware? ( !sys-firmware/jetson-tx1-firmware )
-	gstreamer? ( gst-plugins-base/gst-plugins-base )
+	gstreamer? ( media-libs/gst-plugins-base )
 	vulkan? ( media-libs/vulkan-loader )
 	wayland? ( dev-libs/wayland )
 "
@@ -38,15 +38,15 @@ src_unpack() {
 src_prepare() {
 	sed -i -e 's:^/usr/lib/:/usr/'"lib64"'/:' "${S}"/etc/ld.so.conf.d/nvidia-tegra.conf
 
-	if use egl 
-	then 
+	if use egl
+	then
 		mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/*.so.? "${S}"/usr/lib/aarch64-linux-gnu/tegra/
 		mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json "${S}"/usr/lib/aarch64-linux-gnu/tegra/
 	fi
 	rm -rf "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl
 
 	use wayland   || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvidia-egl-wayland.so
-	use vulkan    || rm "${S}"/usr/lib64/tegra/libnvvulkan-producer.so
+	use vulkan    || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvvulkan-producer.so
 	use gstreamer || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvdsbufferpool.so.1.0.0
 
 	eapply_user
@@ -84,11 +84,11 @@ my_do_lib_recursive() {
 }
 
 src_install() {
-	insinto "/etc" && doins "/etc/nv_tegra_release"
+	insinto "/etc" && doins "${S}/etc/nv_tegra_release"
 
-	insinto "/etc/ld.so.conf.d" && doins "/etc/ld.so.conf.d/nvidia-tegra.conf"
+	insinto "/etc/ld.so.conf.d" && doins "${S}/etc/ld.so.conf.d/nvidia-tegra.conf"
 
-	dobin "/usr/bin/nvidia-bug-report-tegra.sh"
+	dobin "${S}""/usr/bin/nvidia-bug-report-tegra.sh"
 
 	for f in "usr/sbin/"*
 	do

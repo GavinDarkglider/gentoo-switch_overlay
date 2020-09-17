@@ -63,18 +63,12 @@ src_prepare() {
 }
 
 src_configure() {
-	SRC_CONFIGFILE="${FILESDIR}"/gentoo_switch_defconfig-"${KV_MAJOR}.${KV_MINOR}"-"$(echo "${DTSTREE_VER}" | cut -d. -f1)"
-	DST_CONFIGFILE="${S}"/arch/arm64/configs/gentoo_switch_defconfig
-	einfo "Use ${SRC_CONFIGFILE} configuration"
-	cp "${SRC_CONFIGFILE}"  "${DST_CONFIGFILE}" || die "copy failed"
-
-
 	EXTRAVERSION=".${DTSTREE_VER}-nintendo-switch-l4t"
 	einfo "Adjust extraversion to ${EXTRAVERSION}"
 	unpack_set_extraversion
 
 	einfo ""
-	einfo "Use 'make-with-dts-${DTSTREE_VER}.sh gentoo_switch_defconfig' to apply prepared nintendo switch optimized configuration"
+	einfo "Use 'make-with-dts-${DTSTREE_VER}.sh tegra_linux_defconfig' to apply prepared nintendo switch optimized configuration"
 	einfo ""
 }
 

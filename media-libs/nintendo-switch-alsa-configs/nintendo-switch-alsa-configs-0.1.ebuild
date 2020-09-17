@@ -13,7 +13,7 @@ KEYWORDS="-* arm64"
 IUSE=""
 
 RDEPEND="
-	media-libs/alsa-lib
+    media-libs/alsa-lib
 "
 
 S="${WORKDIR}/switch-l4t-configs-master/switch-alsa-ucm/"

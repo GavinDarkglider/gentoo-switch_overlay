@@ -2,10 +2,10 @@ EAPI=6
 KEYWORDS="~arm64"
 SLOT="0"
 
-HOMEPAGE="https://github.com/CTCaer/hekate https://gitlab.com/bell07/gentoo-switch_overlay"
+HOMEPAGE="https://github.com/CTCaer/hekate"
 DESCRIPTION="Install hekate as reboot2payload"
 
-NYX_VER="0.9.2"
+NYX_VER="0.9.4"
 
 RESTRICT="mirror strip"
 SRC_URI="https://github.com/CTCaer/hekate/releases/download/v${PV}/hekate_ctcaer_${PV}_Nyx_${NYX_VER}.zip"

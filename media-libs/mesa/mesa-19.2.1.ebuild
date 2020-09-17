@@ -43,10 +43,6 @@ REQUIRED_USE="
 	d3d9?   ( dri3 || ( video_cards_iris video_cards_r300 video_cards_r600 video_cards_radeonsi video_cards_nouveau video_cards_vmware ) )
 	gles1?  ( egl )
 	gles2?  ( egl )
-	vulkan? ( dri3
-			  || ( video_cards_i965 video_cards_iris video_cards_radeonsi )
-			  video_cards_radeonsi? ( llvm ) )
-	vulkan-overlay? ( vulkan )
 	wayland? ( egl gbm )
 	video_cards_freedreno?  ( gallium )
 	video_cards_intel?  ( classic )

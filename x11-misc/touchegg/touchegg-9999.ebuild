@@ -8,7 +8,7 @@ inherit git-r3 qmake-utils
 DESCRIPTION="Linux multitouch gesture recognizer"
 HOMEPAGE="https://github.com/JoseExposito/touchegg"
 
-EGIT_REPO_URI="git://github.com/manashmandal/touchegg.git https://github.com/manashmandal/touchegg.git"
+EGIT_REPO_URI="https://github.com/manashmandal/touchegg.git"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -31,4 +31,7 @@ src_configure() {
 src_install() {
 	emake DESTDIR="${D}" INSTALL_ROOT="${D}" install
 	einstalldocs
+
+	insinto /etc/xdg/autostart
+	doins "${FILESDIR}"/touchegg.desktop
 }

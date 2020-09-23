@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Two finger gestures service
-Exec=twofing --wait
-Terminal=false

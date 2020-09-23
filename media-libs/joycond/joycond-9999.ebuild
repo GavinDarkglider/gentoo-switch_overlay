@@ -7,7 +7,7 @@ inherit git-r3 cmake-utils
 
 DESCRIPTION="Joycon pairing daemon to be used with hid-joycon driver"
 HOMEPAGE="https://github.com/DanielOgorchock/joycond/"
-EGIT_REPO_URI="git://github.com/DanielOgorchock/joycond"
+EGIT_REPO_URI="https://github.com/DanielOgorchock/joycond"
 EGIT_BRANCH="master"
 
 LICENSE="GPL-3"

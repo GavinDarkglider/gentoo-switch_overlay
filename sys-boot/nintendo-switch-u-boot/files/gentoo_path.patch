@@ -7,7 +7,7 @@ index 5dac96269f..76d7fad72a 100644
  	BOOTENV_SHARED_UBIFS \
  	BOOTENV_SHARED_EFI \
 -	"boot_prefixes=/ /switchroot/ubuntu/\0" \
-+	"boot_prefixes=/gentoo/\0" \
++	"boot_prefixes=/switchroot/gentoo/\0" \
  	"boot_scripts=boot.scr.uimg boot.scr\0" \
  	"boot_script_dhcp=boot.scr.uimg\0" \
  	BOOTENV_BOOT_TARGETS \

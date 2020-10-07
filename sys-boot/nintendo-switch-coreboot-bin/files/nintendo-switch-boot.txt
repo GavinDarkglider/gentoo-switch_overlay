@@ -5,8 +5,8 @@ x_params="rootwait"
 x_reboot_params="pmc_reboot2payload.enable=1 pmc_reboot2payload.reboot_action=bootloader pmc_reboot2payload.default_payload=reboot_payload.bin pmc_reboot2payload.hekate_config_id=GENTOO"
 
 mmc dev 1
-load mmc 1:1 0x83000000 gentoo/vmlinuz-${x_kernel_version}
-load mmc 1:1 0x8d000000 gentoo/tegra210-icosa.dtb-${x_kernel_version}
+load mmc 1:1 0x83000000 switchroot/gentoo/vmlinuz-${x_kernel_version}
+load mmc 1:1 0x8d000000 switchroot/gentoo/tegra210-icosa.dtb-${x_kernel_version}
 setenv bootargs root=${x_root} ${x_params} ${x_reboot_params}
 usb reset
 booti 0x83000000 - 0x8d000000

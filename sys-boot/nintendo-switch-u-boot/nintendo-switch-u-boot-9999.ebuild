@@ -1,5 +1,5 @@
 EAPI="6"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 SLOT="0"
 
 HOMEPAGE="https://gitlab.com/switchroot/switch-uboot"
@@ -33,7 +33,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "u-boot.elf installedd to /usr/share/u-boot/u-boot.elf"
+	elog "u-boot.elf installed to /usr/share/u-boot/u-boot.elf"
 	elog "Please update the coreboot image using update-coreboot.sh"
 	elog "or reinstall sys-boot/nintendo-switch-coreboot-bin"
 }

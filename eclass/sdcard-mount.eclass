@@ -90,5 +90,6 @@ sdcard-mount_pkg_prerm() {
 }
 
 sdcard-mount_pkg_postrm() {
+	sdcard-mount_check_status "${SDCARD_MOUNT_POINT}" && return
 	"${SDCARD_MOUNT_POINT}"/.keep 2>/dev/null
 }

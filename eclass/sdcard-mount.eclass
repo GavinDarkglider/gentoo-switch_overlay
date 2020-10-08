@@ -80,6 +80,7 @@ sdcard-mount_pkg_preinst() {
 	cp -a "${D}/${SDCARD_DESTDIR}/." "${D}/${SDCARD_MOUNT_POINT}"
 }
 
+
 sdcard-mount_pkg_prerm() {
 	# on de-installation use setting used by installation and stored in database
 	sdcard-mount_check_status "${SDCARD_MOUNT_POINT}" && return
@@ -88,6 +89,7 @@ sdcard-mount_pkg_prerm() {
 	# Create a .keep file, in case it is shadowed at the mount point
 	touch "${SDCARD_MOUNT_POINT}"/.keep 2>/dev/null
 }
+
 
 sdcard-mount_pkg_postrm() {
 	sdcard-mount_check_status "${SDCARD_MOUNT_POINT}" && return

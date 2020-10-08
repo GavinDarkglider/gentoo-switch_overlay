@@ -5,15 +5,15 @@ if ! [ -x "$(which -q mkimage 2>/dev/null)" ]; then
 	exit 1
 fi
 
-if [ "$1" == 'help' ] || [ "$1" == '--help' ] || [ "$1" == '-h' ]; then
+if [ -z "$1" ] || [ "$1" == 'help' ] || [ "$1" == '--help' ] || [ "$1" == '-h' ]; then
 	echo "Update boot.scr file after boot.txt editing"
-	echo "usage: update-boot.scr.sh boot.txt boot.scr"
-	echo "if files not specified, the /etc/nintendo-switch-boot.txt and /boot/boot.scr is used"
+	echo "usage: update-boot.scr.sh boot.scr boot.txt"
+	echo "if boot.txt not specified, the /etc/nintendo-switch-boot.txt is used"
 	exit 0
 fi
 
-TXTFILE=${1:-/etc/nintendo-switch-boot.txt}
-SCRFILE=${2:-/boot/boot.scr}
+SCRFILE=${1}
+TXTFILE=${2:-/etc/nintendo-switch-boot.txt}
 
 if ! [ -f "$TXTFILE" ]; then
 	echo "$TXTFILE is not a valid file"

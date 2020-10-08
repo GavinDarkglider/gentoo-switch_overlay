@@ -4,14 +4,14 @@ if ! [ -x "$(which -q cbfstool 2>/dev/null)" ]; then
 	exit 1
 fi
 
-if [ "$1" == 'help' ] || [ "$1" == '--help' ] || [ "$1" == '-h' ]; then
+if [ -z "$1" ] || [ "$1" == 'help' ] || [ "$1" == '--help' ] || [ "$1" == '-h' ]; then
 	echo "Inject u-boot.elf into coreboot.rom file"
 	echo "usage: update-coreboot.sh coreboot.rom u-boot.elf"
-	echo "if files not specified, the /boot/coreboot.rom and /usr/share/u-boot/u-boot.elf is used"
+	echo "if no u-boot.elf is provided the /usr/share/u-boot/u-boot.elf is used"
 	exit 0
 fi
 
-COREBOOT=${1:-/boot/coreboot.rom}
+COREBOOT=${1}
 UBOOT=${2:-/usr/share/u-boot/u-boot.elf}
 
 if ! [ -f "$COREBOOT" ]; then

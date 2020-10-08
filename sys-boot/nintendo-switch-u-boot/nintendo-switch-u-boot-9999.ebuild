@@ -33,7 +33,6 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "u-boot.elf installed to /usr/share/u-boot/u-boot.elf"
-	elog "Please update the coreboot image using update-coreboot.sh"
-	elog "or reinstall sys-boot/nintendo-switch-coreboot-bin"
+	einfo "Update the coreboot.rom and boot.scr using "
+	einfo "   ebuild /var/db/repos/switch_overlay/sys-boot/nintendo-switch-coreboot-bin/nintendo-switch-coreboot-bin-9999.ebuild config"
 }

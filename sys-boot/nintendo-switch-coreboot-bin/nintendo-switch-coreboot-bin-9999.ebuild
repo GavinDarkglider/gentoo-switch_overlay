@@ -34,9 +34,13 @@ src_install() {
 }
 
 pkg_config() {
-	einfo "Write Image /usr/share/u-boot/u-boot.elf to the coreboot.bin"
-	einfo "${ROOT}"/usr/bin/update-coreboot.sh "${ROOT}"/"${SDCARD_DESTDIR}"/switchroot/gentoo/coreboot.rom "${ROOT}"/usr/share/u-boot/u-boot.elf
-	"${ROOT}"/usr/bin/update-coreboot.sh "${ROOT}"/"${SDCARD_DESTDIR}"/switchroot/gentoo/coreboot.rom "${ROOT}"/usr/share/u-boot/u-boot.elf  || die "patching coreboot failed"
+	if [ -f /usr/share/u-boot/u-boot.elf ]; then
+		einfo "Write Image /usr/share/u-boot/u-boot.elf to the coreboot.bin"
+		einfo "${ROOT}"/usr/bin/update-coreboot.sh "${ROOT}"/"${SDCARD_DESTDIR}"/switchroot/gentoo/coreboot.rom "${ROOT}"/usr/share/u-boot/u-boot.elf
+		"${ROOT}"/usr/bin/update-coreboot.sh "${ROOT}"/"${SDCARD_DESTDIR}"/switchroot/gentoo/coreboot.rom "${ROOT}"/usr/share/u-boot/u-boot.elf  || die "patching coreboot failed"
+	else
+		ewarn "No u-boot.elf file found, skip updating coreboot"
+	fi
 
 	einfo "Update ${SDCARD_DESTDIR}"/switchroot/gentoo/boot.scr
 	einfo "${ROOT}"/usr/bin/update-boot.scr.sh "${SDCARD_DESTDIR}"/switchroot/gentoo/boot.scr

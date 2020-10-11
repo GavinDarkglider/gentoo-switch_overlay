@@ -11,8 +11,7 @@ HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 
-RDEPEND+=" sys-boot/nintendo-switch-coreboot-bin" # Coreboot image and boot chain updaters
-RDEPEND+=" dev-embedded/u-boot-tools"             # mkimage to update bootloader
+RDEPEND+=" sys-boot/l4s-bootstack   " # Boot stack files
 
 RDEPEND+=" kernel-sources? ("
 RDEPEND+="      sys-kernel/nintendo-switch-l4t-sources"                             # Working kernel

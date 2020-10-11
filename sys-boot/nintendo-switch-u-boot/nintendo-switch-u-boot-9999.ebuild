@@ -34,5 +34,6 @@ src_install() {
 
 pkg_postinst() {
 	einfo "Update the coreboot.rom and boot.scr using "
-	einfo "   ebuild /var/db/repos/switch_overlay/sys-boot/nintendo-switch-coreboot-bin/nintendo-switch-coreboot-bin-9999.ebuild config"
+	einfo "   ebuild /var/db/repos/switch_overlay/sys-boot/l4s-bootstack/l4s-bootstack-9999.ebuild config"
+	einfo " or by sys-boot/l4s-bootstack rebuild"
 }

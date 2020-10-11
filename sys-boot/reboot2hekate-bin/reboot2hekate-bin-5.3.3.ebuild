@@ -5,6 +5,8 @@ SLOT="0"
 HOMEPAGE="https://github.com/CTCaer/hekate"
 DESCRIPTION="Install hekate as reboot2payload"
 
+IUSE="nyx"
+
 NYX_VER="0.9.4"
 
 RESTRICT="mirror strip"
@@ -17,11 +19,10 @@ src_install() {
 	insinto /lib/firmware
 	newins hekate_ctcaer_${PV}.bin reboot_payload.bin
 
-	insinto "${SDCARD_DESTDIR}"
-	doins -r bootloader
-
-	insinto "${SDCARD_DESTDIR}"/bootloader/ini
-	doins "${FILESDIR}"/Gentoo.ini
+	if use nyx; then
+		insinto "${SDCARD_DESTDIR}"
+		doins -r bootloader
+	fi
 
 	exeinto /etc/init.d
 	doexe "${FILESDIR}"/reboot2hekate

@@ -7,12 +7,21 @@ DESCRIPTION="Precompiled coreboot file"
 
 inherit git-r3 sdcard-mount
 
+IUSE="+initramfs"
+
 EGIT_REPO_URI="https://github.com/Linux-4-Switch/bootstack"
 EGIT_BRANCH="master"
 EGIT_SUBMODULES=()
 
 DEPEND="sys-boot/cbfstool
-		sys-boot/nintendo-switch-u-boot"
+		dev-embedded/u-boot-tools
+		sys-boot/nintendo-switch-u-boot
+		initramfs? ( app-arch/cpio )"
+
+src_unpack() {
+	git-r3_src_unpack
+	use initramfs && unpack "${S}"/src/initramfs_files.tar.gz
+}
 
 src_prepare() {
 	sed -i 's/ubuntu/gentoo/g' "${S}"/src/uboot-scripts/linux_boot.txt
@@ -28,6 +37,12 @@ src_compile() {
 
 	echo "mkimage -A arm -T script -O linux -d ${S}/src/uboot-scripts/linux_boot.txt ${S}/boot.scr"
 	mkimage -A arm -T script -O linux -d "${S}"/src/uboot-scripts/linux_boot.txt "${S}"/boot.scr
+
+	if use initramfs; then
+		cd "${WORKDIR}"/initramfs_files
+		find . | cpio -H newc -o | gzip -9 > "${WORKDIR}"/new_initramfs.cpio.gz
+		mkimage -A arm64 -O linux -T ramdisk -C gzip -d new_initramfs.cpio.gz "${WORKDIR}"/initramfs
+	fi
 }
 
 src_install() {
@@ -43,6 +58,11 @@ src_install() {
 	doins uenv.txt
 	doins uenv_readme.txt
 	doins -r overlays
+
+	if use initramfs; then
+		cd "${WORKDIR}"
+		doins initramfs
+	fi
 }
 
 pkg_config() {

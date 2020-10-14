@@ -1,0 +1,8 @@
+--- a/initramfs_files/init	2020-10-14 06:55:40.057466446 +0200
++++ b/initramfs_files/init	2020-10-14 06:55:53.507465905 +0200
+@@ -414,4 +414,4 @@
+ fi
+ 
+ echo "[ $(date +"%T.%3N") ] L4T-INITRAMFS END $(date)";
+-exec chroot . ${init_path} 2;
++exec chroot . ${init_path} 3;

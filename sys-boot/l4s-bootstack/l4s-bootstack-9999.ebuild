@@ -28,12 +28,7 @@ src_prepare() {
 	sed -i 's/ubuntu/gentoo/g' "${S}"/src/uboot-scripts/linux_boot.txt
 	sed -i 's/SWR-UBU/SWR-GEN/g' "${S}"/src/uboot-scripts/linux_boot.txt
 	sed -i 's/SWR-UBU/SWR-GEN/g' "${S}"/src/uboot-scripts/uenv.txt
-
-	if use initramfs; then
-		cd "${WORKDIR}"
-		eapply "${FILESDIR}"/gentoo-runlevel.patch
-	fi
-
+	sed -i 's/runlevel=2/runlevel=3/g' "${S}"/src/uboot-scripts/uenv.txt
 	eapply_user
 }
 

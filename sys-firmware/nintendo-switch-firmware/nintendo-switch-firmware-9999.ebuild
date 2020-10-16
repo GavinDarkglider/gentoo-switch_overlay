@@ -6,19 +6,19 @@ DESCRIPTION="Nintendo Switch WIFI/Bluetooth Firmware"
 HOMEPAGE=""
 
 SRC_URI="https://github.com/azkali/Lakka-LibreELEC/raw/master/projects/Switch/firmwares/files/brcm/BCM.hcd
-	 https://raw.githubusercontent.com/azkali/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.txt
+         https://raw.githubusercontent.com/azkali/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.txt
          https://raw.githubusercontent.com/azkali/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.bin"
 
 
 SLOT="0"
-KEYWORDS="~arm ~arm64"
+KEYWORDS="arm64"
 IUSE=""
 S="${WORKDIR}/"
 src_unpack() {
     mkdir -p ${S}
     for Z in ${A}
     do
-	cp ${DISTDIR}/${Z} ${S}
+    cp ${DISTDIR}/${Z} ${S}
     done
     cd ${S}
     ln BCM.hcd BCM4356A3.hcd

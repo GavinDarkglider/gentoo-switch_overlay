@@ -17,7 +17,7 @@ HOMEPAGE="https://github.com/NVIDIA/libglvnd"
 if [[ ${PV} = 9999* ]]; then
 	SRC_URI=""
 else
-	KEYWORDS="~amd64"
+	KEYWORDS="arm64"
 	SRC_URI="https://github.com/NVIDIA/${PN}/releases/download/v${PV}/${P}.tar.gz"
 fi
 

@@ -8,7 +8,7 @@ SLOT="32.2"
 CMSHIELD_VER="lineage-16.0"
 SWITCHROOT_VER="linux-rel32"
 
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 
 HOMEPAGE="https://gitlab.com/switchroot/
 	https://nv-tegra.nvidia.com/gitweb"

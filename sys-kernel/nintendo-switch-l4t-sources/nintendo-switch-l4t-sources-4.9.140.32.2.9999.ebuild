@@ -3,7 +3,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 
 GENTOO_PATCHES="
 1500_XATTR_USER_PREFIX.patch

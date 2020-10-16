@@ -3,10 +3,10 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="kernel-sources bluetooth +wifi X pulseaudio +reboot2hekate"
+IUSE="+kernel-sources bluetooth +wifi X pulseaudio +reboot2hekate"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"

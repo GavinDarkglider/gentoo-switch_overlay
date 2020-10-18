@@ -16,6 +16,9 @@ KEYWORDS="arm64 arm"
 
 IUSE="systemd"
 
+DEPEND="dev-libs/libevdev"
+RDEPEND="${DEPEND}"
+
 DISABLE_AUTOFORMATTING="yes"
 
 src_compile() {

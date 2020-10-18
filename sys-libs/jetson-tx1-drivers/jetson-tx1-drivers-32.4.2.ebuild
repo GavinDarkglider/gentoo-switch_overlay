@@ -14,8 +14,8 @@ RESTRICT="preserve-libs mirror"
 DEPEND=">=app-arch/bzip2-1.0.8"
 
 RDEPEND="
-	X? ( =x11-base/xorg-server-1.19.6 )
-	egl? ( media-libs/libglvnd )
+	X? ( =x11-base/xorg-server-1.19.6
+		egl? ( media-libs/libglvnd ) )
 	firmware? ( !sys-firmware/jetson-tx1-firmware )
 	gstreamer? ( media-libs/gst-plugins-base )
 	vulkan? ( media-libs/vulkan-loader )
@@ -38,11 +38,17 @@ src_unpack() {
 src_prepare() {
 	sed -i -e 's:^/usr/lib/:/usr/'"lib64"'/:' "${S}"/etc/ld.so.conf.d/nvidia-tegra.conf
 
-	if use egl
-	then
-		mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/*.so.? "${S}"/usr/lib/aarch64-linux-gnu/tegra/
-		mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json "${S}"/usr/lib/aarch64-linux-gnu/tegra/
+	if use X; then
+		if use egl; then
+			mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/*.so.? "${S}"/usr/lib/aarch64-linux-gnu/tegra/
+			mv "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json "${S}"/usr/lib/aarch64-linux-gnu/tegra/
+		fi
+	else
+		if use egl; then
+			ewarn "Ignoring USE=egl because USE=X is not set"
+		fi
 	fi
+
 	rm -rf "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl
 
 	use wayland   || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvidia-egl-wayland.so

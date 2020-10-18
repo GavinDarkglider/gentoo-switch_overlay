@@ -1,29 +1,26 @@
-EAPI=5
+EAPI=6
 
 inherit versionator
 
 DESCRIPTION="Nintendo Switch WIFI/Bluetooth Firmware"
 HOMEPAGE=""
 
-SRC_URI="https://github.com/azkali/Lakka-LibreELEC/raw/master/projects/Switch/firmwares/files/brcm/BCM.hcd
-         https://raw.githubusercontent.com/azkali/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.txt
-         https://raw.githubusercontent.com/azkali/Lakka-LibreELEC/master/projects/Switch/firmwares/files/brcm/brcmfmac4356-pcie.bin"
-
+SRC_URI="https://github.com/bell07/bashscripts-switch_gentoo/raw/master/distfiles/BCM4356A3.hcd
+         https://github.com/bell07/bashscripts-switch_gentoo/raw/master/distfiles/brcmfmac4356-pcie.txt
+         https://github.com/bell07/bashscripts-switch_gentoo/raw/master/distfiles/brcmfmac4356-pcie.bin"
 
 SLOT="0"
 KEYWORDS="arm64"
 IUSE=""
-S="${WORKDIR}/"
+
+S="${WORKDIR}"
 src_unpack() {
-    mkdir -p ${S}
-    for Z in ${A}
-    do
-    cp ${DISTDIR}/${Z} ${S}
-    done
-    cd ${S}
-    ln BCM.hcd BCM4356A3.hcd
+	einfo "Nothing to unpack"
 }
+
 src_install() {
-    mkdir -p "${D}/lib/firmware/brcm"
-    cp *  "${D}/lib/firmware/brcm" || die "Install failed!"
+    insinto lib/firmware/brcm
+    doins "${DISTDIR}"/BCM4356A3.hcd
+    doins "${DISTDIR}"/brcmfmac4356-pcie.txt
+    doins "${DISTDIR}"/brcmfmac4356-pcie.bin
 }

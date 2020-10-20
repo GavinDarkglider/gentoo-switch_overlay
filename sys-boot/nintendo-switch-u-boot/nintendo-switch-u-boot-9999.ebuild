@@ -1,5 +1,5 @@
 EAPI="6"
-KEYWORDS="arm64"
+KEYWORDS="~arm64"
 SLOT="0"
 
 HOMEPAGE="https://gitlab.com/switchroot/switch-uboot"

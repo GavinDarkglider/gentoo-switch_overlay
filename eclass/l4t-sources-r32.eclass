@@ -17,6 +17,8 @@ K_GENPATCHES_VER="189"
 SWITCHROOT_VER="linux-rel32"
 DTSTREE_VER="32.2"
 
+KV_APPEND="nintendo-switch-l4t"
+
 inherit kernel-2
 detect_version
 detect_arch
@@ -63,7 +65,7 @@ src_prepare() {
 }
 
 src_configure() {
-	EXTRAVERSION=".${DTSTREE_VER}-nintendo-switch-l4t"
+	EXTRAVERSION=".${DTSTREE_VER}-${KV_APPEND}"
 	einfo "Adjust extraversion to ${EXTRAVERSION}"
 	unpack_set_extraversion
 
@@ -75,6 +77,6 @@ src_configure() {
 src_install() {
 	kernel-2_src_install
 	dodir /usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"
-	mv "${D}"/usr/src/linux-l4t-"${PVR}"-nintendo "${D}"/usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"
-	dosym /usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"/linux-l4t-"${PVR}"-nintendo /usr/src/linux-l4t-"${PVR}"-nintendo
+	mv "${D}"/usr/src/linux-l4t-"${PVR}"-nintendo "${D}"/usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"/linux-"${PVR}"-"${KV_APPEND}"
+	dosym /usr/src/nintendo-switch-l4t-dtstree-"${DTSTREE_VER}"/linux-"${PVR}"-"${KV_APPEND}" /usr/src/linux-"${PVR}"-"${KV_APPEND}"
 }

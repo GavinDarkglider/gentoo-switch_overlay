@@ -18,3 +18,7 @@
 # bell07 2020-06-16 does not build
 # host/arch/arm/lib/crossystem_arch.c:294:36: error: ‘%s’ directive output may be truncated writing up to 255 bytes into a region of size 25 [-Werror=format-truncation=]
 =sys-boot/cbfstool-4.12
+
+# bell07 2020-10-26 mask the gentoo version in favor to overlay version
+# The portage version installs brcm/brcmfmac4356-pcie.bin that is provided by kernel for the switch
+sys-kernel/linux-firmware::gentoo

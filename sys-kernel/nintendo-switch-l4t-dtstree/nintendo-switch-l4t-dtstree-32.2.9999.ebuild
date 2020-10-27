@@ -73,7 +73,6 @@ src_prepare() {
 		ewarn "**** Be careful and do not break your device. Do it on your own risk-"
 		cd "${S}/hardware/nvidia/platform/t210/icosa"
 		eapply "${FILESDIR}/emmc_enable-${SLOT}.patch"
-		
 	fi
 	cd "${S}"
 	eapply_user

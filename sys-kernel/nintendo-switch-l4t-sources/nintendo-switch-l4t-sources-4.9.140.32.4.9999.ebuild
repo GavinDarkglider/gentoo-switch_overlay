@@ -15,8 +15,7 @@ GENTOO_PATCHES="
 4400_alpha-sysctl-uac.patch
 4567_distro-Gentoo-Kconfig.patch"
 
-inherit l4t-sources-r32
-
-DESCRIPTION="Nintendo Switch kernel sources - testing / rebase baranch"
+DTSTREE_VER="32.4"
 SWITCHROOT_VER="linux-rel32-rebase"
-KV_APPEND="nintendo-switch-l4t-rebase"
+
+inherit l4t-sources-r32

@@ -6,12 +6,14 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="+kernel-sources bluetooth +wifi X pulseaudio +reboot2hekate"
+IUSE="+bootstack +kernel-sources bluetooth +wifi X pulseaudio +reboot2hekate"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 
-RDEPEND+=" sys-boot/l4s-bootstack   " # Boot stack files
+RDEPEND+="bootstack? ("
+RDEPEND+="      sys-boot/l4s-bootstack   " # Bootstack files
+RDEPEND+=" || ( sys-boot/nintendo-switch-coreboot-bin sys-boot/nintendo-switch-coreboot ) ) " # Coreboot
 
 RDEPEND+=" kernel-sources? ("
 RDEPEND+="      sys-kernel/nintendo-switch-l4t-sources"                             # Working kernel

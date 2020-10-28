@@ -4,7 +4,7 @@ if ! [ -x "$(which -q cbfstool 2>/dev/null)" ]; then
 	exit 1
 fi
 
-if [ -z "$1" ] || [ "$1" == 'help' ] || [ "$1" == '--help' ] || [ "$1" == '-h' ]; then
+if if [ -z "$1" ] || [ "$1" == 'help' ] || [ "$1" == '--help' ] || [ "$1" == '-h' ]; then
 	echo "Inject u-boot.elf into coreboot.rom file"
 	echo "usage: update-coreboot.sh coreboot.rom u-boot.elf"
 	echo "if no u-boot.elf is provided the /usr/share/u-boot/u-boot.elf is used"
@@ -20,8 +20,8 @@ if ! [ -f "$COREBOOT" ]; then
 fi
 
 if ! [ -f "$UBOOT" ]; then
-        echo "$UBOOT is not a valid file"
-        exit 1
+	echo "$UBOOT is not a valid file"
+	exit 1
 fi
 
 # Update u-boot in coreboot

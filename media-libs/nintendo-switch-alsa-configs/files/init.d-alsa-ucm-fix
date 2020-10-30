@@ -1,0 +1,10 @@
+#!/sbin/openrc-run
+
+depend() {
+	need localmount
+	after bootmisc modules coldplug hotplug alsasound
+}
+
+start() {
+	amixer sset "I2S1 Mux",0 ADMAIF1
+}

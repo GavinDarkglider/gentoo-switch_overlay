@@ -24,7 +24,7 @@ src_install() {
     doins "${DISTDIR}"/asound.conf.tegrasndt210ref
 
     insinto /var/lib/alsa
-    doins ${FILESDIR}"/asound.state"
+    doins "${FILESDIR}"/asound.state
 
     insinto /usr/share/alsa/cards
     doins "${FILESDIR}"/tegra-hda.conf

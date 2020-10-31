@@ -35,7 +35,7 @@ sdcard-mount_check_status() {
 		die "invalid SDCARD_MOUNT_POINT"
 	fi
 
-	if [[ -n "$(awk '$2 == "'${MP}'"' < /etc/fstab)" ]]; then
+	if [[ -z "$(awk '$2 == "'${MP}'"' < /etc/fstab)" ]]; then
 		eerror "${MP} is not in /etc/fstab"
 		die "invalid SDCARD_MOUNT_POINT"
 	fi

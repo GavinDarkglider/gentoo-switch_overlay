@@ -17,11 +17,6 @@ DEPEND="dev-embedded/u-boot-tools
 		sys-apps/dtc
 		initramfs? ( app-arch/cpio )"
 
-src_unpack() {
-	git-r3_src_unpack
-	use initramfs && unpack "${S}"/src/initramfs_files.tar.gz
-}
-
 src_prepare() {
 	sed -i 's/ubuntu/gentoo/g' "${S}"/src/uboot-scripts/linux_boot.txt
 	sed -i 's/SWR-UBU/SWR-GEN/g' "${S}"/src/uboot-scripts/linux_boot.txt
@@ -44,7 +39,7 @@ src_compile() {
 	cp nfs.txt overlays/
 
 	if use initramfs; then
-		cd "${WORKDIR}"/initramfs_files
+		cd "${S}"/src/initramfs_files
 		einfo "create initramfs.cpio.gz"
 		find . | cpio -H newc -o | gzip -9 > "${WORKDIR}"/new_initramfs.cpio.gz
 		einfo "mkimage -A arm64 -O linux -T ramdisk -C gzip -d ${WORKDIR}/new_initramfs.cpio.gz ${WORKDIR}/initramfs"

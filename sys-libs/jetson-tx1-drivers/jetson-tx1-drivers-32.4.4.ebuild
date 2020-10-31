@@ -63,7 +63,7 @@ src_prepare() {
 	use wayland   || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvidia-egl-wayland.so
 	use wayland   || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvvulkan-producer.so
 	use vulkan    || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvvulkan-producer.so
-	use gstreamer || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvdsbufferpool.so.1.0.0
+	use gstreamer || rm "${S}"/usr/lib/aarch64-linux-gnu/tegra/libnvdsbufferpool.so*
 
 	eapply_user
 }

@@ -97,14 +97,19 @@ function set_audio() {
 	# $1 is mode
 	# $2 is pactl command
 	PACTL_COMMAND="$2"
+
 	case "$1" in
 		HDMI)
-			$PACTL_COMMAND set-card-profile 1 off
 			$PACTL_COMMAND set-card-profile 0 output:hdmi-stereo
+			$PACTL_COMMAND set-card-profile 1 off
 		;;
 		HANDHELD)
 			$PACTL_COMMAND set-card-profile 1 HiFi
 			$PACTL_COMMAND set-card-profile 0 off
+		;;
+		BOTH)
+			$PACTL_COMMAND set-card-profile 0 output:hdmi-stereo
+			$PACTL_COMMAND set-card-profile 1 HiFi
 		;;
 	esac
 }
@@ -121,13 +126,7 @@ function do_background() {
 		[[ -z "$XAUTHORITY" ]] && sleep 1 && continue
 		export XAUTHORITY
 
-		export PULSE_SERVER="$(get_pulse_server)"
-
-		if [[ "$(whoami)" == "$USER_NAME" ]]; then
-			PACTL_COMMAND="pactl"
-		else
-			PACTL_COMMAND="sudo -u "$USER_NAME" pactl"
-		fi
+		PULSE_SERVER="$(get_pulse_server)"
 
 		if [[ -n "$(xrandr | grep 'DP-0 connected')" ]]; then
 			VIDEO="$DOCKED_VIDEO"
@@ -138,9 +137,17 @@ function do_background() {
 		fi
 
 		logger "dock-script.sh: Set Video to $VIDEO"
+
 		# Connected mode
 		set_video "$VIDEO"
+
 		if [ -n "$PULSE_SERVER" ]; then
+			if [[ "$(whoami)" == "$USER_NAME" ]]; then
+				PACTL_COMMAND="pactl --server=$PULSE_SERVER"
+			else
+				PACTL_COMMAND="sudo -u "$USER_NAME" pactl --server=$PULSE_SERVER"
+			fi
+
 			set_audio "$AUDIO" "$PACTL_COMMAND"
 		fi
 

@@ -1,2 +1,2 @@
-ACTION=="change" KERNEL=="extcon1" RUN+="/usr/bin/dock-script.sh"
-ACTION=="add" KERNEL=="extcon1" RUN+="/usr/bin/dock-script.sh"
+ACTION=="change" KERNEL=="extcon0" RUN+="/usr/bin/dock-script.sh"
+ACTION=="add" KERNEL=="extcon0" RUN+="/usr/bin/dock-script.sh"

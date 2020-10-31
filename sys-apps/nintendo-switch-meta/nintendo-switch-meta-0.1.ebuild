@@ -6,7 +6,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="+bootstack +kernel-sources bluetooth +wifi X pulseaudio +reboot2hekate"
+IUSE="+bootstack elogind +kernel-sources bluetooth +wifi X pulseaudio +reboot2hekate"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -34,3 +34,5 @@ RDEPEND+=" pulseaudio? ( media-libs/nintendo-switch-alsa-configs"
 RDEPEND+="         X? ( || ( app-eselect/eselect-nintendo-switch-dock-handler x11-misc/nintendo-switch-dock-script ) ) )" # install if alsa and X is given
 
 RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )" # Install hekate to /lib/firmware/reboot_payload.bin
+
+RDEPEND+=" elogind? ( sys-libs/nintendo-switch-sleep )" # Sleep fixes for elogind sleep

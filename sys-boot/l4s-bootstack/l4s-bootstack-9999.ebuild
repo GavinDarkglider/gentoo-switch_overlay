@@ -41,6 +41,15 @@ src_compile() {
 	if use initramfs; then
 		cd "${S}"/src/initramfs_files
 		einfo "create initramfs.cpio.gz"
+
+		# Empty folders not handled by source git
+		mkdir dev
+		mkdir mnt
+		mkdir proc
+		mkdir sys
+		mkdir tmp
+		mkdir var
+
 		find . | cpio -H newc -o | gzip -9 > "${WORKDIR}"/new_initramfs.cpio.gz
 		einfo "mkimage -A arm64 -O linux -T ramdisk -C gzip -d ${WORKDIR}/new_initramfs.cpio.gz ${WORKDIR}/initramfs"
 		mkimage -A arm64 -O linux -T ramdisk -C gzip -d "${WORKDIR}"/new_initramfs.cpio.gz "${WORKDIR}"/initramfs

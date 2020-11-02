@@ -11,7 +11,7 @@ DESCRIPTION="Coreboot for Nintendo Switch"
 inherit multiprocessing git-r3 sdcard-mount
 
 EGIT_REPO_URI="https://gitlab.com/switchroot/bootstack/switch-coreboot"
-EGIT_BRANCH="switch-proper-vpr"
+EGIT_BRANCH="switch"
 
 IUSE="cbfstool"
 

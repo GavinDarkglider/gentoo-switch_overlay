@@ -21,4 +21,4 @@
 
 # bell07 2020-10-26 mask the gentoo version in favor to overlay version
 # The portage version installs brcm/brcmfmac4356-pcie.bin that is provided by kernel for the switch
->sys-kernel/linux-firmware-20201022-r4
+>sys-kernel/linux-firmware-20201218-r1

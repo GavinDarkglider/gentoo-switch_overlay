@@ -27,7 +27,7 @@ src_compile() {
 	mkimage -A arm -T script -O linux -d "${S}"/linux_boot.txt "${S}"/boot.scr
 
 	einfo "extract ini file creation from build.sh and create L4T-gentoo.ini"
-	fgrep -A 9999 'Create hekate_ini in bootloader directory' build.sh > build-ini.sh
+	fgrep -A 9999 'Create hekate_ini in bootloader directory' build.sh | grep -B 9999 '"${out}/bootloader/ini/L4T-${DISTRO}.ini"' > build-ini.sh
 	mkdir -p bootloader/ini
 	out=. DISTRO=gentoo sh build-ini.sh
 }

@@ -12,8 +12,7 @@ EGIT_BRANCH="linux-norebase"
 EGIT_CHECKOUT_DIR="${S}"
 
 
-DEPEND="dev-lang/swig
-	sys-apps/dtc"
+DEPEND="dev-lang/swig"
 
 PATCHES=(
     "${FILESDIR}/gentoo_path.patch"

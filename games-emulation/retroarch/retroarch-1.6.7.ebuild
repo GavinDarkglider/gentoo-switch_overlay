@@ -5,7 +5,7 @@
 
 EAPI=6
 
-PYTHON_COMPAT=( python{3_4,3_5,3_6} )
+PYTHON_COMPAT=( python{3_6,3_7} )
 
 LIBRETRO_COMMIT_SHA="8e8bdaaab3dc4686ce39e59da922f79a76ba4496"
 LIBRETRO_REPO_NAME="libretro/RetroArch"

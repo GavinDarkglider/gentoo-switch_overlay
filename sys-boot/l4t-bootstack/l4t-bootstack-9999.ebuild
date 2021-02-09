@@ -17,7 +17,7 @@ DEPEND="dev-embedded/u-boot-tools
 
 src_prepare() {
 	einfo "Patch files to gentoo specific settings"
-	sed -i 's/L4T-bionic.ini/L4T-gentoo.ini/g' "${S}"/linux_boot.txt
+	sed -i 's/^setenv distro .*$/setenv distro gentoo/g' "${S}"/linux_boot.txt
 	sed -i 's/runlevel=2/runlevel=3/g' "${S}"/build.sh
 	eapply_user
 }
@@ -26,16 +26,20 @@ src_compile() {
 	einfo "mkimage -A arm -T script -O linux -d ${S}/linux_boot.txt ${S}/boot.scr"
 	mkimage -A arm -T script -O linux -d "${S}"/linux_boot.txt "${S}"/boot.scr
 
-	einfo "extract ini file creation from build.sh and create L4T-gentoo.ini"
-	fgrep -A 9999 'Create hekate_ini in bootloader directory' build.sh | grep -B 9999 '"${out}/bootloader/ini/L4T-${DISTRO}.ini"' > build-ini.sh
-	mkdir -p bootloader/ini
-	out=. DISTRO=gentoo sh build-ini.sh
+	einfo "extract ini file creation from build.sh and create uenv.txt"
+	fgrep -A 9999 'uenv() {' build.sh | grep -B 9999 '^}$' -m1 | sed 's:"${out}/switchroot/${DISTRO}/uenv.txt":uenv.txt:g' > build-uenv.sh
+	. build-uenv.sh
+	export DISTRO=gentoo
+	uenv
 }
 
 src_install() {
 	insinto "${SDCARD_DESTDIR}"/switchroot/gentoo
-	doins boot.scr
+	doins "${S}"/boot.scr
+	doins "${S}"/uenv.txt
+	doins "${S}"/Hekate-Icons/gentoo/icon_gentoo_hue.bmp
+	doins "${S}"/Hekate-Icons/gentoo/icon_gentoo.bmp
 
 	insinto "${SDCARD_DESTDIR}"/bootloader/ini
-	doins bootloader/ini/L4T-gentoo.ini
+	doins "${FILESDIR}"/L4T-gentoo.ini
 }

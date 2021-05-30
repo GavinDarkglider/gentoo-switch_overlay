@@ -1,0 +1,2 @@
+# Cuda requires this gcc-version
+>sys-devel/gcc-8.4.0-r1

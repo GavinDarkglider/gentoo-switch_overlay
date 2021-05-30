@@ -4,7 +4,6 @@
 >media-libs/mesa-19.2.1
 >media-libs/libglvnd-1.2.0
 >x11-drivers/xf86-input-libinput-0.28.2
->sys-devel/gcc-8.4.0-r1
 
 #makes life easier with alsa reversion
 >dev-java/icedtea-bin-3.13.0

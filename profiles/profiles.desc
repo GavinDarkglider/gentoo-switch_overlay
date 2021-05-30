@@ -5,3 +5,9 @@ arm64 nintendo_switch/17.0/desktop/plasma/systemd exp
 arm64 nintendo_switch/17.0/desktop/systemd exp
 arm64 nintendo_switch/17.0/desktop/gnome exp
 arm64 nintendo_switch/17.0/desktop/gnome/systemd exp
+arm64 nintendo_switch/17.0/desktop/cuda exp
+arm64 nintendo_switch/17.0/desktop/cuda/plasma exp
+arm64 nintendo_switch/17.0/desktop/cuda/plasma/systemd exp
+arm64 nintendo_switch/17.0/desktop/cuda/systemd exp
+arm64 nintendo_switch/17.0/desktop/cuda/gnome exp
+arm64 nintendo_switch/17.0/desktop/cuda/gnome/systemd exp

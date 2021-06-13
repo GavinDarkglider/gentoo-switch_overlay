@@ -12,12 +12,10 @@ HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 
 RDEPEND+="bootstack? ("
-RDEPEND+="      sys-boot/l4t-bootstack sys-boot/l4t-initramfs  " # Bootstack files
+RDEPEND+="      sys-boot/l4t-bootstack sys-boot/l4t-initramfs" # Bootstack files
 RDEPEND+=" || ( sys-boot/nintendo-switch-coreboot-bin sys-boot/nintendo-switch-coreboot ) ) " # Coreboot
 
-RDEPEND+=" kernel-sources? ("
-RDEPEND+="      sys-kernel/nintendo-switch-l4t-sources"                             # Working kernel
-RDEPEND+="      sys-firmware/nintendo-switch-firmware sys-kernel/linux-firmware )"  # Required firmware
+RDEPEND+=" kernel-sources? sys-kernel/nintendo-switch-l4t-sources"
 
 RDEPEND+=" bluetooth? ( net-wireless/bluez )"                    # Bluetooth
 

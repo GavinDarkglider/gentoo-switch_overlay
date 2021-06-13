@@ -6,7 +6,7 @@ DESCRIPTION="NVIDIA Jetson TX1 Accelerated Graphics Driver"
 HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
 MY_P="Tegra210_Linux_R${PV}"
 
-SRC_URI="https://developer.nvidia.com/embedded/L4T/r32_Release_v4.3/t210ref_release_aarch64/Tegra210_Linux_R32.4.3_aarch64.tbz2"
+SRC_URI="https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_release_aarch64/Tegra210_Linux_R32.3.1_aarch64.tbz2"
 
 SLOT="0"
 KEYWORDS="-* arm64"
@@ -16,7 +16,7 @@ RESTRICT="preserve-libs mirror"
 DEPEND=">=app-arch/bzip2-1.0.8"
 
 RDEPEND="
-	X? ( =x11-base/xorg-server-1.19.6
+	X? ( x11-base/xorg-server
 		egl? ( media-libs/libglvnd ) )
 	firmware? ( !sys-firmware/jetson-tx1-firmware )
 	gstreamer? ( media-libs/gst-plugins-base )
@@ -30,12 +30,6 @@ QA_TEXTRELS_arm64="usr/lib64/tegra/libnvidia-eglcore.so.${PV}
 	usr/lib64/tegra/libGL.so.1"
 
 S="${WORKDIR}/Linux_for_Tegra/nv_tegra"
-
-#pkg_nofetch() {
-#	einfo " Please download the {PV} version of Drivers package for Jetson Nano, Nano 2GB and TX1"
-#	einfo " - Tegra210_Linux_R{PV}_aarch64.tbz2"
-#	einfo "from ${HOMEPAGE} and place them in your DISTDIR directory."
-#}
 
 src_unpack() {
 	unpack "${A}"

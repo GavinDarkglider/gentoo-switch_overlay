@@ -76,7 +76,10 @@ src_unpack() {
 
 src_prepare() {
 	eapply "${FILESDIR}"/unify-kernel.patch
-	eapply "${FILESDIR}"/"331_gcc-10.patch"
+	eapply "${FILESDIR}"/331_gcc-10.patch
+	eapply "${FILESDIR}"/d97aaee81dc4b82595dc90ccb6a29bb0de3669d4.patch
+	eapply "${FILESDIR}"/50dec8298041f5b25d4df112e6108056a7e34526.patch
+	eapply "${FILESDIR}"/ac1447bfc5b10ab2a449551da507bcaeec9cfb68.patch
 	eapply_user
 }
 	

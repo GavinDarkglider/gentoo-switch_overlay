@@ -1,4 +1,1 @@
-# required to unpack sys-firmware/jetson-tx1-firmware
-=app-arch/bzip2-1.0.8-r1 ~arm64
-
 =dev-embedded/u-boot-tools-2020.04-r2 ~arm64

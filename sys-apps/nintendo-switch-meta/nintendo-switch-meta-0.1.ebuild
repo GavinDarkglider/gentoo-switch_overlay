@@ -15,7 +15,7 @@ RDEPEND+="bootstack? ("
 RDEPEND+="      sys-boot/l4t-bootstack sys-boot/l4t-initramfs" # Bootstack files
 RDEPEND+=" || ( sys-boot/nintendo-switch-coreboot-bin sys-boot/nintendo-switch-coreboot ) ) " # Coreboot
 
-RDEPEND+=" kernel-sources? sys-kernel/nintendo-switch-l4t-sources"
+RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 
 RDEPEND+=" bluetooth? ( net-wireless/bluez )"                    # Bluetooth
 

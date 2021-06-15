@@ -8,14 +8,15 @@ DESCRIPTION='"Das U-Boot" Source Tree for the Switch'
 inherit git-r3
 
 EGIT_REPO_URI="https://gitlab.com/switchroot/switch-uboot"
-EGIT_BRANCH="linux-norebase"
+EGIT_BRANCH="android"
 EGIT_CHECKOUT_DIR="${S}"
 
 
 DEPEND="dev-lang/swig"
 
 PATCHES=(
-    "${FILESDIR}/gentoo_path.patch"
+    "${FILESDIR}"/android_gentoo_path.patch
+    "${FILESDIR}"/extra_15_mb.patch
 )
 
 src_configure() {

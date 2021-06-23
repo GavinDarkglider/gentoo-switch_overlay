@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-KEYWORDS="~arm64"
+KEYWORDS="" #Does not build anymore :-(
 SLOT="0"
 
 HOMEPAGE="https://gitlab.com/switchroot/bootstack/switch-coreboot"
@@ -11,13 +11,13 @@ DESCRIPTION="Coreboot for Nintendo Switch"
 inherit multiprocessing git-r3 sdcard-mount
 
 EGIT_REPO_URI="https://gitlab.com/switchroot/bootstack/switch-coreboot"
-EGIT_BRANCH="switch"
+EGIT_BRANCH="switch-linux"
 
 IUSE="cbfstool"
 
 DEPEND="sys-boot/nintendo-switch-u-boot
 	cbfstool? ( !sys-boot/cbfstool )
-	!sys-boot/nintendo-switch-coreboot-bin"
+	!sys-boot/switchroot-bootstack"
 
 #### Cut from util/crossgcc/buildgcc
 # GCC toolchain version numbers

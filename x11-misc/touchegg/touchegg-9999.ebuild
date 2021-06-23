@@ -1,37 +1,62 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-inherit git-r3 qmake-utils
+inherit cmake
 
-DESCRIPTION="Linux multitouch gesture recognizer"
+DESCRIPTION="Linux multi-touch gesture recognizer"
 HOMEPAGE="https://github.com/JoseExposito/touchegg"
 
-EGIT_REPO_URI="https://github.com/manashmandal/touchegg.git"
+if [[ "${PV}" == 9999 ]] ; then
+	inherit git-r3
+	EGIT_REPO_URI="https://github.com/JoseExposito/touchegg.git"
+else
+	SRC_URI="https://github.com/JoseExposito/${PN}/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz"
+fi
 
-LICENSE="GPL-2"
+LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~amd64"
-IUSE=""
+KEYWORDS="~arm64"
+IUSE="+gtk systemd"
+RESTRICT="primaryuri"
 
 RDEPEND="
-    dev-qt/qtcore:5
-	dev-qt/qtgui:5
-	dev-qt/qtx11extras:5
+	dev-libs/libinput
+	dev-libs/pugixml
+	x11-libs/cairo
+	x11-libs/libX11
 	x11-libs/libXtst
-	x11-libs/geis
+	x11-libs/libXrandr
+	x11-libs/libXi
+	dev-libs/glib:2
+	gtk? ( x11-libs/gtk+:3 )
+	virtual/libudev
+	systemd? ( sys-apps/systemd )
 "
+
 DEPEND="${RDEPEND}"
 
+DOCS=( "README.md" )
+
 src_configure() {
-	eqmake5 ${PN}.pro
+	local mycmakeargs=(
+		-DAUTO_COLORS="$(usex gtk)"
+	)
+
+	cmake_src_configure
 }
 
 src_install() {
-	emake DESTDIR="${D}" INSTALL_ROOT="${D}" install
-	einstalldocs
+	default
 
-	insinto /etc/xdg/autostart
-	doins "${FILESDIR}"/touchegg.desktop
+	cmake_src_install
+
+	newinitd "${FILESDIR}"/touchegg.initd touchegg
+}
+
+pkg_postinst() {
+	elog "On update run: 'systemctl daemon-reload && systemctl restart touchegg'"
+	elog "See https://github.com/JoseExposito/touchegg#configuration for more information."
+	elog "For manual config, copy '/usr/share/${PN}/${PN}.conf' to '~/.config/${PN}'"
 }

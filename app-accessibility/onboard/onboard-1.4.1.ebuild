@@ -14,7 +14,7 @@ SRC_URI="https://launchpad.net/${PN}/$(get_version_component_range 1-2)/${PV}/+d
 # po/* are licensed under BSD 3-clause
 LICENSE="GPL-3+ BSD"
 SLOT="0"
-KEYWORDS="arm arm64"
+KEYWORDS="arm64"
 
 COMMON_DEPEND="app-text/hunspell:=
 	dev-libs/dbus-glib

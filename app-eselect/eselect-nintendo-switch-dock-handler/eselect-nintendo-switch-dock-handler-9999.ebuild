@@ -3,7 +3,7 @@ EAPI=7
 inherit git-r3
 
 DESCRIPTION="Eselect module for Nintendo Switch Dock Profiles"
-HOMEPAGE=""
+HOMEPAGE="https://github.com/GavinDarkglider/eselect-dockhandler"
 
 EGIT_REPO_URI="https://github.com/GavinDarkglider/eselect-dockhandler"
 

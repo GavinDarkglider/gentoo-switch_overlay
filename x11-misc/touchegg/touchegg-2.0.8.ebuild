@@ -17,7 +17,7 @@ fi
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 IUSE="+gtk systemd"
 RESTRICT="primaryuri"
 

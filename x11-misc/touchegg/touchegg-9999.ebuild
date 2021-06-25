@@ -17,7 +17,7 @@ fi
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 IUSE="+gtk systemd"
 RESTRICT="primaryuri"
 
@@ -42,6 +42,7 @@ DOCS=( "README.md" )
 src_configure() {
 	local mycmakeargs=(
 		-DAUTO_COLORS="$(usex gtk)"
+		-DUSE_SYSTEMD="$(usex systemd)"
 	)
 
 	cmake_src_configure

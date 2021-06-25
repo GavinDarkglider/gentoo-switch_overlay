@@ -7,8 +7,6 @@ ETYPE="sources"
 SWITCHROOT_VER="linux-3.3.1"
 NVIDIA_VER="l4t/l4t-r32.3.1"
 
-DEPEND="sys-apps/dtc"
-
 inherit kernel-2 git-r3
 detect_version
 detect_arch
@@ -17,12 +15,12 @@ KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
 IUSE=""
 
-EXTRAVERSION="l4t-switchroot"
+EXTRAVERSION="-l4t-gentoo"
 
 DESCRIPTION="Nintendo Switch kernel sources"
 SRC_URI="${GENPATCHES_URI} ${ARCH_URI}"
 
-S="${WORKDIR}"/linux-"${PVR}"-"${EXTRAVERSION}"
+S="${WORKDIR}"/linux-"${PVR}""${EXTRAVERSION}"
 
 src_unpack() {
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"

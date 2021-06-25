@@ -1,37 +1,49 @@
 # Copyright 1999-2020 Alexander Weber
-# Copyright 1999-2020 Gavin_Darkglider
+# Copyright 1999-2021 Gavin_Darkglider / Alexander Weber
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="+bootstack elogind +kernel-sources bluetooth +wifi X pulseaudio +reboot2hekate"
+IUSE="bootstack bluetooth dock-script dracut elogind kernel-sources kernel-bin pulseaudio reboot2hekate wifi X"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 
-RDEPEND+="bootstack? ("
-RDEPEND+="      sys-boot/nintendo-switch-dracut-config"
-RDEPEND+="      sys-boot/l4t-bootstack" # Bootstack files
-RDEPEND+=" || ( sys-boot/nintendo-switch-coreboot-bin sys-boot/nintendo-switch-coreboot ) ) " # Coreboot
+# Mandatory
+RDEPEND+=" sys-libs/jetson-tx1-drivers[X=]"
+RDEPEND+=" media-libs/joycond"
 
+# Prebuilt switchroot bootstack files (coreboot and other SD files)
+RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"
+
+# Bluetooth stack
+RDEPEND+=" bluetooth? ( net-wireless/bluez )"
+
+# Script to manage dock / undock
+RDEPEND+=" dock-script? ( || ( x11-misc/nintendo-switch-dock-script app-eselect/eselect-nintendo-switch-dock-handler ) )"
+
+# dracut configuration to generate initramfs
+RDEPEND+=" dracut? ( sys-boot/nintendo-switch-dracut-config )"
+
+# Sleep fixes for elogind sleep
+RDEPEND+=" elogind? ( sys-libs/nintendo-switch-sleep )"
+
+# Switch kernel sources, merged with nvidia source
 RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 
-RDEPEND+=" bluetooth? ( net-wireless/bluez )"                    # Bluetooth
+# Compile and install the kernel
+RDEPEND+=" kernel-bin? ( sys-kernel/nintendo-switch-l4t-kernel )"
 
-RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant )" # Wifi
+# Additional settings to audio server
+RDEPEND+=" pulseaudio? ( media-libs/nintendo-switch-alsa-configs )"
 
-RDEPEND+=" X? ( x11-base/xorg-x11"                               # Xorg server
-RDEPEND+="      x11-base/nintendo-switch-x11-configuration"      # xorg.conf
-RDEPEND+="      app-accessibility/onboard )"                     # Onscreen virtual keyboard
-RDEPEND+=" sys-libs/jetson-tx1-drivers[X=]"                      # Jetson Nano drivers
+# Install hekate to /lib/firmware/reboot_payload.bin
+RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"
 
-RDEPEND+="  media-libs/joycond"  # hid-joycon
+# Basic wifi manager
+RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant )"
 
-RDEPEND+=" pulseaudio? ( media-libs/nintendo-switch-alsa-configs"
-RDEPEND+="         X? ( || ( app-eselect/eselect-nintendo-switch-dock-handler x11-misc/nintendo-switch-dock-script ) ) )" # install if alsa and X is given
-
-RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )" # Install hekate to /lib/firmware/reboot_payload.bin
-
-RDEPEND+=" elogind? ( sys-libs/nintendo-switch-sleep )" # Sleep fixes for elogind sleep
+# Xorg server with configuration and onscreen virtual keyboard
+RDEPEND+=" X? ( x11-base/xorg-x11 x11-base/nintendo-switch-x11-configuration app-accessibility/onboard )"

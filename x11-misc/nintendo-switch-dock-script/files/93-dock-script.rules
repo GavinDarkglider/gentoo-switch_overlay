@@ -1,2 +1,9 @@
-ACTION=="change" KERNEL=="extcon0" RUN+="/usr/bin/dock-script.sh"
-ACTION=="add" KERNEL=="extcon0" RUN+="/usr/bin/dock-script.sh"
+SUBSYSTEM!="switch", GOTO="dp_end"
+KERNEL!="dp", GOTO="dp_end"
+
+ATTRS{state}=="1", TEST=="/proc/asound/tegrahda", RUN+="/bin/ln -sf /etc/asound.conf.tegrahda /etc/asound.conf"
+ATTRS{state}=="1", TEST=="/usr/bin/dock-hotplug", RUN+="/usr/bin/dock-script.sh"
+ATTRS{state}=="0", TEST=="/usr/bin/dock-hotplug", RUN+="/usr/bin/dock-script.sh"
+ATTRS{state}=="0", TEST=="/proc/asound/tegrasndt210ref", RUN+="/bin/ln -sf /etc/asound.conf.tegrasndt210ref /etc/asound.conf"
+
+LABEL="dp_end"

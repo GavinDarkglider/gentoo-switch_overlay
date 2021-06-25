@@ -138,7 +138,6 @@ function do_background() {
 
 		logger "dock-script.sh: Set Video to $VIDEO"
 
-		# Connected mode
 		set_video "$VIDEO"
 
 		if [ -n "$PULSE_SERVER" ]; then

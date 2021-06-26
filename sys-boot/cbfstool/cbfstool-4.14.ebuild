@@ -1,5 +1,5 @@
 EAPI=6
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 SLOT="0"
 
 HOMEPAGE="https://www.coreboot.org/CBFS"

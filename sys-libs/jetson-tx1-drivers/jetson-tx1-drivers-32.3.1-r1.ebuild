@@ -47,7 +47,7 @@ src_prepare() {
 	# All files in /usr/lib/aarch64-linux-gnu are installed bellow. excepting the deleted at this place
 	cd "${S}"/usr/lib/aarch64-linux-gnu/tegra
 
-	use cuda      || rm libcuda*so* libnvbufsurftransform.so* libnvofsdk.so* libnvscf.so*
+	use cuda      || rm libcuda*so* libnvbufsurftransform.so* libnvofsdk.so* libnvscf.so* libnvargus.so* libnvcameratools.so* libnveglstreamproducer.so*
 	use gstreamer || rm libnvdsbufferpool.so*
 	use wayland   || rm libnvidia-egl-wayland.so* libnvvulkan-producer.so*
 	use v4l       || rm lib*v4l*so* libnvodm_imager.so*
@@ -175,6 +175,7 @@ src_install() {
 	if use X; then
 		my_do_lib_recursive usr/lib/xorg /usr/lib64/xorg
 		dosym /usr/lib64/tegra /usr/lib64/opengl/nvidia/lib
+		insinto /etc/X11/xorg.conf.d && newins etc/X11/xorg.conf 30-jetson-tx1-drivers.conf
 	fi
 }
 

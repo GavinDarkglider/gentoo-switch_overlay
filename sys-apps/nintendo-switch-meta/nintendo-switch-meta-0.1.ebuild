@@ -6,7 +6,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="bootstack bluetooth dock-script dracut elogind kernel-sources kernel-bin pulseaudio reboot2hekate wifi X"
+IUSE="bootstack bluetooth dock-script dracut elogind kernel-sources kernel-bin alsa reboot2hekate wifi X"
 HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -37,7 +37,7 @@ RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 RDEPEND+=" kernel-bin? ( sys-kernel/nintendo-switch-l4t-kernel )"
 
 # Additional settings to audio server
-RDEPEND+=" pulseaudio? ( media-libs/nintendo-switch-alsa-configs )"
+RDEPEND+=" alsa? ( || ( media-libs/nintendo-switch-alsa-configs sys-libs/switch-l4t-configs[alsa] ) )"
 
 # Install hekate to /lib/firmware/reboot_payload.bin
 RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"
@@ -46,4 +46,4 @@ RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"
 RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant )"
 
 # Xorg server with configuration and onscreen virtual keyboard
-RDEPEND+=" X? ( x11-base/xorg-x11 x11-base/nintendo-switch-x11-configuration app-accessibility/onboard )"
+RDEPEND+=" X? ( x11-base/xorg-x11 app-accessibility/onboard || ( x11-base/nintendo-switch-x11-configuration sys-libs/switch-l4t-configs[X] ) )"

@@ -104,15 +104,25 @@ pkg_postinst() {
 	kernel-install_pkg_postinst
 	if [[ -z ${ROOT} ]]; then
 		local ver="${PVR}${KV_LOCALVERSION}"
-		mv "vmlinuz-${ver}" "vmlinuz-${ver}".gz
-		gunzip "vmlinuz-${ver}".gz
+
+		#extract the kernel
+		mv "${EROOT}/boot/vmlinuz-${ver}" "${EROOT}/boot/vmlinuz-${ver}".gz
+		gunzip "${EROOT}/boot/vmlinuz-${ver}".gz
+
+		# create symlinks if not exists
 		[[ -e "${EROOT}/boot/Image" ]] || ln -v -s "vmlinuz-${ver}" "${EROOT}/boot/Image"
 		[[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]] || ln -v -s "tegra210-icosa-${ver}".dtb "${EROOT}/boot/tegra210-icosa.dtb"
 		if use initramfs; then
+			# pack initramfs to u-boot image
 			local inst_path=/usr/src/linux-${ver}/arch/arm64/boot
 			einfo "Generate u-boot image ${inst_path}/initramfs from generated ${inst_path}/initrd"
 			mkimage -A arm64 -O linux -T ramdisk -C gzip -d "${EROOT}${inst_path}/initrd" "${EROOT}${inst_path}/initramfs"
 			cp "${EROOT}${inst_path}/initramfs" "${EROOT}/boot/initramfs-${ver}"
+
+			# remove initramfs.img, installed by framework
+			rm "${EROOT}/boot/initramfs-${ver}".img
+
+			# create initramfs symlink if not exists
 			[[ -e "${EROOT}/boot/initramfs" ]] || ln -v -s "initramfs-${ver}" "${EROOT}/boot/initramfs"
 		fi
 	fi

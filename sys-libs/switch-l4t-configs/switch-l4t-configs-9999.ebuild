@@ -41,6 +41,9 @@ src_install() {
 	if use X; then
 		insinto /etc/X11/xorg.conf.d
 		doins switch-xorg-conf/*.conf
+
+		insinto /lib/udev/rules.d
+		doins switch-touch-rules/99-switch-touchscreen.rules
 	fi
 
 	if [[ -n "${MY_CONFIG_PROTECT}" ]] ; then

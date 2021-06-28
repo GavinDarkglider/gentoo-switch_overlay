@@ -1,0 +1,31 @@
+--- libretro-common/glsym/glgen.py
++++ libretro-common/glsym/glgen.py
+@@ -57,7 +57,7 @@
+    syms = []
+    for line in lines:
+       m = re.search(r'^typedef.+PFN(\S+)PROC.+$', line)
+-      g = re.search(r'^.+(gl\S+)\W*\(.+\).*$', line)
++      g = re.search(r'^.+\s(gl\S+)\W*\(.+\).*$', line)
+       if m and noext(m.group(1)):
+          typedefs.append(m.group(0).replace('PFN', 'RGLSYM').replace('GLDEBUGPROC', 'RGLGENGLDEBUGPROC'))
+       if g and noext(g.group(1)):
+@@ -74,7 +74,7 @@
+    return ['RGLSYM' + x.upper() + 'PROC ' + '__rglgen_' + x + ';' for x in gl_syms]
+ 
+ def generate_macros(gl_syms):
+-   return ['    SYM(' + x.replace('gl', '') + '),' for x in gl_syms]
++   return ['    SYM(' + x.replace('gl', '', 1) + '),' for x in gl_syms]
+ 
+ def dump(f, lines):
+    f.write('\n'.join(lines))
+--- main.cpp
++++ main.cpp
+@@ -4,7 +4,7 @@
+ #include <string.h>
+ #include <math.h>
+ 
+-#include <glsym/glsym.h>
++#include <glsym/rglgen.h>
+ #include <libretro.h>
+ #include <file/file_path.h>
+ 

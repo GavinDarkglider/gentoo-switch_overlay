@@ -1,4 +1,4 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="Caprice32 libretro core"
 HOMEPAGE="https://github.com/libretro/libretro-cap32"
-KEYWORDS="=arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="GPL-2"
 SLOT="0"

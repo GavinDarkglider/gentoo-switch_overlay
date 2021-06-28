@@ -1,4 +1,4 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of redream. (SEGA Dreamcast)"
 HOMEPAGE="https://github.com/libretro/retrodream"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -20,9 +20,7 @@ DEPEND=""
 RDEPEND="${DEPEND}
 		games-emulation/libretro-info"
 
-PATCHES=(
-   "${FILESDIR}/redream-libretro-Makefile.patch"
-)
+PATCHES=("${FILESDIR}/redream-libretro-Makefile.patch")
 
 src_prepare() {
 	libretro-core_src_prepare
@@ -47,12 +45,6 @@ src_compile() {
 	emake CC=$(tc-getCC) CXX=$(tc-getCXX) \
 		"${myemakeargs[@]}" \
 		-f deps/libretro/Makefile
-}
-
-pkg_preinst() {
-	if ! has_version "=${CATEGORY}/${PN}-${PVR}"; then
-		first_install="1"
-	fi
 }
 
 pkg_postinst() {

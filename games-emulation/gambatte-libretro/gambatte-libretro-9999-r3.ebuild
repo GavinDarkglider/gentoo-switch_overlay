@@ -6,9 +6,9 @@ EAPI=7
 LIBRETRO_REPO_NAME="libretro/gambatte-libretro"
 inherit libretro-core
 
-DESCRIPTION="libretro implementation of Gambatte. (Game Boy/Game Boy Color)"
+DESCRIPTION="Libretro implementation of Gambatte. (Game Boy/Game Boy Color)"
 HOMEPAGE="https://github.com/libretro/gambatte-libretro"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="GPL-2"
 SLOT="0"

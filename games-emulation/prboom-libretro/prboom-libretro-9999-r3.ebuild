@@ -1,4 +1,4 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of PrBoom. (Doom)"
 HOMEPAGE="https://github.com/libretro/libretro-prboom"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -21,12 +21,6 @@ src_install() {
 	insinto "${LIBRETRO_DATA_DIR}"/prboom_libretro/
 	doins "${S}"/prboom.wad
 	libretro-core_src_install
-}
-
-pkg_preinst() {
-	if ! has_version "=${CATEGORY}/${PN}-${PVR}"; then
-		first_install="1"
-	fi
 }
 
 pkg_postinst() {

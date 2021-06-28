@@ -5,6 +5,6 @@
 		<email>menelkir@itroll.org</email>
 		<name>Daniel Menelkir</name>
 	</maintainer>
-	<longdescription lang="en">Atari 8-bit computer and Atari 5200 libretro core
+	<longdescription lang="en">Free and portable Atari 8-bit computer and 5200 console emulator
 	</longdescription>
 </pkgmetadata>

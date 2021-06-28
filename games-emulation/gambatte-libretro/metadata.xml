@@ -5,6 +5,6 @@
 		<email>menelkir@itroll.org</email>
 		<name>Daniel Menelkir</name>
 	</maintainer>
-	<longdescription lang="en">libretro implementation of Gambatte. (Game Boy/Game Boy Color)
+	<longdescription lang="en">Libretro implementation of Gambatte. (Game Boy/Game Boy Color)
 	</longdescription>
 </pkgmetadata>

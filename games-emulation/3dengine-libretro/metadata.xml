@@ -5,6 +5,6 @@
 		<email>menelkir@itroll.org</email>
 		<name>Daniel Menelkir</name>
 	</maintainer>
-	<longdescription lang="en">3D Engine for libretro GL with additional features (camera/location/etc). Should be compatible from libretro 3D/GLES 2.0 and up.
+	<longdescription lang="en">3D Engine for libretro GL with additional features
 	</longdescription>
 </pkgmetadata>

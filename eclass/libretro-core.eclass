@@ -12,13 +12,7 @@
 # The libretro eclass is designed to streamline the construction of
 # ebuilds for low-level Libretro core ebuilds.
 
-# Workaround for ppsspp
-if [[ ${PV} == 9999 ]] || [[ ${PN} == "ppsspp-libretro" ]] || [[ ${PN} == "psp1-libretro" ]] || [[ ${PN} == "citra-libretro" ]]; then
-	inherit flag-o-matic git-r3 libretro
-else
-	inherit flag-o-matic libretro
-fi
-
+inherit flag-o-matic libretro
 
 IUSE+="custom-cflags debug"
 
@@ -55,28 +49,10 @@ libretro-core_src_unpack() {
 			LIBRETRO_CORE_LIB_FILE+=( "${S}/${i}"_libretro.so )
 		done
 
-	# If this is a live ebuild, retrieve this core's remote repository.
-	# Workaround for ppsspp
-	if [[ ${PV} == "9999" ]] || [[ ${PN} == "ppsspp-libretro" ]] || [[ ${PN} == "psp1-libretro" ]] || [[ ${PN} == "citra-libretro" ]]; then
-		git-r3_src_unpack
-		if [[ ${PN} == "ppsspp-libretro" ]]; then
-			# Add ppsspp-libretro specific version information
-			CUSTOM_LIBRETRO_COMMIT_SHA=$(git -C "${EGIT3_STORE_DIR}/${LIBRETRO_REPO_NAME//\//_}.git" describe --always)
-		else
-			# Add used commit SHA for version information, the above could also work. Needs proper testing with all cores
-			LIBRETRO_COMMIT_SHA=$(git -C "${EGIT3_STORE_DIR}/${LIBRETRO_REPO_NAME//\//_}.git" rev-parse HEAD)
-		fi
-		# Workaround for broken submodule
-		# Needs EGIT_SUBMODULES=("*" "-externals/fmt" "-externals/xbyak")
-		if [[ ${PN} == "citra-libretro" ]]; then
-			for i in fmt xbyak; do
-				cp -a "${S}/externals/$i" "${S}/externals/dynarmic/externals/" || die
-			done
-		fi
-	# Else, unpack this core's local tarball.
-	else
+		# Add used commit SHA for version information, the above could also work. Needs proper testing with all cores
+		LIBRETRO_COMMIT_SHA=$(git -C "${EGIT3_STORE_DIR}/${LIBRETRO_REPO_NAME//\//_}.git" rev-parse HEAD)
+
 		default_src_unpack
-fi
 }
 
 # @FUNCTION: libretro-core_src_prepare
@@ -147,7 +123,7 @@ libretro-core_src_compile() {
 # This function installs the shared library for this Libretro core.
 libretro-core_src_install() {
 	# Absolute path of the directory containing Libretro shared libraries.
-    LIBRETRO_LIB_DIR="${EROOT%/}/usr/$(get_libdir)/libretro"
+	LIBRETRO_LIB_DIR="${EROOT%/}/usr/$(get_libdir)/libretro"
 	# If this core's shared library exists, install that.
 	for i in "${LIBRETRO_CORE_LIB_FILE[@]}"
 	do
@@ -167,3 +143,4 @@ libretro-core_src_install() {
 		fi
 	done
 }
+

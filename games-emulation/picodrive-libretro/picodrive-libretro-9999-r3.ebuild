@@ -1,4 +1,4 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -10,7 +10,7 @@ inherit libretro-core
 DESCRIPTION="libretro implementation of PicoDrive. \
 (Sega GameGear/Sega CD/32X)"
 HOMEPAGE="https://github.com/libretro/picodrive"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="PD"
 SLOT="0"
@@ -28,12 +28,6 @@ src_install() {
 	insinto "${LIBRETRO_DATA_DIR}"/picodrive_libretro
 	doins "${S}"/COPYING
 	libretro-core_src_install
-}
-
-pkg_preinst() {
-	if ! has_version "=${CATEGORY}/${PN}-${PVR}"; then
-		first_install="1"
-	fi
 }
 
 pkg_postinst() {

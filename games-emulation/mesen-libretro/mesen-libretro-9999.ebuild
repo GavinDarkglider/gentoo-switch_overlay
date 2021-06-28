@@ -1,4 +1,4 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -7,9 +7,9 @@ LIBRETRO_REPO_NAME="SourMesen/Mesen"
 
 inherit libretro-core
 
-DESCRIPTION="libretro implementation of Mesen. (Nintendo Entertainment System)"
+DESCRIPTION="Libretro implementation of Mesen. (Nintendo Entertainment System)"
 HOMEPAGE="https://github.com/SourMesen/Mesen"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="GPL-3"
 SLOT="0"

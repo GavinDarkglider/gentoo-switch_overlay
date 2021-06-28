@@ -1,0 +1,12 @@
+diff -ruN mame2015-libretro.orig/Makefile mame2015-libretro/Makefile
+--- mame2015-libretro.orig/Makefile	2021-02-02 09:45:39.575343315 -0300
++++ mame2015-libretro/Makefile	2021-02-02 09:46:01.202010862 -0300
+@@ -515,7 +515,7 @@
+ MD = -mkdir$(EXE_EXT)
+ RM = @rm -f
+ OBJDUMP = @objdump
+-PYTHON ?= @python2
++PYTHON ?= @python
+ 
+ #-------------------------------------------------
+ # form the name of the executable

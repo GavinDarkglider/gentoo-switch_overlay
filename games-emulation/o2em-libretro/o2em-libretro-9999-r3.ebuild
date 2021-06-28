@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Port of O2EM to the libretro API, an Odyssey 2 / VideoPac emulator. "
 HOMEPAGE="https://github.com/libretro/libretro-o2em"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -17,9 +17,3 @@ SLOT="0"
 DEPEND=""
 RDEPEND="${DEPEND}
 		games-emulation/libretro-info"
-
-pkg_preinst() {
-	if ! has_version "=${CATEGORY}/${PN}-${PVR}"; then
-		first_install="1"
-	fi
-}

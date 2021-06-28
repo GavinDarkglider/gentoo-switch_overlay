@@ -1,4 +1,4 @@
-# Copyright 2020 Gentoo Authors
+# Copyright 2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro port of X Millennium Sharp X1 emulator"
 HOMEPAGE="https://github.com/libretro/xmil-libretro"
-KEYWORDS="~arm64"
+KEYWORDS="~arm64 ~x86"
 
 LICENSE="BSD-3"
 SLOT="0"

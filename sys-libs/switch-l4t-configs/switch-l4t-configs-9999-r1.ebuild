@@ -19,6 +19,8 @@ IUSE="alsa +brcm X"
 DEPEND="alsa? ( !media-libs/nintendo-switch-alsa-configs )
 	X? ( !x11-base/nintendo-switch-x11-configuration )"
 
+RDEPEND="alsa? ( media-sound/alsa-utils )" # to load asound.state
+
 src_install() {
 	# Alsa
 	if use alsa; then
@@ -26,8 +28,9 @@ src_install() {
 		insinto /var/lib/alsa
 		doins switch-alsa-ucm2/asound.state
 
-		insinto /usr/share/alsa/ucm/tegra-snd-t210ref-mobile-rt565x
+		insinto /usr/share/alsa/ucm2/tegra-snd-t210r
 		doins switch-alsa-ucm2/HiFi
+		doins switch-alsa-ucm2/HiFi.conf
 		doins switch-alsa-ucm2/tegra-snd-t210ref-mobile-rt565x.conf
 	fi
 	
@@ -46,6 +49,7 @@ src_install() {
 		doins switch-touch-rules/99-switch-touchscreen.rules
 	fi
 
+	# Write config protect environment setting
 	if [[ -n "${MY_CONFIG_PROTECT}" ]] ; then
 		dodir /etc/env.d
 		echo "CONFIG_PROTECT=\"${MY_CONFIG_PROTECT}\"" > "${ED}"/etc/env.d/99${PN} || die

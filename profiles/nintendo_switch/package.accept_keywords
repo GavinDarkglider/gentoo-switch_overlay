@@ -1,3 +1,5 @@
+=app-accessibility/onboard-1.4.1 ~arm64
+
 =dev-embedded/u-boot-tools-2021.04_rc2 ~arm64
 
 <x11-misc/touchegg-9999 ~arm64

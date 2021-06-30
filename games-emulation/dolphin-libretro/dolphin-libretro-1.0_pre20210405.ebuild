@@ -21,6 +21,7 @@ RDEPEND="
 	dev-libs/libfmt=
 	dev-libs/lzo=
 	dev-libs/pugixml
+	dev-qt/qtconcurrent
 	media-libs/libpng
 	media-libs/libsfml
 	media-libs/mesa[egl]

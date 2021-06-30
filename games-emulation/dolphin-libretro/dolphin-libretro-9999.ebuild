@@ -20,6 +20,7 @@ RDEPEND="
 	dev-libs/libfmt:0=
 	dev-libs/lzo:2=
 	dev-libs/pugixml:0=
+	dev-qt/qtconcurrent
 	media-libs/libpng:0=
 	media-libs/libsfml
 	media-libs/mesa[egl]

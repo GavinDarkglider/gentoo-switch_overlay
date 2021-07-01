@@ -65,6 +65,14 @@ RDEPEND="
 	opengl? ( virtual/opengl )
 	ozone? ( games-emulation/retroarch-assets[ozone] )
 	pulseaudio? ( media-sound/pulseaudio )
+	qt5? (
+		dev-qt/qtconcurrent:5
+		dev-qt/qtcore:5
+		dev-qt/qtgui:5
+		dev-qt/qtnetwork:5
+		dev-qt/qtwebengine:5
+		dev-qt/qtwidgets:5
+	)
 	rgui? ( games-emulation/retroarch-assets[rgui] )
 	sdl? ( media-libs/libsdl )
 	sdl2? ( media-libs/libsdl2 )

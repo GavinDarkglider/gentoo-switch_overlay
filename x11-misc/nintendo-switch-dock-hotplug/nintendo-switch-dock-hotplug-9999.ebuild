@@ -3,33 +3,35 @@
 
 EAPI=7
 DESCRIPTION="Nintendo Switch dock handler script"
-HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
+HOMEPAGE="https://gitlab.com/bell07/switch-dock-hotplug"
 
-SRC_URI=""
-LICENSE="GPL-2"
+inherit git-r3
+
+EGIT_REPO_URI="https://gitlab.com/bell07/switch-dock-hotplug"
+EGIT_BRANCH="master"
+
+LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="arm64"
 
 RDEPEND="!app-eselect/eselect-nintendo-switch-dock-handler
          app-admin/sudo"
 
-S="${WORKDIR}"
-
 src_install() {
-	dobin "${FILESDIR}"/dock-script.sh
+	dobin dock-hotplug
 
 	insinto /lib/udev/rules.d
-	doins "${FILESDIR}"/93-dock-script.rules
+	doins 93-dock-hotplug.rules
 
 	insinto /etc
-	doins "${FILESDIR}"/dock-script.env
+	doins dock-hotplug.env
 
 	insinto /etc/xdg/autostart
-	doins "${FILESDIR}"/dock-script.desktop
+	doins dock-hotplug.desktop
 }
 
 pkg_postinst() {
 	elog "To get right setting in lightdm on logout please set"
-	elog "    display-setup-script=/usr/bin/dock-script.sh"
+	elog "    display-setup-script=/usr/bin/dock-hotplug"
 	elog "to the /etc/lightdm/lightdm.conf"
 }

@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Call dock script to override screen layout settings
-Exec=dock-script.sh -delay 1
-Terminal=false

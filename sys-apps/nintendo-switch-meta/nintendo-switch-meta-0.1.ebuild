@@ -22,7 +22,7 @@ RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"
 RDEPEND+=" bluetooth? ( net-wireless/bluez )"
 
 # Script to manage dock / undock
-RDEPEND+=" dock-script? ( || ( x11-misc/nintendo-switch-dock-script app-eselect/eselect-nintendo-switch-dock-handler ) )"
+RDEPEND+=" dock-script? ( || ( x11-misc/nintendo-switch-dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler ) )"
 
 # dracut configuration to generate initramfs
 RDEPEND+=" dracut? ( sys-boot/nintendo-switch-dracut-config )"

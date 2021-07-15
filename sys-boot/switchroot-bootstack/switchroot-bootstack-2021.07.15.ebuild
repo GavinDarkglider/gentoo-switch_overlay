@@ -1,5 +1,5 @@
 EAPI=7
-KEYWORDS="arm64"
+KEYWORDS="*"
 SLOT="0"
 
 HOMEPAGE="https://gitlab.com/switchroot/bootstack/bootstack-build-scripts"

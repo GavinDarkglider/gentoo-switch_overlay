@@ -9,7 +9,8 @@ inherit sdcard-mount
 
 SRC_URI="https://github.com/bell07/bashscripts-switch_gentoo/blob/master/distfiles/switchroot-gentoo-boot-${PV//[.]/-}.7z?raw=true -> switchroot-gentoo-boot-${PV//[.]/-}.7z"
 
-DEPEND="!sys-boot/l4s-bootstack"
+DEPEND="!sys-boot/l4s-bootstack
+	app-arch/p7zip"
 
 S="${WORKDIR}"
 

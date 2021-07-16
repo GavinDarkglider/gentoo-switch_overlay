@@ -1,5 +1,5 @@
 EAPI=7
-KEYWORDS="**"
+KEYWORDS="arm64"
 SLOT="0"
 
 HOMEPAGE="https://gitlab.com/switchroot/bootstack/bootstack-build-scripts"
@@ -13,6 +13,21 @@ DEPEND="!sys-boot/l4s-bootstack
 	app-arch/p7zip"
 
 S="${WORKDIR}"
+
+src_prepare() {
+	einfo "Patch files to gentoo specific settings"
+	cat >> "${S}"/switchroot/gentoo/uenv.txt << EOF
+
+# Read kernel files from /boot of partition 2
+distro_bootpart=2
+boot_dir=/boot
+
+# Enable and rotate device framebuffer
+hdmi_fbconsole=0
+bootargs_extra=fbcon=rotate:3
+EOF
+	eapply_user
+}
 
 src_install() {
 	insinto "${SDCARD_DESTDIR}"

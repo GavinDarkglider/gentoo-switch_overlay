@@ -9,13 +9,23 @@ inherit sdcard-mount
 
 SRC_URI="https://github.com/bell07/bashscripts-switch_gentoo/blob/master/distfiles/switchroot-gentoo-boot-${PV//[.]/-}.7z?raw=true -> switchroot-gentoo-boot-${PV//[.]/-}.7z"
 
-DEPEND="!sys-boot/l4s-bootstack"
+DEPEND="!sys-boot/l4s-bootstack
+	app-arch/p7zip"
 
 S="${WORKDIR}"
 
 src_prepare() {
 	einfo "Patch files to gentoo specific settings"
-	sed -i 's/runlevel=2/runlevel=3/g' "${S}"/switchroot/gentoo/uenv.txt
+	cat >> "${S}"/switchroot/gentoo/uenv.txt << EOF
+
+# Read kernel files from /boot of partition 2
+distro_bootpart=2
+boot_dir=/boot
+
+# Enable and rotate device framebuffer
+hdmi_fbconsole=0
+bootargs_extra=fbcon=rotate:3
+EOF
 	eapply_user
 }
 

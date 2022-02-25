@@ -2,10 +2,6 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="person">
-		<email>wjn@aol.jp</email>
+		<email>jazzvoid@gmail.com</email>
 	</maintainer>
-	<upstream>
-		<remote-id type="launchpad">onboard</remote-id>
-	</upstream>
 </pkgmetadata>
-

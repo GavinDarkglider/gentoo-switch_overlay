@@ -1,20 +1,22 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-PYTHON_COMPAT=( python3_{6,7,8,9} )
+PYTHON_COMPAT=( python3_{8,9} )
 
-inherit distutils-r1 gnome2-utils versionator
+inherit distutils-r1 gnome2-utils
 
-DESCRIPTION="Onscreen keyboard for everybody who can't use a hardware keyboard"
+DESCRIPTION="An onscreen keyboard useful for tablet PC users and for mobility impaired users"
 HOMEPAGE="https://launchpad.net/onboard"
-SRC_URI="https://launchpad.net/${PN}/$(get_version_component_range 1-2)/${PV}/+download/${P}.tar.gz"
+SRC_URI="https://github.com/linuxdeepin/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 # po/* are licensed under BSD 3-clause
 LICENSE="GPL-3+ BSD"
 SLOT="0"
-	KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ~mips ppc ppc64 ~riscv ~s390 sparc x86"
+KEYWORDS="~arm64 ~x86"
+
+DISTUTILS_USE_SETUPTOOLS="no"
 
 COMMON_DEPEND="app-text/hunspell:=
 	dev-libs/dbus-glib
@@ -44,11 +46,6 @@ RDEPEND="${COMMON_DEPEND}
 
 RESTRICT="mirror"
 
-# These are using a functionality of distutils-r1.eclass
-DOCS=( AUTHORS CHANGELOG HACKING NEWS README onboard-defaults.conf.example
-	onboard-default-settings.gschema.override.example )
-PATCHES=( "${FILESDIR}/${P}-remove-duplicated-docs.patch" )
-
 src_prepare() {
 	distutils-r1_src_prepare
 	eapply_user
@@ -56,9 +53,6 @@ src_prepare() {
 
 src_install() {
 	distutils-r1_src_install
-
-	# Delete duplicated docs installed by original dustutils
-	rm "${D}"/usr/share/doc/onboard/*
 }
 
 pkg_preinst() {
@@ -69,9 +63,11 @@ pkg_preinst() {
 pkg_postinst() {
 	gnome2_icon_cache_update
 	gnome2_schemas_update
+	xdg_desktop_database_update
 }
 
 pkg_postrm() {
 	gnome2_icon_cache_update
 	gnome2_schemas_update
+	xdg_desktop_database_update
 }

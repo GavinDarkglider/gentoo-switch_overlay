@@ -13,7 +13,7 @@ DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 
 # Mandatory
 RDEPEND+=" sys-libs/jetson-tx1-drivers[X=]"
-RDEPEND+=" media-libs/joycond"
+RDEPEND+=" games-util/joycond"
 
 # Prebuilt switchroot bootstack files (coreboot and other SD files)
 RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"

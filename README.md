@@ -84,7 +84,7 @@ The package have the next USE flags for enabeling/disabeling things:
 | reboot2hekate | sys-boot/reboot2hekate-bin | Install hekate as /lib/firmware/reboot_payload.bin to reboot back into hekate
 | wifi | net-misc/dhcpcd net-wireless/wpa_supplicant | Nothing special, just basic software for wifi
 | X | x11-base/xorg-x11, app-accessibility/onboard and x11-base/nintendo-switch-x11-configuration (outdated) or sys-libs/switch-l4t-configs[X] | Install all required for X-Server, including config and onscreen keyboard "onboard"
-| | sys-libs/jetson-tx1-drivers and media-libs/joycond | The both packages (driver and joycon management) are pushed unconditionally
+| | sys-libs/jetson-tx1-drivers and games-util/joycond | The both packages (driver and joycon management) are pushed unconditionally
 
 ## Updating packages
 Version ebuilds will be updated automatically in the usual manner of installed packages.

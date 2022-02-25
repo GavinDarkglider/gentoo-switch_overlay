@@ -1,3 +1,6 @@
 =dev-embedded/u-boot-tools-2021.07 ~arm64
 
 <x11-misc/touchegg-9999 ~arm64
+
+# in portage ebuild arm64 is not set
+games-util/joycond **

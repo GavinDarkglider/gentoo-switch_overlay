@@ -20,7 +20,7 @@ IUSE="2048 3dengine 81 atari800 bk blastem bluemsx bnes boom3 bsnes bsnes-mercur
 	thepowdertoy tyrquake uzem vba-next vbam vecx vemulator vice-x128 vice-x64 vice-x64sc vice-xcbm2 vice-xcbm5x0 \
 	vice-xpet vice-xplus4 vice-xscpu64 vice-xvic virtualjaguar vitaquake2 vitaquake3 x1 xrick yabause"
 
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64"
 
 RDEPEND="2048? ( games-emulation/libretro-twentyfortyeight )
 	3dengine? ( games-emulation/3dengine-libretro )

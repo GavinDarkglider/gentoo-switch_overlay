@@ -40,6 +40,16 @@ EXPORT_FUNCTIONS src_unpack src_prepare src_compile src_install
 #
 # This function retrieves the remote Libretro core info files.
 libretro-core_src_unpack() {
+	# If this is a live ebuild, retrieve this core's remote repository.
+	if [[ ${PV} = 9999 ]]; then
+		git-r3_src_unpack
+		# Add used commit SHA for version information, the above could also work. Needs proper testing with all cores
+		LIBRETRO_COMMIT_SHA=$(git -C "${EGIT3_STORE_DIR}/${LIBRETRO_REPO_NAME//\//_}.git" rev-parse HEAD)
+	# Else, unpack this core's local tarball.
+	else
+		default_src_unpack
+	fi
+
 	# Absolute path of this Libretro core's shared library, deferred until the
 	# child ebuild has had the opportunity to redefine ${LIBRETRO_CORE_NAME}
 	[[ -n "${LIBRETRO_CORE_LIB_FILE}" ]] ||
@@ -49,10 +59,6 @@ libretro-core_src_unpack() {
 			LIBRETRO_CORE_LIB_FILE+=( "${S}/${i}"_libretro.so )
 		done
 
-		# Add used commit SHA for version information, the above could also work. Needs proper testing with all cores
-		LIBRETRO_COMMIT_SHA=$(git -C "${EGIT3_STORE_DIR}/${LIBRETRO_REPO_NAME//\//_}.git" rev-parse HEAD)
-
-		default_src_unpack
 }
 
 # @FUNCTION: libretro-core_src_prepare

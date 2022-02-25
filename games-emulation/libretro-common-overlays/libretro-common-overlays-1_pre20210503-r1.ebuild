@@ -18,7 +18,7 @@ else
 
 	SRC_URI="https://github.com/libretro/common-overlays/archive/${LIBRETRO_COMMIT_SHA}.tar.gz -> ${P}.tar.gz"
 
-	KEYWORDS="~arm64 ~x86"
+	KEYWORDS="~amd64 ~x86 ~arm64"
 fi
 
 LICENSE="GPL-3"

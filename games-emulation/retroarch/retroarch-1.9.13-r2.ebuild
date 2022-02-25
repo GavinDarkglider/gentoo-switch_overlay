@@ -18,7 +18,7 @@ KEYWORDS="~arm64 ~x86"
 
 IUSE="alsa cg cpu_flags_x86_sse dbus egl ffmpeg flac freetype gles gles3 kms
 	libcaca libusb materialui miniupnpc openal +opengl opengl_core +ozone
-	parport plain_drm pulseaudio qt5 rgui sdl +sdl2 sixel subtitles ssl stripes
+	parport plain_drm pulseaudio qt5 raspberry-pi rgui sdl +sdl2 sixel subtitles ssl stripes
 	systemd tinyalsa udev vulkan X xrandr xmb xv wayland +zlib"
 
 MENU_REQUIRED_USE="|| ( gles opengl vulkan )"
@@ -47,14 +47,17 @@ RDEPEND="
 	games-emulation/libretro-info
 	games-emulation/retroarch-assets
 
+	!raspberry-pi? ( media-libs/mesa[egl(+)] )
+	raspberry-pi? (
+		|| ( media-libs/raspberrypi-userland media-libs/raspberrypi-userland-bin media-libs/mesa[egl(+),gles2,video_cards_vc4] )
+		)
+
 	alsa? ( media-libs/alsa-lib )
 	cg? ( media-gfx/nvidia-cg-toolkit )
-	gles? ( media-libs/mesa:0=[gles2] )
 	ffmpeg? ( media-video/ffmpeg )
 	flac? ( media-libs/flac )
 	freetype? ( media-libs/freetype )
 	kms? (
-		media-libs/mesa:0=[gbm]
 		x11-libs/libdrm
 	)
 	libcaca? ( media-libs/libcaca )

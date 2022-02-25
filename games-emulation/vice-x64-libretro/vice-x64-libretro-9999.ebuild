@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="Versatile Commodore 8-bit Emulator as a libretro core"
 HOMEPAGE="https://github.com/libretro/vice-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

@@ -10,7 +10,7 @@ inherit git-r3 libretro-core cmake
 
 DESCRIPTION="A Gamecube/Wii emulator core for libretro"
 HOMEPAGE="https://github.com/libretro/dolphin"
-KEYWORDS="~arm64"
+KEYWORDS="~amd64 ~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -23,7 +23,7 @@ RDEPEND="
 	dev-qt/qtconcurrent
 	media-libs/libpng:0=
 	media-libs/libsfml
-	media-libs/mesa[egl]
+	media-libs/mesa
 	net-libs/enet:1.3
 	net-libs/mbedtls:0=
 	net-misc/curl:0=

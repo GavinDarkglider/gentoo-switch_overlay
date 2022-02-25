@@ -1,0 +1,22 @@
+From da81274eb93d17aaeddf893d34110a59ef3da492 Mon Sep 17 00:00:00 2001
+From: Flyinghead <raphael.jean@gmail.com>
+Date: Thu, 23 Dec 2021 22:30:44 +0100
+Subject: [PATCH] lr: gl stencil param isn't obsolete but required
+
+Issue #454
+---
+ shell/libretro/libretro.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/shell/libretro/libretro.cpp b/shell/libretro/libretro.cpp
+index 35e177d21..398b1959b 100644
+--- a/shell/libretro/libretro.cpp
++++ b/shell/libretro/libretro.cpp
+@@ -1574,6 +1574,7 @@ static bool set_opengl_hw_render(u32 preferred)
+ 	params.context_reset         = context_reset;
+ 	params.context_destroy       = context_destroy;
+ 	params.environ_cb            = environ_cb;
++	params.stencil               = true;
+ 	params.imm_vbo_draw          = NULL;
+ 	params.imm_vbo_disable       = NULL;
+ #if defined(__APPLE__) && defined(HAVE_OPENGL)

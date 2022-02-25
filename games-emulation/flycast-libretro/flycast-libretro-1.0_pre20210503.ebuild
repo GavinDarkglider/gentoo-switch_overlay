@@ -6,7 +6,7 @@ EAPI=7
 LIBRETRO_REPO_NAME="libretro/flycast"
 LIBRETRO_COMMIT_SHA="d05a2e45ae197b23da5f066fae12ca6ecdbb95e6"
 
-inherit libretro-core toolchain-funcs
+inherit libretro-core toolchain-funcs multiprocessing
 
 DESCRIPTION="Multiplatform Sega Dreamcast emulator"
 HOMEPAGE="https://github.com/libretro/flycast"

@@ -17,7 +17,7 @@ if [[ ${PV} == *9999 ]]; then
 else
 	inherit vcs-snapshot
 	SRC_URI="https://github.com/${LIBRETRO_REPO_NAME}/archive/${LIBRETRO_COMMIT_SHA}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="~amd64 ~x86 ~arm64"
 fi
 
 LICENSE="CC-BY-4.0"

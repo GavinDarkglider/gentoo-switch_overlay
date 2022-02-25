@@ -14,11 +14,11 @@ SRC_URI="https://github.com/libretro/${MY_PN}/archive/v${PV}.tar.gz -> ${P}.tar.
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64"
 
-IUSE="alsa cg cpu_flags_x86_sse dbus egl ffmpeg flac freetype gles gles3 kms
-	libcaca libusb materialui miniupnpc openal +opengl opengl_core +ozone
-	parport plain_drm pulseaudio qt5 rgui sdl +sdl2 sixel subtitles ssl stripes
+IUSE="alsa cg cpu_flags_x86_sse dbus egl ffmpeg flac freetype gamemode gles gles3 kms
+	libcaca libusb materialui openal +opengl opengl_core +ozone
+	parport plain_drm pulseaudio qt5 raspberry-pi rgui sdl +sdl2 sixel subtitles ssl stripes
 	systemd tinyalsa udev vulkan X xrandr xmb xv wayland +zlib"
 
 MENU_REQUIRED_USE="|| ( gles opengl vulkan )"
@@ -47,20 +47,23 @@ RDEPEND="
 	games-emulation/libretro-info
 	games-emulation/retroarch-assets
 
+	!raspberry-pi? ( media-libs/mesa[egl(+)] )
+	raspberry-pi? (
+		|| ( media-libs/raspberrypi-userland media-libs/raspberrypi-userland-bin media-libs/mesa[egl(+),gles2,video_cards_vc4] )
+		)
+
 	alsa? ( media-libs/alsa-lib )
 	cg? ( media-gfx/nvidia-cg-toolkit )
-	gles? ( media-libs/mesa:0=[gles2] )
 	ffmpeg? ( media-video/ffmpeg )
 	flac? ( media-libs/flac )
 	freetype? ( media-libs/freetype )
+	gamemode? ( games-util/gamemode )
 	kms? (
-		media-libs/mesa:0=[gbm]
 		x11-libs/libdrm
 	)
 	libcaca? ( media-libs/libcaca )
 	libusb? ( virtual/libusb:= )
 	materialui? ( games-emulation/retroarch-assets[materialui] )
-	miniupnpc? ( net-libs/miniupnpc )
 	openal? ( media-libs/openal )
 	opengl? ( virtual/opengl )
 	ozone? ( games-emulation/retroarch-assets[ozone] )
@@ -140,7 +143,6 @@ src_configure() {
 		--disable-audioio \
 		--disable-builtinflac \
 		--disable-builtinmbedtls \
-		--disable-builtinminiupnpc \
 		--disable-builtinzlib \
 		--disable-coreaudio \
 		--disable-jack \
@@ -163,7 +165,6 @@ src_configure() {
 		$(use_enable libcaca caca) \
 		$(use_enable libusb) \
 		$(use_enable materialui) \
-		$(use_enable miniupnpc) \
 		$(use_enable openal al) \
 		$(use_enable opengl) \
 		$(use_enable opengl_core) \

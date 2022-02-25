@@ -8,7 +8,7 @@ inherit libretro git-r3
 DESCRIPTION="Repository containing cheatcode files, content data files, etc."
 HOMEPAGE="https://github.com/libretro/libretro-database"
 EGIT_REPO_URI="https://github.com/libretro/libretro-database"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64"
 
 LICENSE="MIT"
 SLOT="0"

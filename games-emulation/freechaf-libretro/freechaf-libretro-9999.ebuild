@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro emulation core for the Fairchild ChannelF / Video Entertainment System"
 HOMEPAGE="https://github.com/libretro/FreeChaF"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~amd64 ~x86 ~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

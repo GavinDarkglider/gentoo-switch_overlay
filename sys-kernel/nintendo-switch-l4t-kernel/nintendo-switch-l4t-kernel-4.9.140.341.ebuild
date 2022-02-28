@@ -3,10 +3,10 @@
 
 EAPI="7"
 
-SWITCHROOT_VER="linux-3.4.0"
+SWITCHROOT_VER="linux-3.4.1-dev"
 NVIDIA_VER="l4t/l4t-r32.5"
 
-EXTRAVERSION=".340-l4t-gentoo-dist"
+EXTRAVERSION=".341-l4t-gentoo-dist"
 KV_LOCALVERSION="-l4t-gentoo-dist"
 
 inherit kernel-build git-r3
@@ -27,34 +27,31 @@ S="${WORKDIR}"/linux-"${PVR}"
 
 src_unpack() {
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
-	EGIT_COMMIT="${SWITCHROOT_VER}"
+	EGIT_BRANCH="${SWITCHROOT_VER}"
 	EGIT_CHECKOUT_DIR="${S}"
 	git-r3_src_unpack
 	rm -Rf "${S}"/.git*
 	
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-nvidia"
-	EGIT_COMMIT="${SWITCHROOT_VER}"
+	EGIT_BRANCH="${SWITCHROOT_VER}"
 	EGIT_CHECKOUT_DIR="${S}/nvidia"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-nvgpu/"
-	EGIT_BRANCH="${SWITCHROOT_VER}-r32.5"
-	unset EGIT_COMMIT
+	EGIT_BRANCH="linux-3.4.0-r32.5"
 	EGIT_CHECKOUT_DIR="${S}/nvidia/nvgpu"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch"
-	EGIT_COMMIT="${SWITCHROOT_VER}"
-	unset EGIT_BRANCH
+	EGIT_BRANCH="${SWITCHROOT_VER}"
 	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/icosa"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-soc-tegra"
 	EGIT_BRANCH="${NVIDIA_VER}"
-	unset EGIT_COMMIT
 	EGIT_CHECKOUT_DIR="${S}/nvidia/soc/tegra"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
@@ -95,6 +92,7 @@ src_prepare() {
 src_compile() {
 	# Workaround: /usr/bin/ld: unrecognized option '-Wl,-O1'
 	export LDFLAGS=""
+	export KCFLAGS="-Wno-error=stringop-overread" # GCC-11 support
 	kernel-build_src_compile
 }
 
@@ -102,21 +100,25 @@ src_install() {
 	kernel-build_src_install
 	cd "${WORKDIR}"/build
 	insinto "/boot"
-	newins arch/arm64/boot/dts/tegra210-icosa.dtb tegra210-icosa-"${PVR}${KV_LOCALVERSION}".dtb
+	newins arch/arm64/boot/dts/tegra210-icosa.dtb tegra210-icosa-"${PV}${KV_LOCALVERSION}".dtb
 }
 
 pkg_postinst() {
 	kernel-install_pkg_postinst
 	if [[ -z ${ROOT} ]]; then
-		local ver="${PVR}${KV_LOCALVERSION}"
+		local ver="${PV}${KV_LOCALVERSION}"
 
 		#extract the kernel
 		mv "${EROOT}/boot/vmlinuz-${ver}" "${EROOT}/boot/vmlinuz-${ver}".gz
 		gunzip "${EROOT}/boot/vmlinuz-${ver}".gz
 
-		# create symlinks if not exists
-		[[ -e "${EROOT}/boot/Image" ]] || ln -v -s "vmlinuz-${ver}" "${EROOT}/boot/Image"
-		[[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]] || ln -v -s "tegra210-icosa-${ver}".dtb "${EROOT}/boot/tegra210-icosa.dtb"
+		# create or update symlinks
+		[[ -e "${EROOT}/boot/Image" ]] && mv -v "${EROOT}/boot/Image" "${EROOT}/boot/Image.old"
+		[[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]] && mv -v "${EROOT}/boot/tegra210-icosa.dtb" "${EROOT}/boot/tegra210-icosa.dtb.old"
+
+		ln -v -s "vmlinuz-${ver}" "${EROOT}/boot/Image"
+		ln -v -s "tegra210-icosa-${ver}.dtb" "${EROOT}/boot/tegra210-icosa.dtb"
+
 		if use initramfs; then
 			# pack initramfs to u-boot image
 			local inst_path=/usr/src/linux-${ver}/arch/arm64/boot

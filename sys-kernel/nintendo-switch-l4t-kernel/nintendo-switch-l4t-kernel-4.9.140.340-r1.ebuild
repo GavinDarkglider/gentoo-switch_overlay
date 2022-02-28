@@ -115,9 +115,13 @@ pkg_postinst() {
 		mv "${EROOT}/boot/vmlinuz-${ver}" "${EROOT}/boot/vmlinuz-${ver}".gz
 		gunzip "${EROOT}/boot/vmlinuz-${ver}".gz
 
-		# create symlinks if not exists
-		[[ -e "${EROOT}/boot/Image" ]] || ln -v -s "vmlinuz-${ver}" "${EROOT}/boot/Image"
-		[[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]] || ln -v -s "tegra210-icosa-${ver}".dtb "${EROOT}/boot/tegra210-icosa.dtb"
+		# create or update symlinks
+		[[ -e "${EROOT}/boot/Image" ]] && mv -v "${EROOT}/boot/Image" "${EROOT}/boot/Image.old"
+		[[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]] && mv -v "${EROOT}/boot/tegra210-icosa.dtb" "${EROOT}/boot/tegra210-icosa.dtb.old"
+
+		ln -v -s "vmlinuz-${ver}" "${EROOT}/boot/Image"
+		ln -v -s "tegra210-icosa-${ver}.dtb" "${EROOT}/boot/tegra210-icosa.dtb"
+
 		if use initramfs; then
 			# pack initramfs to u-boot image
 			local inst_path=/usr/src/linux-${ver}/arch/arm64/boot

@@ -112,11 +112,19 @@ pkg_postinst() {
 		mv "${EROOT}/boot/vmlinuz-${ver}" "${EROOT}/boot/vmlinuz-${ver}".gz
 		gunzip "${EROOT}/boot/vmlinuz-${ver}".gz
 
-		# create or update symlinks
-		[[ -e "${EROOT}/boot/Image" ]] && mv -v "${EROOT}/boot/Image" "${EROOT}/boot/Image.old"
-		[[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]] && mv -v "${EROOT}/boot/tegra210-icosa.dtb" "${EROOT}/boot/tegra210-icosa.dtb.old"
-
+		# update Image and DTB symlink
+		if [[ -L "${EROOT}/boot/Image" ]]; then
+			rm -v "${EROOT}/boot/Image"
+		elif [[ -e "${EROOT}/boot/Image" ]]; then
+			mv -v "${EROOT}/boot/Image" "${EROOT}/boot/Image.old"
+		fi
 		ln -v -s "vmlinuz-${ver}" "${EROOT}/boot/Image"
+
+		if [[ -L "${EROOT}/boot/tegra210-icosa.dtb" ]]; then
+			rm -v "${EROOT}/boot/tegra210-icosa.dtb"
+		elif [[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]]; then
+			mv -v "${EROOT}/boot/tegra210-icosa.dtb" "${EROOT}/boot/tegra210-icosa.dtb.old"
+		fi
 		ln -v -s "tegra210-icosa-${ver}.dtb" "${EROOT}/boot/tegra210-icosa.dtb"
 
 		if use initramfs; then
@@ -129,8 +137,13 @@ pkg_postinst() {
 			# remove initramfs.img, installed by framework
 			rm "${EROOT}/boot/initramfs-${ver}".img
 
-			# create initramfs symlink if not exists
-			[[ -e "${EROOT}/boot/initramfs" ]] || ln -v -s "initramfs-${ver}" "${EROOT}/boot/initramfs"
+			# update initramfs symlink
+			if [[ -L "${EROOT}/boot/initramfs" ]]; then
+				rm -v "${EROOT}/boot/initramfs"
+			elif [[ -e "${EROOT}/boot/initramfs" ]]; then
+				mv -v "${EROOT}/boot/initramfs" "${EROOT}/boot/initramfs.old"
+			fi
+			ln -v -s "initramfs-${ver}" "${EROOT}/boot/initramfs"
 		fi
 	fi
 }

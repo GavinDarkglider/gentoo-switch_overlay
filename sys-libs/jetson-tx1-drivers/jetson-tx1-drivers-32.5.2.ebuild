@@ -16,7 +16,7 @@ DEPEND="app-arch/bzip2"
 
 RDEPEND="
 	!<media-libs/nintendo-switch-alsa-configs-0.3
-	X? ( x11-base/xorg-server )
+	X? ( <x11-base/xorg-server-21 )
 	egl? ( media-libs/libglvnd )
 	gstreamer? ( media-libs/gst-plugins-base )
 	vulkan? ( media-libs/vulkan-loader )

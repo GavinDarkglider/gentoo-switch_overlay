@@ -11,6 +11,8 @@ KV_LOCALVERSION="-l4t-gentoo-dist"
 
 inherit kernel-build git-r3
 
+ver="${PV}${KV_LOCALVERSION}"
+
 KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
 IUSE="+initramfs "
@@ -98,34 +100,40 @@ src_compile() {
 
 src_install() {
 	kernel-build_src_install
+
+	einfo "Add version to firmware files"
+	mv -v "${D}"/lib/firmware/ttusb-budget/dspbootcode.bin "${D}"/lib/firmware/ttusb-budget/dspbootcode.bin-"${ver}"
+	mv -v "${D}"/lib/firmware/brcm/brcmfmac4356-pcie.bin "${D}"/lib/firmware/brcm/brcmfmac4356-pcie.bin-"${ver}"
+	mv -v "${D}"/lib/firmware/brcm/BCM4356A3.hcd "${D}"/lib/firmware/brcm/BCM4356A3.hcd-"${ver}"
+
 	cd "${WORKDIR}"/build
 	insinto "/boot"
-	newins arch/arm64/boot/dts/tegra210-icosa.dtb tegra210-icosa-"${PV}${KV_LOCALVERSION}".dtb
+	newins arch/arm64/boot/dts/tegra210-icosa.dtb tegra210-icosa.dtb-"${ver}"
+}
+
+_symlink_version() {
+	FILE="$1"
+	if [[ -L "${EROOT}${FILE}" ]]; then
+		rm -v "${EROOT}${FILE}"
+	elif [[ -e "${EROOT}${FILE}" ]]; then
+		mv -v "${EROOT}${FILE}" "${EROOT}${FILE}".old
+	fi
+	ln -v -s "$(basename "${FILE}")"-"${ver}" "${EROOT}${FILE}"
 }
 
 pkg_postinst() {
 	kernel-install_pkg_postinst
 	if [[ -z ${ROOT} ]]; then
-		local ver="${PV}${KV_LOCALVERSION}"
-
 		#extract the kernel
-		mv "${EROOT}/boot/vmlinuz-${ver}" "${EROOT}/boot/vmlinuz-${ver}".gz
-		gunzip "${EROOT}/boot/vmlinuz-${ver}".gz
+		mv "${EROOT}/boot/vmlinuz-${ver}" "${EROOT}/boot/Image-${ver}".gz
+		gunzip "${EROOT}/boot/Image-${ver}".gz
 
 		# update Image and DTB symlink
-		if [[ -L "${EROOT}/boot/Image" ]]; then
-			rm -v "${EROOT}/boot/Image"
-		elif [[ -e "${EROOT}/boot/Image" ]]; then
-			mv -v "${EROOT}/boot/Image" "${EROOT}/boot/Image.old"
-		fi
-		ln -v -s "vmlinuz-${ver}" "${EROOT}/boot/Image"
-
-		if [[ -L "${EROOT}/boot/tegra210-icosa.dtb" ]]; then
-			rm -v "${EROOT}/boot/tegra210-icosa.dtb"
-		elif [[ -e "${EROOT}/boot/tegra210-icosa.dtb" ]]; then
-			mv -v "${EROOT}/boot/tegra210-icosa.dtb" "${EROOT}/boot/tegra210-icosa.dtb.old"
-		fi
-		ln -v -s "tegra210-icosa-${ver}.dtb" "${EROOT}/boot/tegra210-icosa.dtb"
+		_symlink_version "/boot/Image"
+		_symlink_version "/boot/tegra210-icosa.dtb"
+		_symlink_version "/lib/firmware/ttusb-budget/dspbootcode.bin"
+		_symlink_version "/lib/firmware/brcm/brcmfmac4356-pcie.bin"
+		_symlink_version "/lib/firmware/brcm/BCM4356A3.hcd"
 
 		if use initramfs; then
 			# pack initramfs to u-boot image
@@ -137,15 +145,27 @@ pkg_postinst() {
 			# remove initramfs.img, installed by framework
 			rm "${EROOT}/boot/initramfs-${ver}".img
 
-			# update initramfs symlink
-			if [[ -L "${EROOT}/boot/initramfs" ]]; then
-				rm -v "${EROOT}/boot/initramfs"
-			elif [[ -e "${EROOT}/boot/initramfs" ]]; then
-				mv -v "${EROOT}/boot/initramfs" "${EROOT}/boot/initramfs.old"
-			fi
-			ln -v -s "initramfs-${ver}" "${EROOT}/boot/initramfs"
+			_symlink_version "/boot/initramfs"
 		fi
 	fi
+}
+
+_check_symlink() {
+	FILE="$1"
+	if [[ -h "${EROOT}${FILE}" && ! -e "${EROOT}${FILE}" ]] ; then
+		einfo "fix broken symlink ${FILE}"
+		NEWTARGET="$(ls -1 "$FILE"-* 2>/dev/null | tail -n1)"
+		rm "${EROOT}${FILE}"
+		ln -v -s "$(basename "${NEWTARGET}")"-"${ver}" "${EROOT}${FILE}"
+    fi
+}
+
+pkg_postrm() {
+	_check_symlink "/boot/Image"
+	_check_symlink "/boot/tegra210-icosa.dtb" "tegra210-icosa-"
+	_check_symlink "/lib/firmware/ttusb-budget/dspbootcode.bin"
+	_check_symlink "/lib/firmware/brcm/brcmfmac4356-pcie.bin"
+	_check_symlink "/lib/firmware/brcm/BCM4356A3.hcd"
 }
 
 pkg_config() {

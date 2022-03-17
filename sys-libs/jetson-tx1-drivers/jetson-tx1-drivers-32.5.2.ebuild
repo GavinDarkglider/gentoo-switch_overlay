@@ -94,7 +94,6 @@ my_do_lib_recursive() {
 
 
 src_install() {
-	# General part
 	insinto /etc/ld.so.conf.d && doins etc/ld.so.conf.d/nvidia-tegra.conf
 	dobin usr/bin/nvidia-bug-report-tegra.sh
 	insinto /lib/udev/rules.d && doins etc/udev/rules.d/99-tegra-devices.rules
@@ -102,7 +101,6 @@ src_install() {
 	# ~ 100 files unsorted. Some files are deleted conditionally in src_prepare step
 	my_do_lib_recursive usr/lib/aarch64-linux-gnu/tegra /usr/lib64/tegra
 
-	# Misc alsa files
 	if use alsa; then
 		insinto /etc
 		doins etc/asound.conf.tegrasndt210ref
@@ -116,35 +114,29 @@ src_install() {
 		doins -r usr/share/alsa
 	fi
 
-	# Cuda
 	if use cuda; then
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libnvsample_cudaprocess.so
 	fi
 
-	# lot of documentation
 	if use doc; then
 		dodoc -r /usr/share/doc
 	fi
 		
-	# EGL
 	if use egl; then
 		my_do_lib_recursive usr/lib/aarch64-linux-gnu/tegra-egl /usr/lib64/tegra
 		dosym /usr/lib64/tegra/nvidia.json /usr/share/glvnd/egl_vendor.d/10-nvidia.json
 	fi
 
-	# Firmware files
 	if use firmware; then
 		insinto /lib
 		doins -r lib/firmware || die "Install failed!"
 	fi
 
-	# Gstreamer
 	if use gstreamer; then
 		my_do_lib_recursive  usr/lib/aarch64-linux-gnu/gstreamer-1.0 /usr/lib64/gstreamer-1.0
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libgst*
 	fi
 	
-	# Usb device gadget
 	if use usb-device; then
 		insinto /lib/udev/
 		doins etc/udev/rules.d/99-nv-l4t-usb-device-mode.rules
@@ -154,17 +146,14 @@ src_install() {
 		doins opt/nvidia/l4t-usb-device-mode/LICENSE.filesystem.img
 	fi
 	
-	# Vulkan
 	if use vulkan; then
 		dosym /usr/lib64/tegra/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
 	fi
 
-	# Wayland
 	if use wayland; then
 		insinto usr/share/egl/egl_external_platform.d && doins usr/share/egl/egl_external_platform.d/nvidia_wayland.json
 	fi
 	
-	# Camera
 	if use v4l; then
 		insinto /usr/lib64/tegra && doins usr/lib/aarch64-linux-gnu/libv4l*so*
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libv4l*so*
@@ -174,7 +163,6 @@ src_install() {
 		insinto /var/nvidia && doins -r /var/nvidia/nvcam
 	fi
 	
-	# X Server
 	if use X; then
 		my_do_lib_recursive usr/lib/xorg /usr/lib64/xorg
 		dosym /usr/lib64/tegra /usr/lib64/opengl/nvidia/lib

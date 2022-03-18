@@ -10,4 +10,4 @@ USE="$USE libglvnd" # required by sys-libs/jetson-tx1-drivers for egl
 USE="$USE -gpm"     # gpm does not sense without tty/framebuffer console
 USE="$USE vulkan"   # Graphics acceleration
 
-INPUT_DEVICES="-keyboard -mouse" # Keyboards and mouses are handled by evdev or libinput in 2019
+INPUT_DEVICES="libinput joystick"

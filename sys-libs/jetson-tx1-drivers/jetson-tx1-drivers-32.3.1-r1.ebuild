@@ -13,7 +13,8 @@ KEYWORDS="-* arm64"
 IUSE="alsa cuda doc +egl +firmware gstreamer usb-device v4l vulkan wayland X"
 RESTRICT="preserve-libs mirror"
 
-DEPEND="app-arch/bzip2"
+DEPEND="app-arch/bzip2
+	firmware? ( !!sys-firmware/jetson-tx1-firmware )"
 
 RDEPEND="
 	!<media-libs/nintendo-switch-alsa-configs-0.3

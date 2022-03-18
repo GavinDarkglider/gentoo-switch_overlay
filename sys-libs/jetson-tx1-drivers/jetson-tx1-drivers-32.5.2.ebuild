@@ -1,6 +1,4 @@
-EAPI=6
-
-inherit versionator
+EAPI=7
 
 DESCRIPTION="NVIDIA Jetson TX1 Accelerated Graphics Driver"
 HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
@@ -9,10 +7,11 @@ SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v5.2/t210/jetson-
 
 SLOT="0"
 KEYWORDS="-* arm64"
-IUSE="alsa cuda doc +egl +firmware gstreamer usb-device v4l vulkan wayland X"
+IUSE="alsa cuda doc +egl firmware gstreamer usb-device v4l vulkan wayland X"
 RESTRICT="preserve-libs mirror"
 
-DEPEND="app-arch/bzip2"
+DEPEND="app-arch/bzip2
+	firmware? ( !!sys-firmware/jetson-tx1-firmware )"
 
 RDEPEND="
 	!<media-libs/nintendo-switch-alsa-configs-0.3

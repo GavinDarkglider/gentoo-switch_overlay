@@ -32,7 +32,7 @@ src_install() {
 	# Missed broadcom firmware file
 	if use brcm; then
 		insinto lib/firmware/brcm
-		doins switch-wireless-nvram/brcmfmac4356-pcie.txt
+		newins switch-wireless-nvram/brcmfmac4356-pcie.txt brcmfmac4356A3-pcie.txt
 	fi
 
 	# X server configurations

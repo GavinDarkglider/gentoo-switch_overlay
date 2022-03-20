@@ -24,16 +24,11 @@ RDEPEND="alsa? ( media-sound/alsa-utils )" # to load asound.state
 src_install() {
 	# Alsa
 	if use alsa; then
-		MY_CONFIG_PROTECT+=/var/lib/alsa/asound.state
-		insinto /var/lib/alsa
-		doins switch-alsa-ucm2/asound.state
-
 		insinto /usr/share/alsa/ucm2/tegra-snd-t210r
-		doins switch-alsa-ucm2/HiFi
 		doins switch-alsa-ucm2/HiFi.conf
-		doins switch-alsa-ucm2/tegra-snd-t210ref-mobile-rt565x.conf
+		doins switch-alsa-ucm2/tegra-snd-t210r.conf
 	fi
-	
+
 	# Missed broadcom firmware file
 	if use brcm; then
 		insinto lib/firmware/brcm

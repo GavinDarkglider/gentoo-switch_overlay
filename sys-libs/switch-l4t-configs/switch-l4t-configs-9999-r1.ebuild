@@ -42,10 +42,4 @@ src_install() {
 		insinto /lib/udev/rules.d
 		doins switch-touch-rules/99-switch-touchscreen.rules
 	fi
-
-	# Write config protect environment setting
-	if [[ -n "${MY_CONFIG_PROTECT}" ]] ; then
-		dodir /etc/env.d
-		echo "CONFIG_PROTECT=\"${MY_CONFIG_PROTECT}\"" > "${ED}"/etc/env.d/99${PN} || die
-	fi
 }

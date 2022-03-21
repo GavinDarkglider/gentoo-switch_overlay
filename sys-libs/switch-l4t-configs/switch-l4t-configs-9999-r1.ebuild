@@ -1,4 +1,4 @@
-# Copyright 2021 Alexander Weber
+# Copyright 2022 Alexander Weber, Gavin Darkglider
 # Distributed under the terms of the GNU General Public License v3
 
 EAPI=7
@@ -17,8 +17,6 @@ KEYWORDS="arm64 arm"
 IUSE="alsa +brcm X"
 
 DEPEND="X? ( !x11-base/nintendo-switch-x11-configuration )"
-
-RDEPEND="alsa? ( media-sound/alsa-utils )" # to load asound.state
 
 src_install() {
 	# Alsa

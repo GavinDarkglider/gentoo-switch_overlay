@@ -20,10 +20,7 @@ IUSE="+initramfs "
 DESCRIPTION="Nintendo Switch kernel"
 SRC_URI=""
 
-RDEPEND="sys-kernel/linux-firmware[switch_mod]
-        initramfs? ( sys-boot/nintendo-switch-dracut-config dev-embedded/u-boot-tools )"
-DEPEND="${RDEPEND}
-		!=sys-kernel/nintendo-switch-l4t-kernel-4.9.140.331"
+DEPEND="initramfs? ( sys-boot/nintendo-switch-dracut-config dev-embedded/u-boot-tools )"
 
 S="${WORKDIR}"/linux-"${PVR}"
 
@@ -103,12 +100,14 @@ src_install() {
 
 	einfo "Add version to firmware files"
 	mv -v "${D}"/lib/firmware/ttusb-budget/dspbootcode.bin "${D}"/lib/firmware/ttusb-budget/dspbootcode.bin-"${ver}"
-	mv -v "${D}"/lib/firmware/brcm/brcmfmac4356-pcie.bin "${D}"/lib/firmware/brcm/brcmfmac4356-pcie.bin-"${ver}"
+	mv -v "${D}"/lib/firmware/brcm/brcmfmac4356A3-pcie.bin "${D}"/lib/firmware/brcm/brcmfmac4356A3-pcie.bin-"${ver}"
 	mv -v "${D}"/lib/firmware/brcm/BCM4356A3.hcd "${D}"/lib/firmware/brcm/BCM4356A3.hcd-"${ver}"
 
-	cd "${WORKDIR}"/build
-	insinto "/boot"
-	newins arch/arm64/boot/dts/tegra210-icosa.dtb tegra210-icosa.dtb-"${ver}"
+	if [[ -z ${ROOT} ]]; then
+		cd "${WORKDIR}"/build
+		insinto "/boot"
+		newins arch/arm64/boot/dts/tegra210-icosa.dtb tegra210-icosa.dtb-"${ver}"
+	fi
 }
 
 _symlink_version() {
@@ -132,7 +131,7 @@ pkg_postinst() {
 		_symlink_version "/boot/Image"
 		_symlink_version "/boot/tegra210-icosa.dtb"
 		_symlink_version "/lib/firmware/ttusb-budget/dspbootcode.bin"
-		_symlink_version "/lib/firmware/brcm/brcmfmac4356-pcie.bin"
+		_symlink_version "/lib/firmware/brcm/brcmfmac4356A3-pcie.bin"
 		_symlink_version "/lib/firmware/brcm/BCM4356A3.hcd"
 
 		if use initramfs; then
@@ -156,7 +155,9 @@ _check_symlink() {
 		einfo "fix broken symlink ${FILE}"
 		NEWTARGET="$(ls -1 "$FILE"-* 2>/dev/null | tail -n1)"
 		rm "${EROOT}${FILE}"
-		ln -v -s "$(basename "${NEWTARGET}")"-"${ver}" "${EROOT}${FILE}"
+		if [[ -n "${NEWTARGET}" ]]; then
+			ln -v -s "$(basename "${NEWTARGET}")"-"${ver}" "${EROOT}${FILE}"
+		fi
     fi
 }
 
@@ -164,7 +165,7 @@ pkg_postrm() {
 	_check_symlink "/boot/Image"
 	_check_symlink "/boot/tegra210-icosa.dtb" "tegra210-icosa-"
 	_check_symlink "/lib/firmware/ttusb-budget/dspbootcode.bin"
-	_check_symlink "/lib/firmware/brcm/brcmfmac4356-pcie.bin"
+	_check_symlink "/lib/firmware/brcm/brcmfmac4356A3-pcie.bin"
 	_check_symlink "/lib/firmware/brcm/BCM4356A3.hcd"
 }
 

@@ -14,7 +14,6 @@ DEPEND="app-arch/bzip2
 	firmware? ( !!sys-firmware/jetson-tx1-firmware )"
 
 RDEPEND="
-	!<media-libs/nintendo-switch-alsa-configs-0.3
 	X? ( <x11-base/xorg-server-21 )
 	egl? ( media-libs/libglvnd )
 	gstreamer? ( media-libs/gst-plugins-base )

@@ -38,7 +38,7 @@ RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 RDEPEND+=" kernel-bin? ( sys-kernel/nintendo-switch-l4t-kernel )"
 
 # Additional settings to audio server
-RDEPEND+=" alsa? ( || ( media-libs/nintendo-switch-alsa-configs sys-libs/switch-l4t-configs[alsa] ) )"
+RDEPEND+=" alsa? ( sys-libs/switch-l4t-configs[alsa] )"
 
 # Install hekate to /lib/firmware/reboot_payload.bin
 RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"

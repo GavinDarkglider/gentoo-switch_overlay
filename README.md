@@ -72,7 +72,7 @@ The starting point to install the basic files is the sys-apps/nintendo-switch-me
 The package have the next USE flags for enabeling/disabeling things:
 | USE | packages | Explanation
 | ------ | ------ | ------
-| alsa | sys-libs/switch-l4t-configs[alsa] or  media-libs/nintendo-switch-alsa-configs (outdated) | Install alsa ucm configuration and alsa.state to get audio working
+| alsa | sys-libs/switch-l4t-configs[alsa]  | Install alsa ucm configuration to get audio working
 | bootstack | sys-boot/switchroot-bootstack | Installs precompiled bootstack files (coreboot.rom, boot.scr, uenv.txt and more) into /usr/share/sdcard1. The ebuild supports to install the files directly to the vfat partition. Disable the flag if you like to manage this files byself
 | bluetooth | net-wireless/bluez | Nothing special. Just install bluez, required for joycons
 | dock-script | x11-misc/nintendo-switch-dock-script or app-eselect/eselect-nintendo-switch-dock-handler | They are two scripts to manage the dock usage (swap screen and audio)

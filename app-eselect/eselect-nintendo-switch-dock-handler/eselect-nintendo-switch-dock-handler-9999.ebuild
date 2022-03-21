@@ -13,7 +13,7 @@ IUSE=""
 
 RDEPEND="
 	app-admin/eselect
-	media-libs/nintendo-switch-alsa-configs
+	sys-libs/switch-l4t-configs[alsa]
 	app-admin/sudo
 "
 

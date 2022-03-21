@@ -16,8 +16,7 @@ KEYWORDS="arm64 arm"
 
 IUSE="alsa +brcm X"
 
-DEPEND="alsa? ( !media-libs/nintendo-switch-alsa-configs )
-	X? ( !x11-base/nintendo-switch-x11-configuration )"
+DEPEND="X? ( !x11-base/nintendo-switch-x11-configuration )"
 
 RDEPEND="alsa? ( media-sound/alsa-utils )" # to load asound.state
 

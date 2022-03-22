@@ -82,8 +82,10 @@ src_prepare() {
 	eapply "${FILESDIR}"/ac1447bfc5b10ab2a449551da507bcaeec9cfb68.patch
 
 	make tegra_linux_defconfig
-	einfo "Adjust extraversion to ${EXTRAVERSION} and localversion to ${KV_LOCALVERSION}"
+	einfo "Adjust extraversion to ${EXTRAVERSION} and reset localversion"
 	sed -i -e "s:^\(EXTRAVERSION =\).*:\1 ${EXTRAVERSION}:" "${S}"/Makefile || die
+	sed -i -e 's#^CONFIG_LOCALVERSION=".*#""#p' .config || die
+
 	eapply_user
 }
 

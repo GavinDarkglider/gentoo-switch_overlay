@@ -11,8 +11,6 @@ KV_LOCALVERSION="-l4t-gentoo-dist"
 
 inherit kernel-build git-r3
 
-ver="${PV}${KV_LOCALVERSION}"
-
 KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
 IUSE="+initramfs "
@@ -97,6 +95,9 @@ src_compile() {
 	kernel-build_src_compile
 }
 
+ver="${PV}${KV_LOCALVERSION}"
+inst_path=/usr/src/linux-${ver}/arch/arm64/boot
+
 src_install() {
 	kernel-build_src_install
 
@@ -105,11 +106,9 @@ src_install() {
 	mv -v "${D}"/lib/firmware/brcm/brcmfmac4356A3-pcie.bin "${D}"/lib/firmware/brcm/brcmfmac4356A3-pcie.bin-"${ver}"
 	mv -v "${D}"/lib/firmware/brcm/BCM4356A3.hcd "${D}"/lib/firmware/brcm/BCM4356A3.hcd-"${ver}"
 
-	if [[ -z ${ROOT} ]]; then
-		cd "${WORKDIR}"/build
-		insinto "/boot"
-		newins arch/arm64/boot/dts/tegra210-icosa.dtb tegra210-icosa.dtb-"${ver}"
-	fi
+	cd "${WORKDIR}"/build/arch/arm64/boot/dts
+	insinto "${inst_path}"/dts
+	newins tegra210-icosa.dtb tegra210-icosa.dtb
 }
 
 _symlink_version() {
@@ -125,9 +124,15 @@ _symlink_version() {
 pkg_postinst() {
 	kernel-install_pkg_postinst
 	if [[ -z ${ROOT} ]]; then
+
 		#extract the kernel
+		[[ -f "${EROOT}/boot/Image-${ver}" ]] && mv -v "${EROOT}/boot/Image-${ver}" "${EROOT}/boot/Image-${ver}".old
 		mv "${EROOT}/boot/vmlinuz-${ver}" "${EROOT}/boot/Image-${ver}".gz
-		gunzip "${EROOT}/boot/Image-${ver}".gz
+		gunzip "${EROOT}/boot/Image-${ver}".gz || die
+
+		# Install dts
+		[[ -f "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}" ]] && mv -v "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}" "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}".old
+		cp -v "${EROOT}${inst_path}"/dts/tegra210-icosa.dtb "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}"
 
 		# update Image and DTB symlink
 		_symlink_version "/boot/Image"
@@ -138,7 +143,6 @@ pkg_postinst() {
 
 		if use initramfs; then
 			# pack initramfs to u-boot image
-			local inst_path=/usr/src/linux-${ver}/arch/arm64/boot
 			einfo "Generate u-boot image ${inst_path}/initramfs from generated ${inst_path}/initrd"
 			mkimage -A arm64 -O linux -T ramdisk -C gzip -d "${EROOT}${inst_path}/initrd" "${EROOT}${inst_path}/initramfs"
 			cp "${EROOT}${inst_path}/initramfs" "${EROOT}/boot/initramfs-${ver}"

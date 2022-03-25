@@ -87,7 +87,6 @@ src_prepare() {
 	eapply_user
 }
 
-
 src_compile() {
 	# Workaround: /usr/bin/ld: unrecognized option '-Wl,-O1'
 	export LDFLAGS=""
@@ -137,9 +136,6 @@ pkg_postinst() {
 		# update Image and DTB symlink
 		_symlink_version "/boot/Image"
 		_symlink_version "/boot/tegra210-icosa.dtb"
-		_symlink_version "/lib/firmware/ttusb-budget/dspbootcode.bin"
-		_symlink_version "/lib/firmware/brcm/brcmfmac4356A3-pcie.bin"
-		_symlink_version "/lib/firmware/brcm/BCM4356A3.hcd"
 
 		if use initramfs; then
 			# pack initramfs to u-boot image
@@ -153,6 +149,10 @@ pkg_postinst() {
 			_symlink_version "/boot/initramfs"
 		fi
 	fi
+
+	_symlink_version "/lib/firmware/ttusb-budget/dspbootcode.bin"
+	_symlink_version "/lib/firmware/brcm/brcmfmac4356A3-pcie.bin"
+	_symlink_version "/lib/firmware/brcm/BCM4356A3.hcd"
 }
 
 _check_symlink() {
@@ -168,8 +168,11 @@ _check_symlink() {
 }
 
 pkg_postrm() {
-	_check_symlink "/boot/Image"
-	_check_symlink "/boot/tegra210-icosa.dtb" "tegra210-icosa-"
+
+	if [[ -z ${ROOT} ]]; then
+		_check_symlink "/boot/Image"
+		_check_symlink "/boot/tegra210-icosa.dtb" "tegra210-icosa-"
+	fi
 	_check_symlink "/lib/firmware/ttusb-budget/dspbootcode.bin"
 	_check_symlink "/lib/firmware/brcm/brcmfmac4356A3-pcie.bin"
 	_check_symlink "/lib/firmware/brcm/BCM4356A3.hcd"

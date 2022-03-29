@@ -13,12 +13,13 @@ inherit kernel-build git-r3
 
 KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
-IUSE="+initramfs "
+IUSE="+initramfs"
 
 DESCRIPTION="Nintendo Switch kernel"
 SRC_URI=""
 
 DEPEND="initramfs? ( sys-boot/nintendo-switch-dracut-config dev-embedded/u-boot-tools )"
+RDEPEND="${DEPEND}"
 
 S="${WORKDIR}"/linux-"${PVR}"
 

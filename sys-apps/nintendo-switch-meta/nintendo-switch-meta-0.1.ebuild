@@ -6,15 +6,14 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="bootstack bluetooth dock-script dracut elogind kernel-sources kernel-bin alsa reboot2hekate wifi X"
-HOMEPAGE="https://github.com/bell07/bashscripts-switch_gentoo"
+IUSE="bootstack bluetooth dock-script elogind initramfs joystick kernel-sources kernel-bin alsa reboot2hekate wifi X"
+HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 
 # Mandatory
-RDEPEND+=" sys-libs/jetson-tx1-drivers[X=]"
 RDEPEND+=" || ( sys-libs/jetson-tx1-drivers[firmware] sys-firmware/jetson-tx1-firmware )"
-RDEPEND+=" games-util/joycond"
+RDEPEND+=" joystick? ( games-util/joycond )"
 
 # Prebuilt switchroot bootstack files (coreboot and other SD files)
 RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"
@@ -26,7 +25,7 @@ RDEPEND+=" bluetooth? ( net-wireless/bluez )"
 RDEPEND+=" dock-script? ( || ( x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler ) )"
 
 # dracut configuration to generate initramfs
-RDEPEND+=" dracut? ( sys-boot/nintendo-switch-dracut-config )"
+RDEPEND+=" initramfs? ( sys-boot/nintendo-switch-dracut-config )"
 
 # Sleep fixes for elogind sleep
 RDEPEND+=" elogind? ( sys-libs/nintendo-switch-sleep )"
@@ -44,7 +43,8 @@ RDEPEND+=" alsa? ( sys-libs/switch-l4t-configs[alsa] )"
 RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"
 
 # Basic wifi manager
-RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant )"
+RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant sys-libs/switch-l4t-configs[brcm] )"
 
 # Xorg server with configuration and onscreen virtual keyboard
-RDEPEND+=" X? ( x11-base/xorg-x11 app-accessibility/onboard || ( x11-base/nintendo-switch-x11-configuration sys-libs/switch-l4t-configs[X] ) )"
+RDEPEND+=" X? ( sys-libs/jetson-tx1-drivers[X] x11-base/xorg-x11 app-accessibility/onboard
+          || ( x11-base/nintendo-switch-x11-configuration sys-libs/switch-l4t-configs[X] ) )"

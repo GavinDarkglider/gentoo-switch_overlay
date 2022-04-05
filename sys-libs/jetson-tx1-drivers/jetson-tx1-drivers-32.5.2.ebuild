@@ -45,7 +45,7 @@ src_prepare() {
 	cd "${S}"/usr/lib/aarch64-linux-gnu/
 
 	use cuda      || rm tegra/libcuda*so* tegra/libnvbufsurftransform.so* tegra/libnvofsdk.so* \
-	                    tegra/libnvscf.so* tegra/libnvargus.so* tegra/libnvcameratools.so* tegra/libnveglstreamproducer.so* \
+	                    tegra/libnvscf.so* tegra/libnvargus.so* tegra/libnvcameratools.so* tegra/libnvargus_socket*.so tegra/libnveglstreamproducer.so* \
 	                    gstreamer-1.0/*cuda* gstreamer-1.0/libgstnvvideosinks.so
 	use gstreamer || rm tegra/libnvdsbufferpool.so*
 	use wayland   || rm tegra/libnvidia-egl-wayland.so* tegra/libnvvulkan-producer.so* \
@@ -153,12 +153,11 @@ src_install() {
 	fi
 	
 	if use v4l; then
-		insinto /usr/lib64/tegra && doins usr/lib/aarch64-linux-gnu/libv4l*so*
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libv4l*so*
 		dosym /usr/lib64/tegra/libv4l2_nvvideocodec.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvideocodec.so
 		dosym /usr/lib64/tegra/libv4l2_nvvidconv.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvidconv.so
 		dosym /usr/lib64/tegra/libv4l2_nvargus.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvargus.so
-		insinto /var/nvidia && doins -r /var/nvidia/nvcam
+		insinto /var/nvidia && doins -r var/nvidia/nvcam
 	fi
 	
 	if use X; then

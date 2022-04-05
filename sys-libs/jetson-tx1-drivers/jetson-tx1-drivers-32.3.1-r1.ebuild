@@ -164,7 +164,6 @@ src_install() {
 	
 	# Camera
 	if use v4l; then
-		insinto /usr/lib64/tegra && doins usr/lib/aarch64-linux-gnu/libv4l*so*
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libv4l*so*
 		dosym /usr/lib64/tegra/libv4l2_nvvideocodec.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvideocodec.so
 		dosym /usr/lib64/tegra/libv4l2_nvvidconv.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvidconv.so

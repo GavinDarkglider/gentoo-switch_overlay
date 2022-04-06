@@ -6,7 +6,7 @@ HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
 SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v5.2/t210/jetson-210_linux_r32.5.2_aarch64.tbz2"
 
 SLOT="0"
-KEYWORDS="-* arm64"
+KEYWORDS="-* ~arm64"
 IUSE="alsa cuda doc +egl firmware gstreamer usb-device v4l vulkan wayland X"
 RESTRICT="preserve-libs mirror"
 
@@ -58,7 +58,6 @@ src_prepare() {
 	eapply_user
 }
 
-
 my_do_lib_recursive() {
 	# $1 is the source path
 	# $2 is the target path
@@ -95,7 +94,7 @@ src_install() {
 	insinto /etc/ld.so.conf.d && doins etc/ld.so.conf.d/nvidia-tegra.conf
 	dobin usr/bin/nvidia-bug-report-tegra.sh
 	insinto /lib/udev/rules.d && doins etc/udev/rules.d/99-tegra-devices.rules
-	
+
 	# ~ 100 files unsorted. Some files are deleted conditionally in src_prepare step
 	my_do_lib_recursive usr/lib/aarch64-linux-gnu/tegra /usr/lib64/tegra
 
@@ -103,11 +102,11 @@ src_install() {
 		insinto /etc
 		doins etc/asound.conf.tegrasndt210ref
 		doins etc/asound.conf.tegrahda
-		
+
 		insinto /lib/udev/rules.d
 		doins etc/udev/rules.d/90-alsa-asound-tegra.rules
 		doins etc/udev/rules.d/92-hdmi-audio-tegra.rules
-		
+
 		insinto /usr/share
 		doins -r usr/share/alsa
 	fi
@@ -119,7 +118,7 @@ src_install() {
 	if use doc; then
 		dodoc -r /usr/share/doc
 	fi
-		
+
 	if use egl; then
 		my_do_lib_recursive usr/lib/aarch64-linux-gnu/tegra-egl /usr/lib64/tegra
 		dosym /usr/lib64/tegra/nvidia.json /usr/share/glvnd/egl_vendor.d/10-nvidia.json
@@ -134,7 +133,7 @@ src_install() {
 		my_do_lib_recursive  usr/lib/aarch64-linux-gnu/gstreamer-1.0 /usr/lib64/gstreamer-1.0
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libgst*
 	fi
-	
+
 	if use usb-device; then
 		insinto /lib/udev/
 		doins etc/udev/rules.d/99-nv-l4t-usb-device-mode.rules
@@ -143,7 +142,7 @@ src_install() {
 		insinto /opt/nvidia/l4t-usb-device-mode
 		doins opt/nvidia/l4t-usb-device-mode/LICENSE.filesystem.img
 	fi
-	
+
 	if use vulkan; then
 		dosym /usr/lib64/tegra/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
 	fi
@@ -151,7 +150,7 @@ src_install() {
 	if use wayland; then
 		insinto usr/share/egl/egl_external_platform.d && doins usr/share/egl/egl_external_platform.d/nvidia_wayland.json
 	fi
-	
+
 	if use v4l; then
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libv4l*so*
 		dosym /usr/lib64/tegra/libv4l2_nvvideocodec.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvideocodec.so
@@ -159,7 +158,7 @@ src_install() {
 		dosym /usr/lib64/tegra/libv4l2_nvargus.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvargus.so
 		insinto /var/nvidia && doins -r var/nvidia/nvcam
 	fi
-	
+
 	if use X; then
 		my_do_lib_recursive usr/lib/xorg /usr/lib64/xorg
 		dosym /usr/lib64/tegra /usr/lib64/opengl/nvidia/lib
@@ -172,7 +171,7 @@ pkg_postinst() {
 
 	ldconfig
 	if use alsa && ! [[ -f /etc/asound.conf ]]; then
-        einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
-        ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
-    fi
+		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
+		ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
+	fi
 }

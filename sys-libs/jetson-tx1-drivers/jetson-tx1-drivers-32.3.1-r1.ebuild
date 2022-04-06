@@ -96,7 +96,7 @@ src_install() {
 	insinto /etc/ld.so.conf.d && doins etc/ld.so.conf.d/nvidia-tegra.conf
 	dobin usr/bin/nvidia-bug-report-tegra.sh
 	insinto /lib/udev/rules.d && doins etc/udev/rules.d/99-tegra-devices.rules
-	
+
 	# ~ 100 files unsorted. Some files are deleted conditionally in src_prepare step
 	my_do_lib_recursive usr/lib/aarch64-linux-gnu/tegra /usr/lib64/tegra
 
@@ -105,11 +105,11 @@ src_install() {
 		insinto /etc
 		doins etc/asound.conf.tegrasndt210ref
 		doins etc/asound.conf.tegrahda
-		
+
 		insinto /lib/udev/rules.d
 		doins etc/udev/rules.d/90-alsa-asound-tegra.rules
 		doins etc/udev/rules.d/92-hdmi-audio-tegra.rules
-		
+
 		insinto /usr/share
 		doins -r usr/share/alsa
 	fi
@@ -123,7 +123,7 @@ src_install() {
 	if use doc; then
 		dodoc -r /usr/share/doc
 	fi
-		
+
 	# EGL
 	if use egl; then
 		my_do_lib_recursive usr/lib/aarch64-linux-gnu/tegra-egl /usr/lib64/tegra
@@ -141,7 +141,7 @@ src_install() {
 		my_do_lib_recursive  usr/lib/aarch64-linux-gnu/gstreamer-1.0 /usr/lib64/gstreamer-1.0
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libgst*
 	fi
-	
+
 	# Usb device gadget
 	if use usb-device; then
 		insinto /lib/udev/
@@ -151,7 +151,7 @@ src_install() {
 		insinto /opt/nvidia/l4t-usb-device-mode
 		doins opt/nvidia/l4t-usb-device-mode/LICENSE.filesystem.img
 	fi
-	
+
 	# Vulkan
 	if use vulkan; then
 		dosym /usr/lib64/tegra/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
@@ -161,7 +161,7 @@ src_install() {
 	if use wayland; then
 		insinto usr/share/egl/egl_external_platform.d && doins usr/share/egl/egl_external_platform.d/nvidia_wayland.json
 	fi
-	
+
 	# Camera
 	if use v4l; then
 		insinto /usr/lib64 && doins usr/lib/aarch64-linux-gnu/libv4l*so*
@@ -169,7 +169,7 @@ src_install() {
 		dosym /usr/lib64/tegra/libv4l2_nvvidconv.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvidconv.so
 		insinto /var/nvidia && doins -r /var/nvidia/nvcam
 	fi
-	
+
 	# X Server
 	if use X; then
 		my_do_lib_recursive usr/lib/xorg /usr/lib64/xorg
@@ -183,7 +183,7 @@ pkg_postinst() {
 
 	ldconfig
 	if use alsa && ! [[ -f /etc/asound.conf ]]; then
-        einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
-        ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
-    fi
+		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
+		ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
+	fi
 }

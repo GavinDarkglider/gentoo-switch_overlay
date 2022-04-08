@@ -3,11 +3,11 @@ EAPI=7
 DESCRIPTION="NVIDIA Jetson TX1 Accelerated Graphics Driver"
 HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
 
-SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v5.2/t210/jetson-210_linux_r32.5.2_aarch64.tbz2"
+SRC_URI="https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_release_aarch64/Tegra210_Linux_R32.3.1_aarch64.tbz2"
 
 SLOT="0"
-KEYWORDS="-* ~arm64"
-IUSE="alsa doc +egl firmware gstreamer usb-device vulkan wayland X"
+KEYWORDS="-* arm64"
+IUSE="alsa doc +egl +firmware gstreamer usb-device vulkan wayland X"
 RESTRICT="preserve-libs mirror"
 
 DEPEND="app-arch/bzip2
@@ -16,7 +16,7 @@ DEPEND="app-arch/bzip2
 RDEPEND="
 	X? ( <x11-base/xorg-server-21 )
 	egl? ( media-libs/libglvnd )
-	gstreamer? ( media-plugins/gst-plugins-v4l2 media-libs/libv4l[switch_mod] )
+	gstreamer? ( media-plugins/gst-plugins-v4l2 )
 	vulkan? ( media-libs/vulkan-loader )
 	wayland? ( dev-libs/wayland )"
 
@@ -46,13 +46,17 @@ src_prepare() {
 	# All files in /usr/lib/aarch64-linux-gnu are installed bellow. excepting the deleted at this place
 	cd "${S}"/usr/lib/aarch64-linux-gnu/
 
-	use wayland   || rm tegra/libnvidia-egl-wayland.so* tegra/libnvvulkan-producer.so* \
+	use wayland   || rm -v tegra/libnvidia-egl-wayland.so* tegra/libnvvulkan-producer.so* \
 	                 gstreamer-1.0/libgstnvcompositor.so gstreamer-1.0/libgstnveglglessink.so
-	use gstreamer || rm -r gstreamer-1.0 tegra/libnvdsbufferpool.so*
-	use egl       || rm -R tegra-egl
-	use vulkan    || rm tegra/lib*vulkan*so*
+	use gstreamer || rm -rv gstreamer-1.0 tegra/libnvdsbufferpool.so*
+	use egl       || rm -rv tegra-egl
+	use vulkan    || rm -v tegra/lib*vulkan*so*
 
-	rm "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/ld.so.conf
+	# avoid overlaps. The files from tegra subfolder are preferred, so the original files are ok
+	rm -v libv4lconvert.so*
+	rm -v libv4l2.so*
+
+	rm -v "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/ld.so.conf
 
 	eapply_user
 }
@@ -61,13 +65,26 @@ src_prepare() {
 my_do_lib_recursive() {
 	# $1 is the source path
 	# $2 is the target path
-	for f in "$1"/*
-	do
-		if [ -h "${f}" ]
-		then
-			dosym "$(readlink "${f}"| sed 's:usr/lib/aarch64-linux-gnu:usr/lib64:g')" "$2"/"$(basename "${f}")"
-		elif [ -f "${f}" ]
-		then
+	for f in "$1"/*; do
+		if [ -h "${f}" ]; then
+			new_target="$(readlink "${f}"| sed 's:usr/lib/aarch64-linux-gnu:usr/lib64:g')"
+			new_file="$2"/"$(basename "${f}")"
+			if [[ "$new_target" = /* ]]; then
+				relative="$(realpath --relative-to="$(dirname "$new_file")" "$(dirname "$new_target")")"
+				if [ "$relative" == '.' ]; then
+					dosym "$(basename "$new_target")" "$new_file"
+				else
+					dosym "$relative/$(basename "$new_target")" "$new_file"
+				fi
+			else
+				dosym "$new_target" "$new_file"
+			fi
+
+			# Compatibility symlink at original location
+			insinto "$1"
+			relative="$(realpath --relative-to="/$1" "/$2")"
+			dosym "$relative/$(basename "${f}")" "${f}"
+		elif [ -f "${f}" ]; then
 			if [ -n "$(echo "$f" | grep -e [.]so[.] -e [.]so$)" ]
 			then
 				insinto "$2"
@@ -80,14 +97,20 @@ my_do_lib_recursive() {
 				insinto "$2"
 				doins "${f}"
 			fi
-		elif [ -d "${f}" ]
-		then
+
+			# Compatibility symlink at original location
+			insinto "$1"
+			relative="$(realpath --relative-to="/$1" "/$2")"
+			dosym "$relative/$(basename "${f}")" "${f}"
+
+		elif [ -d "${f}" ]; then
 			my_do_lib_recursive "${f}" "${2}/$(basename "$f")"
 		else
 			ewarn "skipped broken file in my_do_lib_recursive ${f}"
 		fi
 	done
 }
+
 
 src_install() {
 	# Basic files
@@ -101,17 +124,18 @@ src_install() {
 	# Compatibility hack because of hardcoded paths
 	dosym /usr/lib64/tegra/libv4l2_nvvideocodec.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvideocodec.so
 	dosym /usr/lib64/tegra/libv4l2_nvvidconv.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvvidconv.so
-	dosym /usr/lib64/tegra/libv4l2_nvargus.so usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/libv4l2_nvargus.so
 
 	# Just nvcam
 	insinto /var/nvidia && doins -r var/nvidia/nvcam
 
 	# Missed soname links
 	dosym libnvv4lconvert.so /usr/lib64/tegra/libv4lconvert.so.0
+	dosym libv4lconvert.so.0 /usr/lib64/tegra/libv4lconvert.so.0.0.999999
 	dosym libnvv4l2.so /usr/lib64/tegra/libv4l2.so.0
-	dosym libnvidia-ptxjitcompiler.so.440.18 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
+	dosym libv4l2.so.0 /usr/lib64/tegra/libv4l2.so.0.0.999999
 	dosym libnvgbm.so /usr/lib64/tegra/libgbm.so.1
 	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
+	dosym libnvidia-ptxjitcompiler.so.32.3.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
 
 	if use alsa; then
 		insinto /etc
@@ -150,7 +174,6 @@ src_install() {
 
 	if use vulkan; then
 		dosym /usr/lib64/tegra/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
-		dosym libvulkan.so.1.2.141 /usr/lib64/tegra/libvulkan.so.1
 	fi
 
 	if use wayland; then
@@ -158,7 +181,8 @@ src_install() {
 	fi
 
 	if use X; then
-		my_do_lib_recursive usr/lib/xorg /usr/lib64/xorg
+		insinto /usr/lib64
+		doins -r usr/lib/xorg
 		dosym /usr/lib64/tegra /usr/lib64/opengl/nvidia/lib
 		insinto /etc/X11/xorg.conf.d && newins etc/X11/xorg.conf 30-jetson-tx1-drivers.conf
 	fi

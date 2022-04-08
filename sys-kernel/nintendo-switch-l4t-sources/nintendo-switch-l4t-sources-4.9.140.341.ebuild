@@ -78,9 +78,10 @@ src_prepare() {
 	eapply "${FILESDIR}"/d97aaee81dc4b82595dc90ccb6a29bb0de3669d4.patch
 	eapply "${FILESDIR}"/50dec8298041f5b25d4df112e6108056a7e34526.patch
 	eapply "${FILESDIR}"/ac1447bfc5b10ab2a449551da507bcaeec9cfb68.patch
+	eapply "${FILESDIR}"/06-Revert-arm64-32bit-sigcontext-definition-to-uapi-signcontext.h.patch
 	eapply_user
 }
-	
+
 src_configure() {
 	einfo "Adjust extraversion to ${EXTRAVERSION}"
 	unpack_set_extraversion

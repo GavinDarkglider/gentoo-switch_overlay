@@ -16,7 +16,8 @@ DEPEND="app-arch/bzip2
 RDEPEND="
 	X? ( <x11-base/xorg-server-21 )
 	egl? ( media-libs/libglvnd )
-	gstreamer? ( media-plugins/gst-plugins-v4l2 )
+	gstreamer? ( media-libs/gst-plugins-bad
+	             media-libs/gst-plugins-ugly )
 	vulkan? ( media-libs/vulkan-loader )
 	wayland? ( dev-libs/wayland )"
 
@@ -43,8 +44,11 @@ src_prepare() {
 	# All files in /usr/lib/aarch64-linux-gnu are installed bellow. excepting the deleted at this place
 	cd "${S}"/usr/lib/aarch64-linux-gnu/
 
-	use wayland   || rm -v tegra/libnvidia-egl-wayland.so* tegra/libnvvulkan-producer.so* \
-	                 gstreamer-1.0/libgstnvcompositor.so gstreamer-1.0/libgstnveglglessink.so
+	if ! use wayland; then
+		rm -v tegra/libnvidia-egl-wayland.so*       # requires libwayland-client.so.0 + libwayland-server.so.0
+		rm -v tegra/libnvvulkan-producer.so*        # requires libnvidia-egl-wayland.so.1
+		rm -v gstreamer-1.0/libgstnveglglessink.so* # requires libwayland-client.so.0 + libwayland-server.so.0
+	fi
 	use gstreamer || rm -rv gstreamer-1.0 tegra/libnvdsbufferpool.so*
 	use egl       || rm -rv tegra-egl
 	use vulkan    || rm -v tegra/lib*vulkan*so*
@@ -75,6 +79,7 @@ my_do_lib_recursive() {
 			# Compatibility symlink at original location
 			relative="$(realpath --relative-to="/$2" "/$1")"
 			dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
+
 		elif [ -f "${f}" ]; then
 			if [ -n "$(echo "$f" | grep -e [.]so[.] -e [.]so$)" ]
 			then
@@ -93,7 +98,13 @@ my_do_lib_recursive() {
 			fi
 
 		elif [ -d "${f}" ]; then
-			my_do_lib_recursive "${f}" "${2}"
+			if [ "$(basename "${f}")" == 'gstreamer-1.0' ] ; then
+				my_do_lib_recursive "${f}" "${2}/gstreamer-1.0"
+			else
+				my_do_lib_recursive "${f}" "${2}"
+				relative="$(realpath --relative-to="/$2" "/$1")"
+				dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
+			fi
 		else
 			ewarn "skipped broken file in my_do_lib_recursive ${f}"
 		fi
@@ -113,7 +124,6 @@ src_install() {
 	doins -r usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/
 
 	# Missed soname links
-
 	dosym libv4l2.so.0.0.999999 /usr/lib64/libv4l2.so.0
 	dosym libv4l2.so.0 /usr/lib64/libv4l2.so
 	dosym libv4lconvert.so.0.0.999999 /usr/lib64/libv4lconvert.so.0

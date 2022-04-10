@@ -2,18 +2,17 @@ EXPORT_FUNCTIONS pkg_setup pkg_preinst pkg_prerm pkg_postrm
 
 #SDCARD_MOUNT_POINT=/mnt/sdcard1  ###should be provided in make.conf
 SDCARD_DESTDIR=/usr/share/sdcard1
-
+SDCARD_MOUNT_DISABLED=0
 
 sdcard-mount_is_disabled() {
 	# Skip things when EROOT is active.
-	if [[ ${EROOT:-/} != / ]] ; then
-		return 0
-	fi
+	[[ ${EROOT:-/} != / ]] && return 0
 
 	# If we're only building a package, then there's no need to check things.
-	if [[ ${MERGE_TYPE} == buildonly ]] ; then
-		return 0
-	fi
+	[[ ${MERGE_TYPE} == buildonly ]] && return 0
+
+	# Disabled in pkg_setup
+	[[ ${SDCARD_MOUNT_DISABLED} == 1 ]] && return 0
 
 	# OK, we want to handle things ourselves.
 	return 1
@@ -93,5 +92,5 @@ sdcard-mount_pkg_prerm() {
 
 sdcard-mount_pkg_postrm() {
 	sdcard-mount_check_status "${SDCARD_MOUNT_POINT}" && return
-	"${SDCARD_MOUNT_POINT}"/.keep 2>/dev/null
+	rm "${SDCARD_MOUNT_POINT}"/.keep 2>/dev/null
 }

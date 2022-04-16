@@ -275,7 +275,7 @@ RDEPEND="${RDEPEND}
 DEPEND="${RDEPEND}
 	ladspa? ( >=media-libs/ladspa-sdk-1.13-r2[${MULTILIB_USEDEP}] )
 	v4l? ( sys-kernel/linux-headers )
-	nvv4l2? ( =sys-kernel/linux-headers-4.9.140* sys-libs/jetson-tx1-drivers )
+	nvv4l2? ( =sys-kernel/linux-headers-9999* sys-libs/jetson-tx1-drivers )
 "
 BDEPEND="
 	>=sys-devel/make-3.81

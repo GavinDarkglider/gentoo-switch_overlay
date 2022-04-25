@@ -1,2 +1,4 @@
 # Gavin 2021-06-14 needed for xauth to generate auth files correctly.
 x11-base/xorg-server xcsecurity
+
+media-video/ffmpeg nvv4l2 -david

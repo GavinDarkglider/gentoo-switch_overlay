@@ -1,0 +1,12 @@
+diff -Naur ffmpeg-4.4.9999/configure ffmpeg-4.4.9999-2/configure
+--- ffmpeg-4.4.9999/configure	2022-04-25 14:51:27.965200946 -0000
++++ ffmpeg-4.4.9999-2/configure	2022-04-25 16:28:23.149464960 -0000
+@@ -6798,7 +6798,7 @@
+     check_type "ffnvcodec/dynlink_cuda.h ffnvcodec/dynlink_cuviddec.h" "CUVIDAV1PICPARAMS"
+ fi
+ 
+-enabled nvv4l2 && add_ldflags '-L/usr/lib/aarch64-linux-gnu/tegra' \
++enabled nvv4l2 && add_ldflags '-L/usr/lib64/tegra' \
+                && check_headers linux/videodev2.h \
+                && require_pkg_config libv4l2 libv4l2 libv4l2.h v4l2_ioctl
+ 

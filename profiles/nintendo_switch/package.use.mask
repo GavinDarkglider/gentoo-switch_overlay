@@ -1,2 +1,4 @@
 # Unmask joystick driver
 x11-base/xorg-drivers -input_devices_joystick
+
+media-video/ffmpeg david

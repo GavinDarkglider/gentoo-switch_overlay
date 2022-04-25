@@ -1,3 +1,4 @@
 # Does not work with jetson-tx1-drivers-32.5.2
 >x11-base/xorg-drivers-21
 >x11-base/xorg-server-21
+>media-video/ffmpeg-4.4-9999

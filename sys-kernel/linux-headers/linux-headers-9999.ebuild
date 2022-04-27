@@ -80,6 +80,7 @@ src_prepare() {
 	eapply "${FILESDIR}"/50dec8298041f5b25d4df112e6108056a7e34526.patch
 	eapply "${FILESDIR}"/ac1447bfc5b10ab2a449551da507bcaeec9cfb68.patch
 	eapply "${FILESDIR}"/01-Revert-arm64-32bit-sigcontext-definition-to-uapi-sigcontext.h.patch
+	eapply "${FILESDIR}"/linux-headers-fix-no-uapi-header-provides-a-definition-of-struct-sockaddr.patch
 	eapply_user
 	default
 }

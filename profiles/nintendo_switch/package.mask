@@ -2,3 +2,4 @@
 >x11-base/xorg-drivers-21
 >x11-base/xorg-server-21
 >media-video/ffmpeg-4.4.9999
+>dev-libs/ell-0.30-r1

@@ -7,7 +7,7 @@ SRC_URI="https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_
 
 SLOT="0"
 KEYWORDS="-* arm64"
-IUSE="alsa doc +egl +firmware gstreamer usb-device vulkan wayland X"
+IUSE="alsa doc +egl +firmware gstreamer usb-device vulkan X"
 RESTRICT="preserve-libs mirror"
 
 DEPEND="app-arch/bzip2
@@ -15,11 +15,13 @@ DEPEND="app-arch/bzip2
 
 RDEPEND="
 	X? ( <x11-base/xorg-server-21 )
-	egl? ( media-libs/libglvnd )
+	egl? ( >media-libs/mesa-21.1 )
 	gstreamer? ( media-libs/gst-plugins-bad
-	             media-libs/gst-plugins-ugly )
+            media-libs/gst-plugins-ugly )
 	vulkan? ( media-libs/vulkan-loader )
-	wayland? ( dev-libs/wayland )"
+	v4l? ( =media-libs/libv4l-1.18.0[tegra] )"
+
+# Todo.... Build gstreamer/v4l stuff from upstream packages, with tegra patches.
 
 S="${WORKDIR}/extracted"
 
@@ -37,25 +39,40 @@ src_unpack() {
 
 src_prepare() {
 	# Patch files
-	sed -i 's:libGLX_nvidia.so.0:/usr/lib64/libGLX_nvidia.so.0:g' usr/lib/aarch64-linux-gnu/tegra/nvidia_icd.json
-	sed -i 's:libEGL_nvidia.so.0:/usr/lib64/libEGL_nvidia.so.0:g' usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json
-	sed -i 's:libnvidia-egl-wayland.so.1:/usr/lib64/libnvidia-egl-wayland.so.1:g' usr/share/egl/egl_external_platform.d/nvidia_wayland.json
+	sed -i 's:libGLX_nvidia.so.0:/usr/lib64/tegra/libGLX_nvidia.so.0:g' usr/lib/aarch64-linux-gnu/tegra/nvidia_icd.json
+	sed -i 's:libEGL_nvidia.so.0:/usr/lib64/tegra-egl/libEGL_nvidia.so.0:g' usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json
+
+	echo "/usr/lib64/tegra" > etc/ld.so.conf.d/nvidia-tegra.conf
 
 	# All files in /usr/lib/aarch64-linux-gnu are installed bellow. excepting the deleted at this place
 	cd "${S}"/usr/lib/aarch64-linux-gnu/
 
-	if ! use wayland; then
-		rm -v tegra/libnvidia-egl-wayland.so*       # requires libwayland-client.so.0 + libwayland-server.so.0
-		rm -v tegra/libnvvulkan-producer.so*        # requires libnvidia-egl-wayland.so.1
-		rm -v gstreamer-1.0/libgstnveglglessink.so* # requires libwayland-client.so.0 + libwayland-server.so.0
-	fi
+	use egl       || rm -rv tegra-egl \
+					 tegra/libnvvulkan-producer.so* \
+	                 gstreamer-1.0/libgstnvcompositor.so gstreamer-1.0/libgstnveglglessink.so
 	use gstreamer || rm -rv gstreamer-1.0 tegra/libnvdsbufferpool.so*
-	use egl       || rm -rv tegra-egl
 	use vulkan    || rm -v tegra/lib*vulkan*so*
+
+	use v4l       || rm -r tegra/libnvv4l*.so* tegra/libv4l2*.so* tegra/libtegrav4l2.so libv4l
+
+    #Remove useless egl stuff, we will build upstream with special patches.
+    rm -v tegra/libnvidia-egl-wayland.so*
+    rm -v usr/share/egl/egl_external_platform.d/nvidia_wayland.json
+
+	if use v4l; then
+		#Remove in favor of our in tree built version 
+		rm -v tegra/libnvv4l*.so*
+		rm -v libv4lconvert.so*
+		rm -v libv4l2.so*
+
+		mkdir -p libv4l/plugins/nv
+		mv tegra/libv4l2_nvvideocodec.so libv4l/plugins/
+		mv tegra/libv4l2_nvvidconv.so libv4l/plugins/
+		mv tegra/libtegrav4l2.so ./
+	fi
 
 	rm -v "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/ld.so.conf
 
-	rm -r "${S}"/lib/firmware/gm20b
 	eapply_user
 }
 
@@ -112,25 +129,22 @@ my_do_lib_recursive() {
 }
 
 
+
 src_install() {
 	# Basic files
+	insinto /etc/ld.so.conf.d && doins etc/ld.so.conf.d/nvidia-tegra.conf
+	dobin usr/bin/nvidia-bug-report-tegra.sh
 	insinto /lib/udev/rules.d && doins etc/udev/rules.d/99-tegra-devices.rules
 
 	# Install all libs
-	my_do_lib_recursive usr/lib/aarch64-linux-gnu/ usr/lib64
+	my_do_lib_recursive usr/lib/aarch64-linux-gnu/ /usr/lib64
 
-	# Plugins in old location without symlinks
-	insinto usr/lib/aarch64-linux-gnu/libv4l/plugins/
-	doins -r usr/lib/aarch64-linux-gnu/libv4l/plugins/nv/
+	# Just nvcam
+	insinto /var/nvidia && doins -r var/nvidia/nvcam
 
 	# Missed soname links
-	dosym libv4l2.so.0.0.999999 /usr/lib64/libv4l2.so.0
-	dosym libv4l2.so.0 /usr/lib64/libv4l2.so
-	dosym libv4lconvert.so.0.0.999999 /usr/lib64/libv4lconvert.so.0
-	dosym libv4lconvert.so.0 /usr/lib64/libv4lconvert.so
-
-	dosym libnvdsbufferpool.so.1.0.0 /usr/lib64/libnvdsbufferpool.so
-	dosym libnvgbm.so /usr/lib64/libgbm.so.1
+	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
+	dosym libnvidia-ptxjitcompiler.so.32.3.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
 
 	if use alsa; then
 		insinto /etc
@@ -148,14 +162,9 @@ src_install() {
 		dodoc -r /usr/share/doc
 	fi
 
-	if use egl; then
-		dosym /usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json /usr/share/glvnd/egl_vendor.d/10-nvidia.json
-	fi
-
 	if use firmware; then
 		insinto /lib
 		doins -r lib/firmware || die "Install failed!"
-		dosym tegra21x lib/firmware/gm20b
 	fi
 
 	if use usb-device; then
@@ -168,11 +177,7 @@ src_install() {
 	fi
 
 	if use vulkan; then
-		dosym /usr/lib/aarch64-linux-gnu/tegra/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
-	fi
-
-	if use wayland; then
-		insinto usr/share/egl/egl_external_platform.d && doins usr/share/egl/egl_external_platform.d/nvidia_wayland.json
+		dosym /usr/lib64/tegra/nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
 	fi
 
 	if use X; then

@@ -1,0 +1,18 @@
+diff --git a/include/uapi/linux/if.h b/include/uapi/linux/if.h
+index 1158a04..259617a 100644
+--- a/include/uapi/linux/if.h
++++ b/include/uapi/linux/if.h
+@@ -24,6 +24,10 @@
+#include <linux/socket.h> /* for "struct sockaddr" et al */
+#include <linux/compiler.h> /* for "__user" et al */
+
++#ifndef __KERNEL__
++#include <sys/socket.h> /* for struct sockaddr. */
++#endif
++
+#if __UAPI_DEF_IF_IFNAMSIZ
+#define IFNAMSIZ 16
+#endif /* __UAPI_DEF_IF_IFNAMSIZ */
+--
+ldv
+

@@ -2,3 +2,6 @@
 >x11-base/xorg-drivers-21
 >x11-base/xorg-server-21
 >media-video/ffmpeg-4.4.9999
+#Mask newer libv4l/v4l-utils as patches will need ported forward
+>media-libs/libv4l-1.18.1
+>media-tv/v4l-utils-1.18.1

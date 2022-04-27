@@ -48,3 +48,6 @@ RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant sys-libs/switch-l
 # Xorg server with configuration and onscreen virtual keyboard
 RDEPEND+=" X? ( sys-libs/jetson-tx1-drivers[X] x11-base/xorg-x11 app-accessibility/onboard
           || ( x11-base/nintendo-switch-x11-configuration sys-libs/switch-l4t-configs[X] ) )"
+
+#EGL DRM/KMS Dependencies
+RDEPEND+=" egl? ( gui-libs/tegra-udrm-gbm )"

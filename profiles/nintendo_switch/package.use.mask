@@ -2,3 +2,6 @@
 x11-base/xorg-drivers -input_devices_joystick
 
 media-video/ffmpeg david
+
+# Requires >=dev-libs/ell-0.39
+net-wireless/bluez btpclient mesh

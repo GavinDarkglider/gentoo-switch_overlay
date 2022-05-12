@@ -1,18 +1,14 @@
-diff --git a/include/uapi/linux/if.h b/include/uapi/linux/if.h
-index 1158a04..259617a 100644
---- a/include/uapi/linux/if.h
-+++ b/include/uapi/linux/if.h
+diff -Naur linux-headers-9999/include/uapi/linux/if.h linux-headers-9999-2/include/uapi/linux/if.h
+--- linux-headers-9999/include/uapi/linux/if.h	2022-04-27 18:41:35.694568190 -0000
++++ linux-headers-9999-2/include/uapi/linux/if.h	2022-04-27 18:45:45.223209653 -0000
 @@ -24,6 +24,10 @@
-#include <linux/socket.h> /* for "struct sockaddr" et al */
-#include <linux/compiler.h> /* for "__user" et al */
-
+ #include <linux/socket.h>		/* for "struct sockaddr" et al	*/
+ #include <linux/compiler.h>		/* for "__user" et al           */
+ 
 +#ifndef __KERNEL__
 +#include <sys/socket.h> /* for struct sockaddr. */
 +#endif
 +
-#if __UAPI_DEF_IF_IFNAMSIZ
-#define IFNAMSIZ 16
-#endif /* __UAPI_DEF_IF_IFNAMSIZ */
---
-ldv
-
+ #if __UAPI_DEF_IF_IFNAMSIZ
+ #define	IFNAMSIZ	16
+ #endif /* __UAPI_DEF_IF_IFNAMSIZ */

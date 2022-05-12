@@ -7,7 +7,7 @@ SRC_URI="https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_
 
 SLOT="0"
 KEYWORDS="-* arm64"
-IUSE="alsa doc +egl +firmware gstreamer usb-device vulkan X"
+IUSE="alsa doc +egl +firmware gstreamer usb-device vulkan X v4l"
 RESTRICT="preserve-libs mirror"
 
 DEPEND="app-arch/bzip2
@@ -137,7 +137,7 @@ src_install() {
 	insinto /lib/udev/rules.d && doins etc/udev/rules.d/99-tegra-devices.rules
 
 	# Install all libs
-	my_do_lib_recursive usr/lib/aarch64-linux-gnu/ /usr/lib64
+	my_do_lib_recursive usr/lib/aarch64-linux-gnu/ usr/lib64
 
 	# Just nvcam
 	insinto /var/nvidia && doins -r var/nvidia/nvcam

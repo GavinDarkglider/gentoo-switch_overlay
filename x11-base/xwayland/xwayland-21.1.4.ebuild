@@ -9,7 +9,7 @@ DESCRIPTION="Standalone X server running under Wayland"
 HOMEPAGE="https://wayland.freedesktop.org/xserver.html"
 SRC_URI="https://xorg.freedesktop.org/archive/individual/xserver/${P}.tar.xz"
 
-IUSE="selinux +tegra video_cards_nvidia unwind xcsecurity"
+IUSE="selinux +video_cards_tegra video_cards_nvidia unwind xcsecurity"
 
 LICENSE="MIT"
 SLOT="0"
@@ -36,6 +36,7 @@ DEPEND="
 	>=x11-libs/xtrans-1.3.5
 	x11-base/xorg-proto
 	>=x11-misc/xkeyboard-config-2.4.1-r3
+	video_cards_tegra? ( gui-libs/egl-wayland )
 "
 
 RDEPEND="
@@ -59,7 +60,7 @@ src_configure() {
 		$(meson_use unwind libunwind)
 		$(meson_use xcsecurity)
 		$(meson_use video_cards_nvidia xwayland_eglstream)
-		$(meson_use tegra xwayland_eglstream)
+		$(meson_use video_cards_tegra xwayland_eglstream)
 		-Ddpms=true
 		-Ddri3=true
 		-Ddtrace=false

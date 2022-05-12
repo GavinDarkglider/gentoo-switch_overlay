@@ -76,6 +76,7 @@ PATCHES=(
 	# https://github.com/bluez/bluez/issues/220
 	"${FILESDIR}"/0001-hog-Fix-read-order-of-attributes-rediffed.patch
 	"${FILESDIR}"/0002-hog-Add-input-queue-while-uhid-device-has-not-been-c-rediffed.patch
+	"${FILESDIR}"/bluez_ell_patch.patch
 )
 
 pkg_setup() {

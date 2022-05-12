@@ -77,6 +77,7 @@ PATCHES=(
 	# gatt-client: Fix disconnecting due to GattCharacteristic1.MTU
 	# (from 'master')
 	"${FILESDIR}"/${P}-fix-disconnecting.patch
+	"${FILESDIR}"/bluez_ell_patch.patch
 )
 
 pkg_setup() {

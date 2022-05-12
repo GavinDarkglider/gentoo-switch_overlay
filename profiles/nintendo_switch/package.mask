@@ -8,3 +8,6 @@
 
 #Fix dev-libs/ell
 >dev-libs/ell-0.30-r1
+
+#mesa
+>media-libs/mesa-21.3.8

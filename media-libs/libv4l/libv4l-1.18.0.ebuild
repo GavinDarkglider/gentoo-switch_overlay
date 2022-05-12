@@ -40,8 +40,7 @@ src_prepare() {
 	if use tegra; then
 		PATCHES+=( "${FILESDIR}"/0001-Make-plugin-directory-relative-to-ORIGIN.patch \
                            "${FILESDIR}"/0002-Replace-stat-fstat-calls-with-__xstat-__fxstat.patch \
-                           "${FILESDIR}"/0003-Update-conversion-defaults-to-match-NVIDIA-sources.patch \\
-		)
+                           "${FILESDIR}"/0003-Update-conversion-defaults-to-match-NVIDIA-sources.patch )
 	fi
 	default
 	elibtoolize

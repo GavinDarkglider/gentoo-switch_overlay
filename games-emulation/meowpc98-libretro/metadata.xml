@@ -2,7 +2,7 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="person">
-		<email>menelkir@itroll.org</email>
+		<email>dmenelkir@gmaill.com</email>
 		<name>Daniel Menelkir</name>
 	</maintainer>
 	<longdescription lang="en">Neko Project 2 (PC98 emulator) port for libretro/RetroArch (XNP2)

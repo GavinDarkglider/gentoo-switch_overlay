@@ -2,4 +2,4 @@
 x11-base/xorg-drivers -input_devices_joystick
 
 media-video/ffmpeg david
-www-client/chromium -system-ffmpeg
+

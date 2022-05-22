@@ -39,6 +39,10 @@ BDEPEND="
 REQUIRED_USE="|| ( opengl gles2 )
 			  || ( drm wayland X )"
 
+PATCHES=(
+	"${FILESDIR}"/${PV}-libmatrix-Add-missing-utility-include.patch
+)
+
 src_configure() {
 	local flavors=()
 

@@ -7,7 +7,7 @@ SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v7.1/t210/jetson-
 
 SLOT="0"
 KEYWORDS="-* arm64"
-IUSE="alsa doc +egl -firmware gstreamer usb-device vulkan X v4l"
+IUSE="alsa doc +egl firmware gstreamer usb-device vulkan X v4l"
 RESTRICT="preserve-libs mirror"
 
 DEPEND="app-arch/bzip2
@@ -15,11 +15,11 @@ DEPEND="app-arch/bzip2
 
 RDEPEND="
 	X? ( <x11-base/xorg-server-21 )
-	egl? ( >media-libs/mesa-21.1 )
+	egl? ( >media-libs/mesa-21.1 x11-libs/libdrm[video_cards_tegra] )
 	gstreamer? ( media-libs/gst-plugins-bad
             media-libs/gst-plugins-ugly )
 	vulkan? ( media-libs/vulkan-loader )
-	v4l? ( =media-libs/libv4l-1.18.0[tegra] )"
+	v4l? ( =media-libs/libv4l-1.18.0[video_cards_tegra] )"
 
 # Todo.... Build gstreamer/v4l stuff from upstream packages, with tegra patches.
 
@@ -175,7 +175,7 @@ src_install() {
 	# Missed soname links
 	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
 	dosym libnvidia-ptxjitcompiler.so.32.7.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
-        dosym libdrm_nvdc.so /usr/lib64/libdrm.so.2
+	dosym libdrm_nvdc.so /usr/lib64/libdrm.so.2
 
 	if use alsa; then
 		insinto /etc

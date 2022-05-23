@@ -3,7 +3,6 @@
 # in portage ebuild arm64 is not set
 games-util/joycond ~*
 
-
 =x11-drivers/xf86-input-joystick-1.6.3 ~arm64
 
 #Bookworm dependencies

@@ -1,12 +1,15 @@
-# Does not work with jetson-tx1-drivers-32.5.2
+# Does not work with jetson-tx1-drivers-32.7
 >x11-base/xorg-drivers-21
 >x11-base/xorg-server-21
->media-video/ffmpeg-4.4.9999
+
 #Mask newer libv4l/v4l-utils as patches will need ported forward
 >media-libs/libv4l-1.18.1
 >media-tv/v4l-utils-1.18.1
 
-#Fix dev-libs/ell
+# Use version in overlay
+>media-video/ffmpeg-4.4.9999
+
+# Downgrade because of old linux headers from l4t kernel
 >dev-libs/ell-0.30-r1
 
 #mesa
@@ -16,4 +19,6 @@
 >media-libs/alsa-lib-1.2.4
 >media-libs/alsa-topology-conf-1.2.4
 >media-libs/alsa-ucm-conf-1.2.4
+>media-plugins/alsa-plugins-1.2.4
 >media-sound/pulseaudio-14.2
+>media-sound/pavucontrol-5

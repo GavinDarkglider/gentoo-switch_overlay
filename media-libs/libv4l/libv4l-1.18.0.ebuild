@@ -13,8 +13,8 @@ SRC_URI="https://linuxtv.org/downloads/v4l-utils/${MY_P}.tar.bz2"
 
 LICENSE="LGPL-2.1+"
 SLOT="0/0"
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux"
-IUSE="jpeg tegra"
+KEYWORDS="~alpha ~amd64 ~arm arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux"
+IUSE="jpeg video_cards_tegra"
 
 RDEPEND="jpeg? ( >=virtual/jpeg-0-r2:0=[${MULTILIB_USEDEP}] )
 	!elibc_glibc? ( sys-libs/argp-standalone )
@@ -37,7 +37,7 @@ pkg_setup() {
 }
 
 src_prepare() {
-	if use tegra; then
+	if use video_cards_tegra; then
 		PATCHES+=( "${FILESDIR}"/0001-Make-plugin-directory-relative-to-ORIGIN.patch \
                            "${FILESDIR}"/0002-Replace-stat-fstat-calls-with-__xstat-__fxstat.patch \
                            "${FILESDIR}"/0003-Update-conversion-defaults-to-match-NVIDIA-sources.patch )

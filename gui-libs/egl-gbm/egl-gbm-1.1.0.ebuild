@@ -11,7 +11,7 @@ SRC_URI="https://github.com/NVIDIA/egl-gbm/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="amd64 ~arm64"
+KEYWORDS="amd64 arm64"
 
 RDEPEND="
 	>=media-libs/mesa-21.2[gbm(+)]
@@ -24,7 +24,7 @@ DEPEND="
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-1.1.0-werror.patch
-        0001-Tegra-workarounds.patch
+        "${FILESDIR}"/0001-Tegra-workarounds.patch
 )
 
 src_install() {

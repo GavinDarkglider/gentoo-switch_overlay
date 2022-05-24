@@ -3,8 +3,12 @@
 # in portage ebuild arm64 is not set
 games-util/joycond ~*
 
-=x11-drivers/xf86-input-joystick-1.6.3 ~arm64
-
 #Bookworm dependencies
 dev-libs/granite *
 dev-python/html2text *
+
+#wayland dependencies
+gui-libs/egl-wayland ~arm64
+gui-libs/eglexternalplatform ~arm64
+
+x11-drivers/xf86-input-joystick ~arm64

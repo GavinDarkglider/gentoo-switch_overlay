@@ -11,11 +11,11 @@ SRC_URI="https://github.com/OE4T/tegra-udrm-gbm/archive/refs/tags/v${PV}.tar.gz 
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="amd64 ~arm64"
+KEYWORDS="amd64 arm64"
 
 RDEPEND="
 	>=media-libs/mesa-21.2[gbm(+)]
 	x11-libs/libdrm
-	sys-libs/tegra-tx1-drivers"
-	
+	sys-libs/jetson-tx1-drivers"
+
 DEPEND="${RDEPEND}"

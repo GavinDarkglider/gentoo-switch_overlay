@@ -53,6 +53,8 @@ src_prepare() {
 
 src_install() {
 	distutils-r1_src_install
+        insinto /etc/xdg/autostart
+	doins "${FILESDIR}"/onboard.desktop
 }
 
 pkg_preinst() {

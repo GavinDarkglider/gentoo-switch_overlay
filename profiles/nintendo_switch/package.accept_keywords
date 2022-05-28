@@ -5,3 +5,7 @@ games-util/joycond ~*
 
 
 =x11-drivers/xf86-input-joystick-1.6.3 ~arm64
+
+#Bookworm dependencies
+dev-libs/granite *
+dev-python/html2text *

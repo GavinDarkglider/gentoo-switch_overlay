@@ -12,3 +12,6 @@ gui-libs/egl-wayland ~arm64
 gui-libs/eglexternalplatform ~arm64
 
 x11-drivers/xf86-input-joystick ~arm64
+
+#Gnome
+gnome-base/gnome-light *

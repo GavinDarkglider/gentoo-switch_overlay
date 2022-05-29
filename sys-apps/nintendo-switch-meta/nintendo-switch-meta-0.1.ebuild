@@ -6,7 +6,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="bootstack bluetooth dock-script elogind initramfs joystick kernel-sources kernel-bin alsa reboot2hekate wifi X"
+IUSE="bootstack bluetooth dock-script elogind initramfs joystick kernel-sources kernel-bin alsa reboot2hekate wifi X egl"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"

@@ -72,7 +72,6 @@ src_prepare() {
 	fi
 
 	rm -v "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/ld.so.conf
-
 	eapply_user
 }
 
@@ -176,6 +175,9 @@ src_install() {
 	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
 	dosym libnvidia-ptxjitcompiler.so.32.7.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
 	dosym libdrm_nvdc.so /usr/lib64/libdrm.so.2
+
+	#EGL Config
+	dosym mv /usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json  /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 	if use alsa; then
 		insinto /etc

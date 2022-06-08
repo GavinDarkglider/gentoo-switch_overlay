@@ -7,7 +7,7 @@ SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v7.1/t210/jetson-
 
 SLOT="0"
 KEYWORDS="-* arm64"
-IUSE="alsa doc +egl firmware gstreamer usb-device vulkan X v4l"
+IUSE="alsa doc +egl firmware gstreamer usb-device vulkan X v4l pulseaudio"
 RESTRICT="preserve-libs mirror"
 
 DEPEND="app-arch/bzip2
@@ -57,17 +57,18 @@ src_prepare() {
 
     #Remove useless egl stuff, we will build upstream with special patches.
     rm -v tegra/libnvidia-egl-wayland.so*
-    rm -v usr/share/egl/egl_external_platform.d/nvidia_wayland.json
+    rm -v ../../share/egl/egl_external_platform.d/nvidia_wayland.json
 
 	if use v4l; then
 		#Remove in favor of our in tree built version 
 		rm -v tegra/libnvv4l*.so*
 		rm -v libv4lconvert.so*
 		rm -v libv4l2.so*
-
-		mkdir -p libv4l/plugins/nv
+		rm -r libv4l
+		mkdir -p libv4l/plugins
 		mv tegra/libv4l2_nvvideocodec.so libv4l/plugins/
 		mv tegra/libv4l2_nvvidconv.so libv4l/plugins/
+		mv tegra/libv4l2_nvargus.so libv4l/plugins/
 		mv tegra/libtegrav4l2.so ./
 	fi
 
@@ -173,11 +174,11 @@ src_install() {
 
 	# Missed soname links
 	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
-	dosym libnvidia-ptxjitcompiler.so.32.7.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
+	dosym libnvidia-ptxjitcompiler.so.440.18 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
 	dosym libdrm_nvdc.so /usr/lib64/libdrm.so.2
 
 	#EGL Config
-	dosym mv /usr/lib/aarch64-linux-gnu/tegra-egl/nvidia.json  /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+	dosym /usr/lib64/tegra-egl/nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 	if use alsa; then
 		insinto /etc
@@ -225,8 +226,24 @@ pkg_postinst() {
 	[ "${ROOT}" != "/" ] && return 0
 
 	ldconfig
-	if use alsa && ! [[ -f /etc/asound.conf ]]; then
+	if use alsa && ! [[ -f /etc/asound.conf ]] && ! use pulseaudio; then
 		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
 		ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
 	fi
+	if use pulseaudio && ! [[ -f /etc/asound.conf ]] && ! use alsa; then
+               einfo "No /etc/asound.conf found, create default Pulseaudio asound.conf"
+		cat << EOF >> /etc/asound.conf
+# This file is referred to from files in /usr/share/alsa/alsa.conf.d/ in order
+# to set up the pulse device as the default if required.
+
+pcm.!default {
+        type pulse
+}
+
+ctl.!default {
+        type pulse
+}
+EOF
+	fi
+
 }

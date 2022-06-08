@@ -1,5 +1,7 @@
 EAPI=7
 
+inherit udev
+
 DESCRIPTION="NVIDIA Jetson TX1 Accelerated Graphics Driver"
 HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
 
@@ -226,13 +228,9 @@ pkg_postinst() {
 	[ "${ROOT}" != "/" ] && return 0
 
 	ldconfig
-	if use alsa && ! [[ -f /etc/asound.conf ]] && ! use pulseaudio; then
-		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
-		ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
-	fi
-	if use pulseaudio && ! [[ -f /etc/asound.conf ]] && ! use alsa; then
+	if use pulseaudio && ! [[ -f /etc/asound.conf ]]; then
                einfo "No /etc/asound.conf found, create default Pulseaudio asound.conf"
-		cat << EOF >> /etc/asound.conf
+               cat << EOF >> /etc/asound.conf
 # This file is referred to from files in /usr/share/alsa/alsa.conf.d/ in order
 # to set up the pulse device as the default if required.
 
@@ -244,6 +242,11 @@ ctl.!default {
         type pulse
 }
 EOF
-	fi
 
+	elif use alsa && ! [[ -f /etc/asound.conf ]]; then
+		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
+		ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
+	fi
+	udev_reload
 }
+

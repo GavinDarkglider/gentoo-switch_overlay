@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{8..11} )
 
 inherit gnome.org gnome2-utils meson python-single-r1 virtualx xdg
 
@@ -11,7 +11,7 @@ HOMEPAGE="https://wiki.gnome.org/Projects/GnomeShell"
 
 LICENSE="GPL-2+ LGPL-2+"
 SLOT="0"
-IUSE="+bluetooth +browser-extension elogind gtk-doc +ibus +networkmanager systemd telepathy test -pipewire"
+IUSE="+bluetooth +browser-extension elogind gtk-doc +ibus +networkmanager systemd telepathy test pipewire"
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	?? ( elogind systemd )"
 RESTRICT="!test? ( test )"
@@ -37,7 +37,8 @@ DEPEND="
 	bluetooth? ( net-wireless/gnome-bluetooth:3=[introspection] )
 	>=media-libs/gstreamer-0.11.92:1.0
 	media-libs/gst-plugins-base:1.0
-	pipewire? ( >=media-video/pipewire-0.3.0:= )
+	pipewire? (
+		>=media-video/pipewire-0.3.0:= )
 	networkmanager? (
 		>=net-misc/networkmanager-1.10.4:=[introspection]
 		net-libs/libnma[introspection]
@@ -140,9 +141,6 @@ PATCHES=(
 	"${FILESDIR}"/42.0-optional-bluetooth.patch
 	# Change favorites defaults, bug #479918
 	"${FILESDIR}"/40.0-defaults.patch
-
-	# Upstream backport, bug #844919
-	"${FILESDIR}"/42.1-polkit-g_autoptr.patch
 )
 
 src_prepare() {

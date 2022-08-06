@@ -33,7 +33,7 @@ case "${EAPI:-0}" in
 		;;
 esac
 
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{8..11} )
 
 inherit python-any-r1 savedconfig toolchain-funcs kernel-install
 
@@ -43,7 +43,8 @@ BDEPEND="
 	sys-devel/bc
 	sys-devel/flex
 	virtual/libelf
-	virtual/yacc"
+	virtual/yacc
+"
 
 # @FUNCTION: kernel-build_src_configure
 # @DESCRIPTION:
@@ -199,6 +200,14 @@ kernel-build_src_install() {
 
 	# building modules fails with 'vmlinux has no symtab?' if stripped
 	use ppc64 && dostrip -x "/usr/src/linux-${ver}/${image_path}"
+
+	# Install vmlinux with debuginfo when requested
+	if use debug; then
+		if [[ "${image_path}" != "vmlinux" ]]; then
+			mv "build/vmlinux" "${ED}/usr/src/linux-${ver}/vmlinux" || die
+		fi
+		dostrip -x "/usr/src/linux-${ver}/vmlinux"
+	fi
 
 	# strip empty directories
 	find "${D}" -type d -empty -exec rmdir {} + || die

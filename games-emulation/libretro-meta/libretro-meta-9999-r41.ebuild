@@ -15,7 +15,7 @@ IUSE="2048 3dengine 81 atari800 bk blastem bluemsx bnes boom3 bsnes bsnes-mercur
 	mednafen-pce-fast mednafen-pcfx mednafen-psx mednafen-psx-hw mednafen-saturn mednafen-supafaust \
 	mednafen-supergrafx mednafen-vb mednafen-wswan melonds meowpc98 mesen mesens meteor mgba mrboom mu mupen64 \
 	np2kai neocd nestopia nxengine o2em oberon opera openlara parallel_n64 pcsx-rearmed picodrive pocketcdg \
-	pokemini potator ppsspp prboom prosystem puae puae2021 px68k quicknes quasi88 race retro8 retrodream reminiscence \
+	pokemini potator ppsspp prboom prosystem puae puae2021 px68k quicknes quasi88 race retro8 reminiscence \
 	sameboy scummvm smsplus snes9x snes9x2002 snes9x2005 snes9x2010 squirreljme stella2014 tgbdual tic80 theodore \
 	thepowdertoy tyrquake uzem vba-next vbam vecx vemulator vice-x128 vice-x64 vice-x64sc vice-xcbm2 vice-xcbm5x0 \
 	vice-xpet vice-xplus4 vice-xscpu64 vice-xvic virtualjaguar vitaquake2 vitaquake3 x1 xrick yabause"
@@ -96,7 +96,7 @@ RDEPEND="2048? ( games-emulation/libretro-twentyfortyeight )
 	mesen? ( games-emulation/mesen-libretro )
 	mesens? ( games-emulation/mesens-libretro )
 	meteor? ( games-emulation/meteor-libretro )
-	mgba? ( games-emulation/mgba-libretro )
+	mgba? ( games-emulation/mbga[libretro] )
 	mrboom? ( games-emulation/mrboom-libretro )
 	mu? ( games-emulation/mu-libretro )
 	mupen64? ( games-emulation/mupen64next-libretro )
@@ -124,7 +124,6 @@ RDEPEND="2048? ( games-emulation/libretro-twentyfortyeight )
 	quicknes? ( games-emulation/quicknes-libretro )
 	race? ( games-emulation/race-libretro )
 	retro8? ( games-emulation/retro8-libretro )
-	retrodream? ( games-emulation/retrodream-libretro )
 	reminiscence? ( games-emulation/reminiscence-libretro )
 	sameboy? ( games-emulation/sameboy-libretro )
 	scummvm? ( games-emulation/scummvm-libretro )

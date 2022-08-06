@@ -4,7 +4,7 @@
 EAPI=7
 
 LIBRETRO_REPO_NAME="libretro/swanstation"
-LIBRETRO_COMMIT_SHA="7ef8f419c6302d547b39bf920970bdc8ff6bab82"
+LIBRETRO_COMMIT_SHA="fdd4a9efa13271747a0046e0502b54f39eba6da6"
 
 inherit libretro-core cmake flag-o-matic
 

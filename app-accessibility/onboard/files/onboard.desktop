@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Start Onboard
+Exec=onboard
+Terminal=false

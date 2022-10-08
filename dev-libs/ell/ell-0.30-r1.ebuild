@@ -38,6 +38,7 @@ CONFIG_CHECK="
 	~KEY_DH_OPERATIONS
 "
 
+PATCHES=( "${FILESDIR}"/ell-0.30-fix-compile-with-older-toolchains.patch )
 src_prepare() {
 	default
 	[[ "${PV}" == *9999 ]] && eautoreconf

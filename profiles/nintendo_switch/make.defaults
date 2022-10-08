@@ -10,3 +10,5 @@ USE="$USE vulkan"        # Graphics acceleration
 USE="$USE gstreamer v4l" # Video acceleration
 
 INPUT_DEVICES="libinput joystick"
+
+VIDEO_CARDS="tegra"

@@ -3,7 +3,8 @@
 
 EAPI=7
 
-PYTHON_COMPAT=( python3_{8,9} )
+PYTHON_COMPAT=( python3_{8,9,10,11} )
+DISTUTILS_USE_SETUPTOOLS="no"
 
 inherit distutils-r1 gnome2-utils
 
@@ -15,8 +16,6 @@ SRC_URI="https://github.com/linuxdeepin/${PN}/archive/${PV}.tar.gz -> ${P}.tar.g
 LICENSE="GPL-3+ BSD"
 SLOT="0"
 KEYWORDS="~arm64 ~x86"
-
-DISTUTILS_USE_SETUPTOOLS="no"
 
 COMMON_DEPEND="app-text/hunspell:=
 	dev-libs/dbus-glib
@@ -53,8 +52,6 @@ src_prepare() {
 
 src_install() {
 	distutils-r1_src_install
-        insinto /etc/xdg/autostart
-	doins "${FILESDIR}"/onboard.desktop
 }
 
 pkg_preinst() {

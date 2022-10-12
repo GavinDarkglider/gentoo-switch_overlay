@@ -6,7 +6,6 @@ EAPI=7
 ETYPE="headers"
 H_SUPPORTEDARCH="arm64"
 
-SWITCHROOT_VER="linux-3.4.1-dev"
 NVIDIA_VER="l4t/l4t-r32.5"
 
 inherit kernel-2 git-r3
@@ -25,13 +24,13 @@ DESCRIPTION="Nintendo Switch kernel Headers"
 
 src_unpack() {
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-4.9"
-	EGIT_BRANCH="${SWITCHROOT_VER}"
+	EGIT_BRANCH="linux-3.4.1-dev"
 	EGIT_CHECKOUT_DIR="${S}"
 	git-r3_src_unpack
 	rm -Rf "${S}"/.git*
-	
+
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-kernel-nvidia"
-	EGIT_BRANCH="${SWITCHROOT_VER}"
+	EGIT_BRANCH="linux-3.4.2-dev"
 	EGIT_CHECKOUT_DIR="${S}/nvidia"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
@@ -43,7 +42,7 @@ src_unpack() {
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch"
-	EGIT_BRANCH="${SWITCHROOT_VER}"
+	EGIT_BRANCH="linux-3.4.1-dev"
 	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/icosa"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
@@ -74,12 +73,13 @@ src_unpack() {
 }
 
 src_prepare() {
-	eapply "${FILESDIR}"/unify-kernel.patch
-	eapply "${FILESDIR}"/340_gcc-10.patch
-	eapply "${FILESDIR}"/d97aaee81dc4b82595dc90ccb6a29bb0de3669d4.patch
-	eapply "${FILESDIR}"/50dec8298041f5b25d4df112e6108056a7e34526.patch
-	eapply "${FILESDIR}"/ac1447bfc5b10ab2a449551da507bcaeec9cfb68.patch
-	eapply "${FILESDIR}"/01-Revert-arm64-32bit-sigcontext-definition-to-uapi-sigcontext.h.patch
+	eapply "${FILESDIR}"/01-unify_l4t_sources.patch
+	eapply "${FILESDIR}"/02-gcc-10.patch
+	eapply "${FILESDIR}"/03-nvidia_drivers_actmon_add__init_annotation_to_tegra_actmon_register.patch
+	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
+	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch
+	eapply "${FILESDIR}"/06-Revert-arm64-32bit-sigcontext-definition-to-uapi-signcontext.h.patch
+
 	eapply "${FILESDIR}"/linux-headers-fix-no-uapi-header-provides-a-definition-of-struct-sockaddr.patch
 	eapply_user
 	default

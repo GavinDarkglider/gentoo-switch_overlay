@@ -1,5 +1,4 @@
-# Copyright 1999-2020 Alexander Weber
-# Copyright 1999-2021 Gavin_Darkglider / Alexander Weber
+# Copyright 1999-2022 Gavin_Darkglider / Alexander Weber
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
@@ -46,7 +45,7 @@ RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"
 RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant sys-libs/switch-l4t-configs[brcm] )"
 
 # Xorg server with configuration and onscreen virtual keyboard
-RDEPEND+=" X? ( sys-libs/jetson-tx1-drivers[X] x11-base/xorg-x11 app-accessibility/onboard
+RDEPEND+=" X? ( sys-libs/jetson-tx1-drivers[X] app-accessibility/onboard
           || ( x11-base/nintendo-switch-x11-configuration sys-libs/switch-l4t-configs[X] ) )"
 
 #EGL DRM/KMS Dependencies

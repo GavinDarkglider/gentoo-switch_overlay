@@ -4,13 +4,13 @@
 EAPI=7
 
 EGIT_REPO_URI="https://gitlab.freedesktop.org/mesa/drm.git"
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{8..11} )
 
 if [[ ${PV} = 9999* ]]; then
 	GIT_ECLASS="git-r3"
 fi
 
-inherit ${GIT_ECLASS} python-any-r1 flag-o-matic meson-multilib
+inherit ${GIT_ECLASS} python-any-r1 meson-multilib
 
 DESCRIPTION="X.Org libdrm library"
 HOMEPAGE="https://dri.freedesktop.org/ https://gitlab.freedesktop.org/mesa/drm"
@@ -18,7 +18,7 @@ if [[ ${PV} = 9999* ]]; then
 	SRC_URI=""
 else
 	SRC_URI="https://dri.freedesktop.org/libdrm/${P}.tar.xz"
-	KEYWORDS="~alpha ~amd64 ~arm arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux"
+	KEYWORDS="~alpha amd64 arm arm64 hppa ~ia64 ~loong ~m68k ~mips ppc ppc64 ~riscv ~s390 sparc x86 ~amd64-linux ~x86-linux"
 fi
 
 VIDEO_CARDS="amdgpu exynos freedreno intel nouveau omap radeon tegra vc4 vivante vmware"
@@ -41,7 +41,7 @@ BDEPEND="${PYTHON_DEPS}
 PATCHES=( "${FILESDIR}"/libdrm.patch )
 
 python_check_deps() {
-	has_version -b "dev-python/docutils[${PYTHON_USEDEP}]"
+	python_has_version "dev-python/docutils[${PYTHON_USEDEP}]"
 }
 
 multilib_src_configure() {

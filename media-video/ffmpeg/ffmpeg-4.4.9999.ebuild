@@ -1,7 +1,7 @@
 # Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 # Subslot: libavutil major.libavcodec major.libavformat major
 # Since FFmpeg ships several libraries, subslot is kind of limited here.
@@ -273,14 +273,16 @@ RDEPEND="${RDEPEND}
 "
 
 DEPEND="${RDEPEND}
+	amf? ( media-libs/amf-headers )
 	ladspa? ( >=media-libs/ladspa-sdk-1.13-r2[${MULTILIB_USEDEP}] )
 	v4l? ( sys-kernel/linux-headers )
 	nvv4l2? ( =sys-kernel/linux-headers-9999* sys-libs/jetson-tx1-drivers )
 "
-BDEPEND="
+
+# += for verify-sig above
+BDEPEND+="
 	>=sys-devel/make-3.81
 	virtual/pkgconfig
-	amf? ( media-libs/amf-headers )
 	cpu_flags_x86_mmx? ( || ( >=dev-lang/nasm-2.13 >=dev-lang/yasm-1.3 ) )
 	cuda? ( >=sys-devel/clang-7[llvm_targets_NVPTX] )
 	doc? ( sys-apps/texinfo )
@@ -317,7 +319,9 @@ S=${WORKDIR}/${P/_/-}
 
 PATCHES=(
 	"${FILESDIR}"/chromium-r1.patch
-	"${FILESDIR}"/ffmpeg-5.0-backport-ranlib-build-fix.patch
+	"${FILESDIR}"/${PN}-5.0-backport-ranlib-build-fix.patch
+	"${FILESDIR}"/ffmpeg-4.4.2-libsdl2-new-version-scheme.patch
+	"${FILESDIR}"/ffmpeg-4.4.3-clang-14-ff_seek_frame_binary-crash.patch
 	"${FILESDIR}"/ffmpeg-fix-nvv4l2-linking-issues.patch
 )
 
@@ -329,6 +333,20 @@ build_separate_libffmpeg() {
 	use opencl
 }
 
+pkg_setup() {
+	# ffmpeg[chromaprint] depends on chromaprint, and chromaprint[tools] depends on ffmpeg.
+	# May cause breakage while updating, #862996, #625210, #833821.
+	if has_version media-libs/chromaprint[tools] && use chromaprint; then
+		ewarn "You have media-libs/chromaprint installed with 'tools' USE flag, which "
+		ewarn "links to ffmpeg, and you have enabled 'chromaprint' USE flag for ffmpeg, "
+		ewarn "which links to chromaprint. This may cause issues while rebuilding ffmpeg."
+		ewarn ""
+		ewarn "If your build fails to 'ERROR: chromaprint not found', rebuild chromaprint "
+		ewarn "without the 'tools' use flag first, then rebuild ffmpeg, and then finally enable "
+		ewarn "'tools' USE flag for chromaprint. See #862996."
+	fi
+}
+
 src_prepare() {
 	if [[ "${PV%_p*}" != "${PV}" ]] ; then # Snapshot
 		export revision=git-N-${FFMPEG_REVISION}
@@ -337,11 +355,25 @@ src_prepare() {
 	eapply "${FILESDIR}/vmaf-models-default-path.patch"
 
 	default
+
+	# -fdiagnostics-color=auto gets appended after user flags which
+	# will ignore user's preference.
+	sed -i -e '/check_cflags -fdiagnostics-color=auto/d' configure || die
+
 	echo 'include $(SRC_PATH)/ffbuild/libffmpeg.mak' >> Makefile || die
 }
 
 multilib_src_configure() {
 	local myconf=( )
+
+	# bug 842201
+	use ia64 && tc-is-gcc && append-flags \
+		-fno-tree-ccp \
+		-fno-tree-dominator-opts \
+		-fno-tree-fre \
+		-fno-code-hoisting \
+		-fno-tree-pre \
+		-fno-tree-vrp
 
 	local ffuse=( "${FFMPEG_FLAG_MAP[@]}" )
 	use openssl && myconf+=( --enable-nonfree )
@@ -415,9 +447,9 @@ multilib_src_configure() {
 		break
 	done
 
-	# LTO support, bug #566282, bug #754654
-	is-flagq "-flto*" && myconf+=( "--enable-lto" )
-	filter-flags "-flto*"
+	# LTO support, bug #566282, bug #754654, bug #772854
+	[[ ${ABI} != x86 ]] && is-flagq "-flto*" && myconf+=( "--enable-lto" )
+	filter-lto
 
 	# Mandatory configuration
 	myconf=(

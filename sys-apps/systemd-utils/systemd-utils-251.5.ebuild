@@ -2,11 +2,13 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{8..11} )
 
-inherit bash-completion-r1 flag-o-matic meson-multilib python-any-r1 toolchain-funcs usr-ldscript
+QA_PKGCONFIG_VERSION=$(ver_cut 1)
 
-DESCRIPTION="Utilities taken from systemd"
+inherit bash-completion-r1 flag-o-matic meson-multilib python-any-r1 toolchain-funcs udev usr-ldscript
+
+DESCRIPTION="Utilities split out from systemd for OpenRC users"
 HOMEPAGE="https://systemd.io/"
 
 if [[ ${PV} == *.* ]]; then
@@ -19,17 +21,18 @@ else
 	SRC_URI="https://github.com/systemd/systemd/archive/refs/tags/v${PV}.tar.gz -> ${MY_P}.tar.gz"
 fi
 
-MUSL_PATCHSET="systemd-musl-patches-250.4"
+MUSL_PATCHSET="systemd-musl-patches-251.2"
 SRC_URI+=" elibc_musl? ( https://dev.gentoo.org/~floppym/dist/${MUSL_PATCHSET}.tar.gz )"
 
 LICENSE="GPL-2 LGPL-2.1 MIT public-domain"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
-IUSE="+acl boot +kmod selinux sysusers +tmpfiles test +udev"
+IUSE="+acl boot +kmod selinux split-usr sysusers +tmpfiles test +udev"
 REQUIRED_USE="|| ( boot tmpfiles sysusers udev )"
 RESTRICT="!test? ( test )"
 
 COMMON_DEPEND="
+	elibc_musl? ( >=sys-libs/musl-1.2.3 )
 	selinux? ( sys-libs/libselinux:0= )
 	tmpfiles? (
 		acl? ( sys-apps/acl:0= )
@@ -48,10 +51,8 @@ COMMON_DEPEND="
 	)
 "
 DEPEND="${COMMON_DEPEND}
-	boot? (
-		>=sys-boot/gnu-efi-3.0.2
-	)
 	>=sys-kernel/linux-headers-3.11
+	boot? ( >=sys-boot/gnu-efi-3.0.2 )
 "
 RDEPEND="${COMMON_DEPEND}
 	boot? ( !<sys-boot/systemd-boot-250 )
@@ -92,8 +93,11 @@ BDEPEND="
 	virtual/pkgconfig
 "
 
+TMPFILES_OPTIONAL=1
+UDEV_OPTIONAL=1
+
 python_check_deps() {
-	has_version -b "dev-python/jinja[${PYTHON_USEDEP}]"
+	python_has_version "dev-python/jinja[${PYTHON_USEDEP}]"
 }
 
 QA_EXECSTACK="usr/lib/systemd/boot/efi/*"
@@ -101,11 +105,15 @@ QA_FLAGS_IGNORED="usr/lib/systemd/boot/efi/.*"
 
 src_prepare() {
 	local PATCHES=(
-		"${FILESDIR}/250.4-test-systemd-tmpfiles.standalone.patch"
+		# Breaks Clang. Revert the commit for now and force off F_S=3.
+		"${FILESDIR}/251-revert-fortify-source-3-fix.patch"
 		"${FILESDIR}/systemd-utils-001-fix-filesystem-checks.patch"
 	)
+
 	if use elibc_musl; then
 		PATCHES+=( "${WORKDIR}/${MUSL_PATCHSET}" )
+		# Applied upstream in 251.3
+		rm "${WORKDIR}/${MUSL_PATCHSET}/0001-Add-sys-file.h-for-LOCK_.patch" || die
 	fi
 	default
 
@@ -115,12 +123,36 @@ src_prepare() {
 	sed -i -e "/${rpath_pattern}/d" meson.build || die
 }
 
+src_configure() {
+	# Broken with FORTIFY_SOURCE=3 without a patch. And the patch
+	# wasn't backported to 250.x, but it turns out to break Clang
+	# anyway:  bug #841770.
+	#
+	# Our toolchain sets F_S=2 by default w/ >= -O2, so we need
+	# to unset F_S first, then explicitly set 2, to negate any default
+	# and anything set by the user if they're choosing 3 (or if they've
+	# modified GCC to set 3).
+	#
+	if is-flagq '-O[23]' || is-flagq '-Ofast' ; then
+		# We can't unconditionally do this b/c we fortify needs
+		# some level of optimisation.
+		filter-flags -D_FORTIFY_SOURCE=3
+		append-cppflags -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2
+	fi
+
+	multilib-minimal_src_configure
+}
+
 multilib_src_configure() {
 	local emesonargs=(
-		-Drootprefix="${EPREFIX:-/}"
+		$(meson_use split-usr)
+		$(meson_use split-usr split-bin)
+		-Drootprefix="$(usex split-usr "${EPREFIX:-/}" "${EPREFIX}/usr")"
+		-Drootlibdir="${EPREFIX}/usr/$(get_libdir)"
 		-Dsysvinit-path=
 		$(meson_native_use_bool boot efi)
 		$(meson_native_use_bool boot gnu-efi)
+		$(meson_native_use_bool boot kernel-install)
 		$(meson_native_use_bool selinux)
 		$(meson_native_use_bool sysusers)
 		$(meson_use test tests)
@@ -159,7 +191,6 @@ multilib_src_configure() {
 		-Dima=false
 		-Dinitrd=false
 		-Dfirstboot=false
-		-Dkernel-install=false
 		-Dldconfig=false
 		-Dlibcryptsetup=false
 		-Dlibcurl=false
@@ -245,6 +276,7 @@ multilib_src_compile() {
 		if use boot; then
 			targets+=(
 				bootctl
+				kernel-install
 				man/bootctl.1
 				man/kernel-install.8
 				src/boot/efi/linux$(efi_arch).{efi,elf}.stub
@@ -373,45 +405,53 @@ multilib_src_test() {
 	fi
 }
 
+src_install() {
+	local rootprefix="$(usex split-usr '' /usr)"
+	meson-multilib_src_install
+}
+
 multilib_src_install() {
 	if multilib_is_native_abi; then
 		if use boot; then
 			into /usr
-			dobin bootctl
+			dobin bootctl kernel-install
 			doman man/{bootctl.1,kernel-install.8}
 			insinto usr/lib/systemd/boot/efi
 			doins src/boot/efi/{linux$(efi_arch).{efi,elf}.stub,systemd-boot$(efi_arch).efi}
 		fi
 		if use sysusers; then
-			into /
+			into "${rootprefix:-/}"
 			newbin systemd-sysusers{.standalone,}
 			doman man/{systemd-sysusers.8,sysusers.d.5}
 		fi
 		if use tmpfiles; then
-			into /
+			into "${rootprefix:-/}"
 			newbin systemd-tmpfiles{.standalone,}
 			doman man/{systemd-tmpfiles.8,tmpfiles.d.5}
 		fi
 		if use udev; then
-			into /
+			into "${rootprefix:-/}"
 			dobin udevadm systemd-hwdb
-			dosym ../../bin/udevadm /lib/systemd/systemd-udevd
-			exeinto /lib/udev
+			dosym ../../bin/udevadm "${rootprefix}"/lib/systemd/systemd-udevd
+
+			exeinto "${rootprefix}"/lib/udev
 			doexe src/udev/{ata_id,cdrom_id,fido_id,mtd_probe,scsi_id,v4l_id}
-			insinto /lib/udev/rules.d
+
+			insinto "${rootprefix}"/lib/udev/rules.d
 			doins rules.d/*.rules
-			insinto /lib/udev/hwdb.d
+
+			insinto "${rootprefix}"/lib/udev/hwdb.d
 			doins hwdb.d/*.hwdb
+
 			insinto /usr/share/pkgconfig
 			doins src/udev/udev.pc
+
 			doman man/{udev.conf.5,systemd.link.5,hwdb.7,systemd-hwdb.8,udev.7,udevadm.8}
 			newman man/systemd-udevd.service.8 systemd-udevd.8
-
 		fi
 	fi
 	if use udev; then
-		into /usr
-		dolib.so "$(readlink libudev.so.1)" libudev.so{.1,}
+		meson_install --no-rebuild --tags libudev
 		gen_usr_ldscript -a udev
 		insinto "/usr/$(get_libdir)/pkgconfig"
 		doins src/libudev/libudev.pc
@@ -422,7 +462,6 @@ multilib_src_install_all() {
 	einstalldocs
 	if use boot; then
 		into /usr
-		dobin src/kernel-install/kernel-install
 		exeinto usr/lib/kernel/install.d
 		doexe src/kernel-install/*.install
 		dobashcomp shell-completion/bash/bootctl
@@ -437,17 +476,26 @@ multilib_src_install_all() {
 	fi
 	if use udev; then
 		doheader src/libudev/libudev.h
+
 		insinto /etc/udev
 		doins src/udev/udev.conf
 		keepdir /etc/udev/{hwdb.d,rules.d}
-		insinto /lib/systemd/network
+
+		insinto "${rootprefix}"/lib/systemd/network
 		doins network/99-default.link
+
+		# Remove to avoid conflict with elogind
+		# https://bugs.gentoo.org/856433
+		rm rules.d/70-power-switch.rules || die
 		insinto /lib/udev/rules.d
 		doins rules.d/*.rules
 		doins "${FILESDIR}"/40-gentoo.rules
+
 		insinto /lib/udev/hwdb.d
 		doins hwdb.d/*.hwdb
+
 		dobashcomp shell-completion/bash/udevadm
+
 		insinto /usr/share/zsh/site-functions
 		doins shell-completion/zsh/_udevadm
 	fi
@@ -472,5 +520,6 @@ pkg_postinst() {
 		ebegin "Updating hwdb"
 		systemd-hwdb --root="${ROOT}" update
 		eend $?
+		udev_reload
 	fi
 }

@@ -20,9 +20,3 @@
 >media-libs/alsa-topology-conf-1.2.4
 >media-libs/alsa-ucm-conf-1.2.4
 >media-plugins/alsa-plugins-1.2.4
->media-sound/pulseaudio-14.2
->media-sound/pavucontrol-5
-
-#Pipewire stuff
-media-video/pipewire
-media-video/wireplumber

@@ -7,7 +7,7 @@ DESCRIPTION="Install hekate as reboot2payload"
 
 IUSE="nyx"
 
-NYX_VER="1.2.0"
+NYX_VER="1.4.0"
 
 RESTRICT="mirror strip"
 SRC_URI="https://github.com/CTCaer/hekate/releases/download/v${PV}/hekate_ctcaer_${PV}_Nyx_${NYX_VER}.zip"
@@ -16,6 +16,11 @@ S="${WORKDIR}"
 DEPEND="app-arch/unzip"
 
 inherit sdcard-mount
+
+pkg_setup() {
+	use nyx || SDCARD_MOUNT_DISABLED=1
+	sdcard-mount_pkg_setup
+}
 
 src_install() {
 	insinto /lib/firmware
@@ -34,6 +39,6 @@ pkg_postinst() {
 	einfo "Reboot parameters can be changed by kernel command line. Default values are"
 	einfo "     pmc_reboot2payload.reboot_action=bootloader pmc_reboot2payload.default_payload=reboot_payload.bin pmc_reboot2payload.hekate_config_id=GENTOO"
 	einfo ""
-	einfo "Add the reboot2hekate service to boot runlevel to enable the reboot2hekate"
+	einfo "If not managed by initramfs, add the reboot2hekate service to boot runlevel to enable the reboot2hekate"
 	einfo "     rc-update add reboot2hekate boot"
 }

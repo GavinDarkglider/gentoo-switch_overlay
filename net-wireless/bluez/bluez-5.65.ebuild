@@ -8,7 +8,8 @@ inherit autotools linux-info python-single-r1 readme.gentoo-r1 systemd udev mult
 
 DESCRIPTION="Bluetooth Tools and System Daemons for Linux"
 HOMEPAGE="http://www.bluez.org"
-SRC_URI="https://www.kernel.org/pub/linux/bluetooth/${P}.tar.xz"
+SRC_URI="https://www.kernel.org/pub/linux/bluetooth/${P}.tar.xz
+	https://dev.gentoo.org/~pacho/${PN}/power-state-adapter-property.patch"
 
 LICENSE="GPL-2+ LGPL-2.1+"
 SLOT="0/3"
@@ -20,6 +21,7 @@ IUSE="btpclient cups doc debug deprecated extra-tools experimental +mesh midi +o
 # again in the future.
 # btpclient needs mesh, bug #790587
 REQUIRED_USE="
+	btpclient? ( mesh )
 	extra-tools? ( deprecated readline )
 	test? ( ${PYTHON_REQUIRED_USE} )
 	test-programs? ( ${PYTHON_REQUIRED_USE} )
@@ -38,10 +40,10 @@ BDEPEND="
 "
 DEPEND="
 	>=dev-libs/glib-2.28:2[${MULTILIB_USEDEP}]
-	btpclient? ( >=dev-libs/ell-0.29 )
+	btpclient? ( >=dev-libs/ell-0.30 )
 	cups? ( net-print/cups:= )
 	mesh? (
-		>=dev-libs/ell-0.29
+		>=dev-libs/ell-0.30
 		>=dev-libs/json-c-0.13:=
 		sys-libs/readline:0=
 	)
@@ -60,23 +62,21 @@ RDEPEND="${DEPEND}
 RESTRICT="!test? ( test )"
 
 PATCHES=(
+	"${FILESDIR}"/bluez_ell_patch.patch
+
 	# Try both udevadm paths to cover udev/systemd vs. eudev locations (#539844)
 	# http://www.spinics.net/lists/linux-bluetooth/msg58739.html
 	# https://bugs.gentoo.org/539844
 	# https://github.com/bluez/bluez/issues/268
 	"${FILESDIR}"/${PN}-udevadm-path-r1.patch
 
-	# https://github.com/bluez/bluez/issues/267
-	"${FILESDIR}"/${PN}-5.63-musl-limits.patch
-
 	# Fedora patches
 	# http://www.spinics.net/lists/linux-bluetooth/msg40136.html
 	"${FILESDIR}"/0001-obex-Use-GLib-helper-function-to-manipulate-paths.patch
 
-	# https://github.com/bluez/bluez/issues/220
-	"${FILESDIR}"/0001-hog-Fix-read-order-of-attributes-rediffed.patch
-	"${FILESDIR}"/0002-hog-Add-input-queue-while-uhid-device-has-not-been-c-rediffed.patch
-	"${FILESDIR}"/bluez_ell_patch.patch
+	# Fixed in next release
+	"${FILESDIR}"/0001-adapter-Reset-pending-settings-when-receiving-MGMT-e.patch
+	"${DISTDIR}"/power-state-adapter-property.patch
 )
 
 pkg_setup() {
@@ -293,4 +293,8 @@ pkg_postinst() {
 
 	has_version net-dialup/ppp || elog "To use dial up networking you must install net-dialup/ppp"
 	use mesh && readme.gentoo_print_elog
+}
+
+pkg_postrm() {
+	use udev && udev_reload
 }

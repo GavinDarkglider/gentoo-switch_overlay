@@ -12,7 +12,7 @@ SRC_URI="https://www.kernel.org/pub/linux/bluetooth/${P}.tar.xz"
 
 LICENSE="GPL-2+ LGPL-2.1+"
 SLOT="0/3"
-KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~mips ~ppc ~ppc64 ~riscv ~x86"
+KEYWORDS="amd64 arm arm64 ~hppa ~mips ppc ppc64 ~riscv x86"
 IUSE="btpclient cups doc debug deprecated extra-tools experimental +mesh midi +obex +readline selinux systemd test test-programs +udev"
 
 # Since this release all remaining extra-tools need readline support, but this could
@@ -20,6 +20,7 @@ IUSE="btpclient cups doc debug deprecated extra-tools experimental +mesh midi +o
 # again in the future.
 # btpclient needs mesh, bug #790587
 REQUIRED_USE="
+	btpclient? ( mesh )
 	extra-tools? ( deprecated readline )
 	test? ( ${PYTHON_REQUIRED_USE} )
 	test-programs? ( ${PYTHON_REQUIRED_USE} )
@@ -60,6 +61,8 @@ RDEPEND="${DEPEND}
 RESTRICT="!test? ( test )"
 
 PATCHES=(
+	"${FILESDIR}"/bluez_ell_patch.patch
+
 	# Try both udevadm paths to cover udev/systemd vs. eudev locations (#539844)
 	# http://www.spinics.net/lists/linux-bluetooth/msg58739.html
 	# https://bugs.gentoo.org/539844
@@ -72,8 +75,6 @@ PATCHES=(
 	# Fedora patches
 	# http://www.spinics.net/lists/linux-bluetooth/msg40136.html
 	"${FILESDIR}"/0001-obex-Use-GLib-helper-function-to-manipulate-paths.patch
-
-	"${FILESDIR}"/bluez_ell_patch.patch
 )
 
 pkg_setup() {
@@ -290,4 +291,8 @@ pkg_postinst() {
 
 	has_version net-dialup/ppp || elog "To use dial up networking you must install net-dialup/ppp"
 	use mesh && readme.gentoo_print_elog
+}
+
+pkg_postrm() {
+	use udev && udev_reload
 }

@@ -13,7 +13,7 @@ IUSE=""
 
 RDEPEND="
 	app-admin/eselect
-	sys-libs/switch-l4t-configs[alsa]
+	sys-libs/gentoo-config-files[alsa]
 	app-admin/sudo
 "
 

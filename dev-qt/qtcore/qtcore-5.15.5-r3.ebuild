@@ -3,7 +3,7 @@
 
 EAPI=8
 
-QT5_KDEPATCHSET_REV=1
+QT5_KDEPATCHSET_REV=2
 QT5_MODULE="qtbase"
 inherit linux-info qt5-build
 
@@ -11,7 +11,7 @@ DESCRIPTION="Cross-platform application development framework"
 SLOT=5/${QT5_PV}
 
 if [[ ${QT5_BUILD_TYPE} == release ]]; then
-	KEYWORDS="amd64 arm arm64 ~hppa ppc ppc64 ~riscv ~sparc x86"
+	KEYWORDS="amd64 arm arm64 ~hppa ~loong ~ppc ppc64 ~riscv ~sparc x86"
 fi
 
 IUSE="icu old-kernel systemd"
@@ -26,6 +26,11 @@ DEPEND="
 	systemd? ( sys-apps/systemd:= )
 "
 RDEPEND="${DEPEND}"
+
+PATCHES=(
+	"${FILESDIR}/${P}-hack_never_use_execinfo.patch"
+	"${FILESDIR}/${P}-QTBUG-105286.patch"
+)
 
 QT5_TARGET_SUBDIRS=(
 	src/tools/bootstrap
@@ -43,9 +48,7 @@ QT5_GENTOO_PRIVATE_CONFIG=(
 	!:xml
 )
 
-PATCHES=(
-	"${FILESDIR}"/${PN}-5.15.3-pthread.patch # bug 803470
-	"${FILESDIR}"/0001-eglfs-Newer-Nvidia-libdrm-provide-device-instead-dri.patch
+PATCHES+=(
 	"${FILESDIR}"/0002-eglfs-add-a-default-framebuffer-to-NVIDIA-eglstreams.patch
 )
 
@@ -64,6 +67,8 @@ src_prepare() {
 
 	# fix missing qt_version_tag symbol w/ LTO, bug 674382
 	sed -i -e 's/^gcc:ltcg/gcc/' src/corelib/global/global.pri || die
+
+	eapply "${FILESDIR}/${P}-slibtool.patch" # bug 792804, TODO: merge into _QT5_GENTOOPATCHSET_REV
 
 	qt5-build_src_prepare
 }

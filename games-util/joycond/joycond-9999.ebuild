@@ -34,12 +34,12 @@ CONFIG_CHECK="
 PATCHES=(
 	"${FILESDIR}"/${PN}-systemd-paths.patch
 	"${FILESDIR}"/${PN}-systemd-paranoia.patch
+	"${FILESDIR}"/Fix-cmake-install.patch
 )
 
 src_install() {
 	cmake_src_install
 	newinitd "${FILESDIR}"/${PN}.initd ${PN}
-	doman doc/${PN}.1
 }
 
 pkg_postinst() {

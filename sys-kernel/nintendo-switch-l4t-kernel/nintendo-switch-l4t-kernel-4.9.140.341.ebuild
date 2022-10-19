@@ -17,7 +17,7 @@ IUSE="+initramfs debug"
 DESCRIPTION="Nintendo Switch kernel"
 SRC_URI=""
 
-DEPEND="initramfs? ( sys-libs/gentoo-config-files[initramfs] dev-embedded/u-boot-tools )"
+DEPEND="initramfs? ( sys-boot/nintendo-switch-dracut-config dev-embedded/u-boot-tools )"
 RDEPEND="${DEPEND}"
 
 S="${WORKDIR}"/linux-"${PVR}"

@@ -1,12 +1,12 @@
-# Copyright 2020 Gentoo Authors
+# Copyright 2020-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit gnome2-utils meson vala xdg
 
 DESCRIPTION="GameHub is a unified library for all your games"
-HOMEPAGE="https://tkashkin.tk/projects/gamehub"
+HOMEPAGE="https://tkashkin.github.io/projects/gamehub https://github.com/tkashkin/gamehub"
 
 MY_PN="GameHub"
 MY_PV="$(ver_rs 3 '-')-master"
@@ -17,7 +17,6 @@ SRC_URI="https://github.com/tkashkin/${MY_PN}/archive/${MY_PV}.tar.gz -> ${P}.ta
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~arm64 ~x86"
-IUSE=""
 
 RDEPEND="
 	dev-db/sqlite:3
@@ -31,16 +30,16 @@ RDEPEND="
 	sys-auth/polkit
 	x11-libs/gtk+:3
 	x11-libs/libX11
-	x11-libs/libXtst"
-BDEPEND="
-	${RDEPEND}
-	$(vala_depend)"
+	x11-libs/libXtst
+"
+DEPEND="${RDEPEND}"
+BDEPEND="$(vala_depend)"
 
 S="${WORKDIR}/${MY_P}"
 
 src_prepare() {
 	default
-	vala_src_prepare
+	vala_setup
 }
 
 pkg_postinst() {

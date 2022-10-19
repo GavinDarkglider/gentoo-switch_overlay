@@ -5,29 +5,34 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="bootstack bluetooth dock-script elogind initramfs joystick kernel-sources kernel-bin alsa reboot2hekate wifi X egl"
+IUSE="alsa bootstack dock-script egl elogind initramfs joystick kernel-sources kernel-bin reboot2hekate +wifi X"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 
 # Mandatory
 RDEPEND+=" || ( sys-libs/jetson-tx1-drivers[firmware] sys-firmware/jetson-tx1-firmware )"
-RDEPEND+=" joystick? ( games-util/joycond )"
 
 # Prebuilt switchroot bootstack files (coreboot and other SD files)
 RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"
 
-# Bluetooth stack
-RDEPEND+=" bluetooth? ( net-wireless/bluez )"
+# Additional settings to audio server
+RDEPEND+=" alsa? ( sys-libs/switch-l4t-configs[alsa] )"
 
 # Script to manage dock / undock
 RDEPEND+=" dock-script? ( || ( x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler ) )"
 
-# dracut configuration to generate initramfs
-RDEPEND+=" initramfs? ( sys-boot/nintendo-switch-dracut-config )"
+#EGL DRM/KMS Dependencies
+RDEPEND+=" egl? ( gui-libs/tegra-udrm-gbm )"
 
-# Sleep fixes for elogind sleep
-RDEPEND+=" elogind? ( sys-libs/nintendo-switch-sleep )"
+# Sleep fixes
+RDEPEND+=" elogind? ( sys-libs/gentoo-config-files[elogind] )"
+
+# dracut configuration to generate initramfs
+RDEPEND+=" initramfs? ( sys-libs/gentoo-config-files[initramfs] )"
+
+# Joycons
+RDEPEND+=" joystick? ( games-util/joycond )"
 
 # Switch kernel sources, merged with nvidia source
 RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
@@ -35,18 +40,11 @@ RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 # Compile and install the kernel
 RDEPEND+=" kernel-bin? ( sys-kernel/nintendo-switch-l4t-kernel )"
 
-# Additional settings to audio server
-RDEPEND+=" alsa? ( sys-libs/switch-l4t-configs[alsa] )"
-
 # Install hekate to /lib/firmware/reboot_payload.bin
 RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"
 
 # Basic wifi manager
-RDEPEND+=" wifi? ( net-misc/dhcpcd net-wireless/wpa_supplicant sys-libs/switch-l4t-configs[brcm] )"
+RDEPEND+=" wifi? ( sys-libs/switch-l4t-configs[brcm] )"
 
 # Xorg server with configuration and onscreen virtual keyboard
-RDEPEND+=" X? ( sys-libs/jetson-tx1-drivers[X] app-accessibility/onboard
-          || ( x11-base/nintendo-switch-x11-configuration sys-libs/switch-l4t-configs[X] ) )"
-
-#EGL DRM/KMS Dependencies
-RDEPEND+=" egl? ( gui-libs/tegra-udrm-gbm )"
+RDEPEND+=" X? ( sys-libs/jetson-tx1-drivers[X] app-accessibility/onboard sys-libs/switch-l4t-configs[X] )"

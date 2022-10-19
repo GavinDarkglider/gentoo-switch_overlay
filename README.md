@@ -72,19 +72,20 @@ The starting point to install the basic files is the sys-apps/nintendo-switch-me
 The package have the next USE flags for enabeling/disabeling things:
 | USE | packages | Explanation
 | ------ | ------ | ------
+| | sys-libs/jetson-tx1-drivers[firmware] or sys-firmware/jetson-tx1-firmware | Firmware is mandatory, either drivers or firmware only package
 | alsa | sys-libs/switch-l4t-configs[alsa]  | Install alsa ucm configuration to get audio working
 | bootstack | sys-boot/switchroot-bootstack | Installs precompiled bootstack files (coreboot.rom, boot.scr, uenv.txt and more) into /usr/share/sdcard1. The ebuild supports to install the files directly to the vfat partition. Disable the flag if you like to manage this files byself
-| bluetooth | net-wireless/bluez | Nothing special. Just install bluez, required for joycons
-| dock-script | x11-misc/nintendo-switch-dock-script or app-eselect/eselect-nintendo-switch-dock-handler | They are two scripts to manage the dock usage (swap screen and audio)
-| dracut | sys-boot/nintendo-switch-dracut-config | Installs configuration for dracut, for building initramfs. Note, the initramfs needs to be packed for u-boot using dev-embedded/u-boot-tools.
-| elogind | sys-libs/nintendo-switch-sleep | Install sleep fixes script managed by elogind
+| dock-script | x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler | Different scripts to manage the dock/undock events (swap screen and audio)
+| egl | gui-libs/tegra-udrm-gbm | DRM/KMS Dependencies
+| elogind | sys-libs/gentoo-config-files[elogind] | Deep Sleep and resume fixes, managed by elogind
+| initramfs | sys-libs/gentoo-config-files[initramfs] | Installs configuration for dracut, for building initramfs. Note, the initramfs needs to be packed for u-boot using dev-embedded/u-boot-tools.
+| joystick | games-util/joycond | Combined joycons manager
 | kernel-sources | sys-kernel/nintendo-switch-l4t-sources | Install l4t kernel sources, patched with nvidia sources inside. Use this package if you like to compile your kernel directly on the switch
 | kernel-bin | sys-kernel/nintendo-switch-l4t-kernel | Install the l4t kernel and some sources to compile external modules. USe this package if you use qemu build enviroment and binary packages
 |-kernel-sources -kernel-bin | | Of course you can disable kernel-sources and kernel-bin, and compile your kernel however you like
 | reboot2hekate | sys-boot/reboot2hekate-bin | Install hekate as /lib/firmware/reboot_payload.bin to reboot back into hekate
-| wifi | net-misc/dhcpcd net-wireless/wpa_supplicant | Nothing special, just basic software for wifi
-| X | x11-base/xorg-x11, app-accessibility/onboard and x11-base/nintendo-switch-x11-configuration (outdated) or sys-libs/switch-l4t-configs[X] | Install all required for X-Server, including config and onscreen keyboard "onboard"
-| | sys-libs/jetson-tx1-drivers and games-util/joycond | The both packages (driver and joycon management) are pushed unconditionally
+| wifi | sys-libs/switch-l4t-configs[brcm] | Fimrware settings for wifi. Additional networking manager, like wpa_supplicant
+| X | sys-libs/jetson-tx1-drivers[X] app-accessibility/onboard or sys-libs/switch-l4t-configs[X] | Install all required for X-Server, including config and onscreen keyboard "onboard"
 
 ## Updating packages
 Version ebuilds will be updated automatically in the usual manner of installed packages.

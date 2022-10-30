@@ -32,7 +32,7 @@ RDEPEND+=" elogind? ( sys-libs/gentoo-config-files[elogind] )"
 RDEPEND+=" initramfs? ( sys-libs/gentoo-config-files[initramfs] )"
 
 # Joycons
-RDEPEND+=" joystick? ( games-util/joycond )"
+RDEPEND+=" joystick? ( =games-util/joycond-9999 )"
 
 # Switch kernel sources, merged with nvidia source
 RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"

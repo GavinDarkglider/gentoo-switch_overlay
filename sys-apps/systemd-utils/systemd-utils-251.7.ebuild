@@ -176,6 +176,7 @@ multilib_src_configure() {
 		-Daudit=false
 		-Dbacklight=false
 		-Dbinfmt=false
+		-Dbpf-framework=false
 		-Dbzip2=false
 		-Dcoredump=false
 		-Ddbus=false

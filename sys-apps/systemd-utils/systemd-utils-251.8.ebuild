@@ -105,9 +105,7 @@ QA_FLAGS_IGNORED="usr/lib/systemd/boot/efi/.*"
 
 src_prepare() {
 	local PATCHES=(
-		# Breaks Clang. Revert the commit for now and force off F_S=3.
-		"${FILESDIR}/251-revert-fortify-source-3-fix.patch"
-		"${FILESDIR}/systemd-utils-001-fix-filesystem-checks.patch"
+		"${FILESDIR}/251-gpt-auto-no-cryptsetup.patch"
 	)
 
 	if use elibc_musl; then
@@ -115,6 +113,9 @@ src_prepare() {
 		# Applied upstream in 251.3
 		rm "${WORKDIR}/${MUSL_PATCHSET}/0001-Add-sys-file.h-for-LOCK_.patch" || die
 	fi
+
+	PATCHES+=( "${FILESDIR}/systemd-utils-001-fix-filesystem-checks.patch" )
+
 	default
 
 	# Remove install_rpath; we link statically
@@ -124,9 +125,7 @@ src_prepare() {
 }
 
 src_configure() {
-	# Broken with FORTIFY_SOURCE=3 without a patch. And the patch
-	# wasn't backported to 250.x, but it turns out to break Clang
-	# anyway:  bug #841770.
+	# Broken with FORTIFY_SOURCE=3: bug #841770.
 	#
 	# Our toolchain sets F_S=2 by default w/ >= -O2, so we need
 	# to unset F_S first, then explicitly set 2, to negate any default
@@ -175,6 +174,7 @@ multilib_src_configure() {
 		-Daudit=false
 		-Dbacklight=false
 		-Dbinfmt=false
+		-Dbpf-framework=false
 		-Dbzip2=false
 		-Dcoredump=false
 		-Ddbus=false

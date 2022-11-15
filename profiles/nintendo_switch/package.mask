@@ -20,3 +20,11 @@
 >media-libs/alsa-topology-conf-1.2.4
 >media-libs/alsa-ucm-conf-1.2.4
 >media-plugins/alsa-plugins-1.2.4
+
+# Since no overlay masks are supported in profile, the whole package is masked.
+# The replaced versions in this overlay are unmasked by package.unmask
+dev-qt/qtcore
+net-wireless/bluez
+sys-apps/shadow
+sys-apps/systemd-utils
+x11-libs/libdrm

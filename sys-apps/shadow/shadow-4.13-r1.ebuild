@@ -60,6 +60,10 @@ BDEPEND="
 	verify-sig? ( sec-keys/openpgp-keys-sergehallyn )
 "
 
+PATCHES=(
+	"${FILESDIR}"/${P}-configure-clang16.patch
+)
+
 src_prepare() {
 	sed -i '1 s/^/#include <stddef.h>\n/' libmisc/btrfs.c
 	default

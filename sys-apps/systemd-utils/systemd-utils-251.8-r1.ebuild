@@ -471,6 +471,8 @@ multilib_src_install_all() {
 	if use tmpfiles; then
 		doinitd "${FILESDIR}"/systemd-tmpfiles-setup
 		doinitd "${FILESDIR}"/systemd-tmpfiles-setup-dev
+		exeinto /etc/cron.daily
+		doexe "${FILESDIR}"/systemd-tmpfiles-clean
 		insinto /usr/share/zsh/site-functions
 		doins shell-completion/zsh/_systemd-tmpfiles
 	fi
@@ -487,11 +489,11 @@ multilib_src_install_all() {
 		# Remove to avoid conflict with elogind
 		# https://bugs.gentoo.org/856433
 		rm rules.d/70-power-switch.rules || die
-		insinto /lib/udev/rules.d
+		insinto "${rootprefix}"/lib/udev/rules.d
 		doins rules.d/*.rules
 		doins "${FILESDIR}"/40-gentoo.rules
 
-		insinto /lib/udev/hwdb.d
+		insinto "${rootprefix}"/lib/udev/hwdb.d
 		doins hwdb.d/*.hwdb
 
 		dobashcomp shell-completion/bash/udevadm

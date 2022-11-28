@@ -28,3 +28,6 @@ net-wireless/bluez
 sys-apps/shadow
 sys-apps/systemd-utils
 x11-libs/libdrm
+
+# 2022-11-28 This version does not launch. User stay on console without any error
+=x11-misc/lightdm-1.32.0-r1

@@ -1,9 +1,9 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-inherit cmake-utils kodi-addon
+inherit cmake kodi-addon
 
 DESCRIPTION="PRboom for Kodi"
 HOMEPAGE="https://github.com/kodi-game/game.libretro.prboom"
@@ -35,5 +35,5 @@ RDEPEND="
 
 src_prepare() {
 	echo 'find_library(PRBOOM_LIB NAMES prboom_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)' > "${S}/Findlibretro-prboom.cmake" || die
-	default
+	cmake_src_prepare
 }

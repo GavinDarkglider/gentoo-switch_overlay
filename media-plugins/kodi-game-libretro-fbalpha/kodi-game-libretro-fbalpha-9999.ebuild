@@ -1,9 +1,9 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-inherit cmake-utils kodi-addon
+inherit cmake kodi-addon
 
 DESCRIPTION="FBAlpha GameClient for Kodi"
 HOMEPAGE="https://github.com/kodi-game/game.libretro.fbalpha"
@@ -35,5 +35,5 @@ RDEPEND="
 src_prepare() {
 	echo ${S}
 	sed -i 's/find_library(FBNEO_LIB NAMES fbneo_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)/find_library(FBNEO_LIB NAMES fbalpha_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)/g' ${S}/CMakeLists.txt || die
-	default
+	cmake_src_prepare
 }

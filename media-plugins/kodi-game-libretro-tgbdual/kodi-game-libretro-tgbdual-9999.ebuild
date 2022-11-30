@@ -1,9 +1,9 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-inherit cmake-utils kodi-addon
+inherit cmake kodi-addon
 
 DESCRIPTION="Tgbdual GameClient for Kodi"
 HOMEPAGE="https://github.com/kodi-game/game.libretro.tgbdual"
@@ -34,5 +34,5 @@ RDEPEND="
 	"
 src_prepare() {
 	echo 'find_library(TGBDUAL_LIB NAMES tgbdual_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)' > "${S}/Findlibretro-tgbdual.cmake" || die
-	default
+	cmake_src_prepare
 }

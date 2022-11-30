@@ -1,9 +1,9 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-inherit cmake-utils kodi-addon
+inherit cmake kodi-addon
 
 DESCRIPTION="Mupen64Plus GameClient for Kodi"
 HOMEPAGE="https://github.com/kodi-game/game.libretro.mupen64plus"
@@ -34,6 +34,6 @@ RDEPEND="
 	"
 src_prepare() {
 	echo 'find_library(MUPEN64PLUS_LIB NAMES mupen64plus_libretro${CMAKE_SHARED_LIBRARY_SUFFIX} PATH_SUFFIXES libretro)' > "${S}/Findlibretro-mupen64plus.cmake" || die
-	default
+	cmake_src_prepare
 }
 

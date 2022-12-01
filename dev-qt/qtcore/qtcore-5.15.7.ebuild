@@ -85,7 +85,7 @@ src_prepare() {
 	qt5-build_src_prepare
 
 	# workaround for 0171-Annotate-QMutex-...patch adding a header
-	perl ${QT5_BINDIR}/syncqt.pl -version ${PV} || die
+	perl bin/syncqt.pl -version ${PV} || die
 }
 
 src_configure() {

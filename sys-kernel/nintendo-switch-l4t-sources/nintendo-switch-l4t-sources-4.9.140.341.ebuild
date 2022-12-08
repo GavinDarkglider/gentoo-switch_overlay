@@ -42,7 +42,7 @@ src_unpack() {
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch"
 	EGIT_BRANCH="linux-3.4.1-dev"
-	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/icosa"
+	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/nx"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
@@ -78,6 +78,7 @@ src_prepare() {
 	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch
 	eapply "${FILESDIR}"/06-Revert-arm64-32bit-sigcontext-definition-to-uapi-signcontext.h.patch
+	eapply "${FILESDIR}"/07-temporary-sleep-fix-before-new-bootloader.patch
 	eapply "${FILESDIR}"/linux-headers-fix-no-uapi-header-provides-a-definition-of-struct-sockaddr.patch
         eapply "${FILESDIR}"/linux-headers-add-MAP_HUGE_2MB-and-MAP_HUGE_1MB.patch
 	eapply_user

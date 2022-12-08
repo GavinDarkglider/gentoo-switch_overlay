@@ -43,7 +43,7 @@ src_unpack() {
 
 	EGIT_REPO_URI="https://gitlab.com/switchroot/kernel/l4t-platform-t210-switch"
 	EGIT_BRANCH="linux-3.4.1-dev"
-	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/icosa"
+	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/nx"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
 
@@ -80,6 +80,7 @@ src_prepare() {
 	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch
 	eapply "${FILESDIR}"/06-Revert-arm64-32bit-sigcontext-definition-to-uapi-signcontext.h.patch
+	eapply "${FILESDIR}"/07-temporary-sleep-fix-before-new-bootloader.patch
 	eapply "${FILESDIR}"/linux-headers-fix-no-uapi-header-provides-a-definition-of-struct-sockaddr.patch
 	eapply "${FILESDIR}"/linux-headers-add-MAP_HUGE_2MB-and-MAP_HUGE_1MB.patch
 
@@ -111,7 +112,7 @@ src_install() {
 
 	cd "${WORKDIR}"/build/arch/arm64/boot/dts
 	insinto "${inst_path}"/dts
-	newins tegra210-icosa.dtb tegra210-icosa.dtb
+	newins tegra210-odin.dtb tegra210-odin.dtb
 }
 
 _symlink_version() {
@@ -134,12 +135,12 @@ pkg_postinst() {
 		gunzip "${EROOT}/boot/Image-${ver}".gz || die
 
 		# Install dts
-		[[ -f "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}" ]] && mv -v "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}" "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}".old
-		cp -v "${EROOT}${inst_path}"/dts/tegra210-icosa.dtb "${EROOT}"/boot/tegra210-icosa.dtb-"${ver}"
+		[[ -f "${EROOT}"/boot/tegra210-odin.dtb-"${ver}" ]] && mv -v "${EROOT}"/boot/tegra210-odin.dtb-"${ver}" "${EROOT}"/boot/tegra210-odin.dtb-"${ver}".old
+		cp -v "${EROOT}${inst_path}"/dts/tegra210-odin.dtb "${EROOT}"/boot/tegra210-odin.dtb-"${ver}"
 
 		# update Image and DTB symlink
 		_symlink_version "/boot/Image"
-		_symlink_version "/boot/tegra210-icosa.dtb"
+		_symlink_version "/boot/tegra210-odin.dtb"
 
 		if use initramfs; then
 			# pack initramfs to u-boot image
@@ -175,7 +176,7 @@ pkg_postrm() {
 
 	if [[ -z ${ROOT} ]]; then
 		_check_symlink "/boot/Image"
-		_check_symlink "/boot/tegra210-icosa.dtb" "tegra210-icosa-"
+		_check_symlink "/boot/tegra210-odin.dtb" "tegra210-odin-"
 	fi
 	_check_symlink "/lib/firmware/ttusb-budget/dspbootcode.bin"
 	_check_symlink "/lib/firmware/brcm/brcmfmac4356A3-pcie.bin"

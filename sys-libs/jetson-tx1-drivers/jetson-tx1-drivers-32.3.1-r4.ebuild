@@ -1,13 +1,15 @@
 EAPI=7
 
+inherit udev
+
 DESCRIPTION="NVIDIA Jetson TX1 Accelerated Graphics Driver"
 HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
 
-SRC_URI="https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_release_aarch64/Tegra210_Linux_R32.3.1_aarch64.tbz2"
+SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v7.1/t210/jetson-210_linux_r32.7.1_aarch64.tbz2"
 
 SLOT="0"
 KEYWORDS="-* arm64"
-IUSE="alsa doc +egl +firmware gstreamer usb-device vulkan X v4l"
+IUSE="alsa doc +egl firmware gstreamer usb-device vulkan X v4l pulseaudio"
 RESTRICT="preserve-libs mirror"
 
 DEPEND="app-arch/bzip2
@@ -15,11 +17,11 @@ DEPEND="app-arch/bzip2
 
 RDEPEND="
 	X? ( <x11-base/xorg-server-21 )
-	egl? ( >media-libs/mesa-21.1 )
+	egl? ( x11-libs/libdrm[video_cards_tegra] )
 	gstreamer? ( media-libs/gst-plugins-bad
             media-libs/gst-plugins-ugly )
 	vulkan? ( media-libs/vulkan-loader )
-	v4l? ( =media-libs/libv4l-1.18.0[tegra] )"
+	v4l? ( =media-libs/libv4l-1.18.0[video_cards_tegra] )"
 
 # Todo.... Build gstreamer/v4l stuff from upstream packages, with tegra patches.
 
@@ -56,78 +58,108 @@ src_prepare() {
 	use v4l       || rm -r tegra/libnvv4l*.so* tegra/libv4l2*.so* tegra/libtegrav4l2.so libv4l
 
     #Remove useless egl stuff, we will build upstream with special patches.
-    rm -v tegra/libnvidia-egl-wayland.so*
-    rm -v usr/share/egl/egl_external_platform.d/nvidia_wayland.json
+    #rm -v tegra/libnvidia-egl-wayland.so*
+    #rm -v ../../share/egl/egl_external_platform.d/nvidia_wayland.json
 
 	if use v4l; then
 		#Remove in favor of our in tree built version 
 		rm -v tegra/libnvv4l*.so*
 		rm -v libv4lconvert.so*
 		rm -v libv4l2.so*
-
-		mkdir -p libv4l/plugins/nv
+		rm -r libv4l
+		mkdir -p libv4l/plugins
 		mv tegra/libv4l2_nvvideocodec.so libv4l/plugins/
 		mv tegra/libv4l2_nvvidconv.so libv4l/plugins/
+		mv tegra/libv4l2_nvargus.so libv4l/plugins/
 		mv tegra/libtegrav4l2.so ./
 	fi
 
 	rm -v "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/ld.so.conf
-
 	eapply_user
 }
 
 
-my_do_lib_recursive() {
+#my_do_lib_recursive() {
 	# $1 is the source / target path
 	# $2 is the path for additional symlinks
-	for f in "$1"/*; do
-		if [ -h "${f}" ]; then
-			target="$(readlink "${f}")"
-			if [[ "$target" = /* ]]; then
-				relative="$(realpath --relative-to=/"$(dirname "${f}")" /"$(dirname "$target")")"
-				if [ "$relative" == '.' ]; then
-					dosym "$(basename "$target")" "${f}"
-				else
-					dosym "$relative/$(basename "$target")" "${f}"
-				fi
-			else
-				dosym "$target" "${f}"
-			fi
-			# Compatibility symlink at original location
-			relative="$(realpath --relative-to="/$2" "/$1")"
-			dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
+#	for f in "$1"/*; do
+#		if [ -h "${f}" ]; then
+#			target="$(readlink "${f}")"
+#			if [[ "$target" = /* ]]; then
+#				relative="$(realpath --relative-to=/"$(dirname "${f}")" /"$(dirname "$target")")"
+#				if [ "$relative" == '.' ]; then
+#					dosym "$(basename "$target")" "${f}"
+#				else
+#					dosym "$relative/$(basename "$target")" "${f}"
+#				fi
+#			else
+#				dosym "$target" "${f}"
+#			fi
+#			# Compatibility symlink at original location
+#			relative="$(realpath --relative-to="/$2" "/$1")"
+#			dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
+#
+#		elif [ -f "${f}" ]; then
+#			if [ -n "$(echo "$f" | grep -e [.]so[.] -e [.]so$)" ]
+#			then
+#				insinto "$1"
+#				doins "${f}"
+#				# Compatibility symlink at original location
+#				relative="$(realpath --relative-to="/$2" "/$1")"
+#				dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
+#			elif [ -x "${f}" ]
+#			then
+#				exeinto "$1"
+#				doexe "${f}"
+#			else
+#				insinto "$1"
+#				doins "${f}"
+#			fi
+#
+#		elif [ -d "${f}" ]; then
+#			if [ "$(basename "${f}")" == 'gstreamer-1.0' ] ; then
+#				my_do_lib_recursive "${f}" "${2}/gstreamer-1.0"
+#			else
+#				my_do_lib_recursive "${f}" "${2}"
+#				relative="$(realpath --relative-to="/$2" "/$1")"
+#				dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
+#			fi
+#		else
+#			ewarn "skipped broken file in my_do_lib_recursive ${f}"
+#		fi
+#	done
+#}
 
-		elif [ -f "${f}" ]; then
+my_do_lib_recursive() {
+	# $1 is the source path
+	# $2 is the target path
+	for f in "$1"/*
+	do
+		if [ -h "${f}" ]
+		then
+			dosym "$(readlink "${f}"| sed 's:usr/lib/aarch64-linux-gnu:usr/lib64:g')" "$2"/"$(basename "${f}")"
+		elif [ -f "${f}" ]
+		then
 			if [ -n "$(echo "$f" | grep -e [.]so[.] -e [.]so$)" ]
 			then
-				insinto "$1"
+				insinto "$2"
 				doins "${f}"
-				# Compatibility symlink at original location
-				relative="$(realpath --relative-to="/$2" "/$1")"
-				dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
 			elif [ -x "${f}" ]
 			then
-				exeinto "$1"
+				exeinto "$2"
 				doexe "${f}"
 			else
-				insinto "$1"
+				insinto "$2"
 				doins "${f}"
 			fi
-
-		elif [ -d "${f}" ]; then
-			if [ "$(basename "${f}")" == 'gstreamer-1.0' ] ; then
-				my_do_lib_recursive "${f}" "${2}/gstreamer-1.0"
-			else
-				my_do_lib_recursive "${f}" "${2}"
-				relative="$(realpath --relative-to="/$2" "/$1")"
-				dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
-			fi
+		elif [ -d "${f}" ]
+		then
+			my_do_lib_recursive "${f}" "${2}/$(basename "$f")"
 		else
 			ewarn "skipped broken file in my_do_lib_recursive ${f}"
 		fi
 	done
 }
-
 
 
 src_install() {
@@ -145,6 +177,10 @@ src_install() {
 	# Missed soname links
 	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
 	dosym libnvidia-ptxjitcompiler.so.32.3.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
+	dosym libdrm_nvdc.so /usr/lib64/libdrm.so.2
+
+	#EGL Config
+	dosym /usr/lib64/tegra-egl/nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 	if use alsa; then
 		insinto /etc
@@ -192,8 +228,25 @@ pkg_postinst() {
 	[ "${ROOT}" != "/" ] && return 0
 
 	ldconfig
-	if use alsa && ! [[ -f /etc/asound.conf ]]; then
+	if use pulseaudio && ! [[ -f /etc/asound.conf ]]; then
+               einfo "No /etc/asound.conf found, create default Pulseaudio asound.conf"
+               cat << EOF >> /etc/asound.conf
+# This file is referred to from files in /usr/share/alsa/alsa.conf.d/ in order
+# to set up the pulse device as the default if required.
+
+pcm.!default {
+        type pulse
+}
+
+ctl.!default {
+        type pulse
+}
+EOF
+
+	elif use alsa && ! [[ -f /etc/asound.conf ]]; then
 		einfo "No /etc/asound.conf found, create symlink to /etc/asound.conf.tegrasndt210ref"
 		ln -s /etc/asound.conf.tegrasndt210ref /etc/asound.conf
 	fi
+	udev_reload
 }
+

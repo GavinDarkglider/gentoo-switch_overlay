@@ -8,7 +8,7 @@ HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
 SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v7.1/t210/jetson-210_linux_r32.7.1_aarch64.tbz2"
 
 SLOT="0"
-KEYWORDS="-* arm64"
+KEYWORDS="-* ~arm64"
 IUSE="alsa doc +egl firmware gstreamer usb-device vulkan X v4l pulseaudio"
 RESTRICT="preserve-libs mirror"
 

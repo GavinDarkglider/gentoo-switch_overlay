@@ -1,6 +1,6 @@
 diff -Naur linux-Switch/nvidia/platform/t210/icosa/kernel-dts/tegra210-icosa-common.dtsi linux-Switch-2/nvidia/platform/t210/icosa/kernel-dts/tegra210-icosa-common.dtsi
---- linux-Switch/nvidia/platform/t210/icosa/kernel-dts/nx-platforms/tegra210-odin-common.dtsi	2022-10-14 16:26:22.015884735 +0200
-+++ linux-Switch-2/nvidia/platform/t210/icosa/kernel-dts/nx-platorms/tegra210-odin-common.dtsi	2022-10-14 16:28:10.917657052 +0200
+--- linux-Switch/nvidia/platform/t210/nx/kernel-dts/nx-platforms/tegra210-odin-common.dtsi	2022-10-14 16:26:22.015884735 +0200
++++ linux-Switch-2/nvidia/platform/t210/nx/kernel-dts/nx-platorms/tegra210-odin-common.dtsi	2022-10-14 16:28:10.917657052 +0200
 @@ -86,7 +86,6 @@
  	};
  

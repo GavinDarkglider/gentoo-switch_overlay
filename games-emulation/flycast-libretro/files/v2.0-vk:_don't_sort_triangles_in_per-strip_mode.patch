@@ -1,0 +1,46 @@
+From 98123b921582f13f73da36bab88381b4571758bb Mon Sep 17 00:00:00 2001
+From: Flyinghead <raphael.jean@gmail.com>
+Date: Thu, 8 Dec 2022 21:35:51 +0100
+Subject: [PATCH] vk: don't sort triangles in per-strip mode
+
+useless and now crashes since vertices aren't in ascending order anymore
+---
+ core/rend/vulkan/drawer.cpp | 5 +++--
+ core/rend/vulkan/drawer.h   | 1 -
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/core/rend/vulkan/drawer.cpp b/core/rend/vulkan/drawer.cpp
+index 735f1aef2..0902696e2 100644
+--- a/core/rend/vulkan/drawer.cpp
++++ b/core/rend/vulkan/drawer.cpp
+@@ -25,7 +25,7 @@ void Drawer::SortTriangles()
+ {
+ 	sortedPolys.resize(pvrrc.render_passes.used());
+ 	sortedIndexes.resize(pvrrc.render_passes.used());
+-	sortedIndexCount = 0;
++	u32 sortedIndexCount = 0;
+ 	RenderPass previousPass = {};
+ 
+ 	for (int render_pass = 0; render_pass < pvrrc.render_passes.used(); render_pass++)
+@@ -291,7 +291,8 @@ bool Drawer::Draw(const Texture *fogTexture, const Texture *paletteTexture)
+ {
+ 	FragmentShaderUniforms fragUniforms = MakeFragmentUniforms<FragmentShaderUniforms>();
+ 
+-	SortTriangles();
++	if (!config::PerStripSorting)
++		SortTriangles();
+ 	currentScissor = vk::Rect2D();
+ 
+ 	vk::CommandBuffer cmdBuffer = BeginRenderPass();
+diff --git a/core/rend/vulkan/drawer.h b/core/rend/vulkan/drawer.h
+index 823a048d7..a0d892718 100644
+--- a/core/rend/vulkan/drawer.h
++++ b/core/rend/vulkan/drawer.h
+@@ -251,7 +251,6 @@ class Drawer : public BaseDrawer
+ 	// Per-triangle sort results
+ 	std::vector<std::vector<SortTrigDrawParam>> sortedPolys;
+ 	std::vector<std::vector<u32>> sortedIndexes;
+-	u32 sortedIndexCount = 0;
+ 	bool perStripSorting = false;
+ };
+ 

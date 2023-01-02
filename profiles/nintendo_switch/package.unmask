@@ -3,6 +3,7 @@
 =net-wireless/bluez-5.66
 =sys-apps/shadow-4.12.3
 =sys-apps/shadow-4.13-r1
+=sys-apps/systemd-utils-251.10
 =sys-apps/systemd-utils-251.7
 =sys-apps/systemd-utils-251.8-r1
 =sys-apps/systemd-utils-251.9

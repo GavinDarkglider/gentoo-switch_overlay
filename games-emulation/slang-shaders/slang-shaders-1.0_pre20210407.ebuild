@@ -21,5 +21,5 @@ src_install() {
 	dodir "${LIBRETRO_DATA_DIR}"/"${PN}"
 	# Remove unnecessary git files
 	[[ ! ${PV} == "1.0_pre"* ]] && rm -r .git
-	cp -R "${S}"/* "${D}${LIBRETRO_DATA_DIR}"/"${PN}"/
+	cp -R "${S}"/* "${D}/${LIBRETRO_DATA_DIR}"/"${PN}"/
 }

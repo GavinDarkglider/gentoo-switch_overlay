@@ -1,8 +1,17 @@
-# Copyright 2022 Gentoo Authors
+# Copyright 2022-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{9..11} )
+
+if [[ ${PV} != 25[12].* ]] ; then
+	# The F_S=3 issues should be fixed in 253.
+	# - https://github.com/systemd/systemd/issues/22801
+	# - https://github.com/systemd/systemd/pull/25967
+	# - https://github.com/systemd/systemd/commit/7929e180aa47a2692ad4f053afac2857d7198758
+	# - https://github.com/systemd/systemd/commit/4f79f545b3c46c358666c9f5f2b384fe50aac4b4
+	die "Please remove the FORTIFY_SOURCE hacks in src_configure."
+fi
 
 QA_PKGCONFIG_VERSION=$(ver_cut 1)
 
@@ -106,6 +115,7 @@ QA_FLAGS_IGNORED="usr/lib/systemd/boot/efi/.*"
 src_prepare() {
 	local PATCHES=(
 		"${FILESDIR}/251-gpt-auto-no-cryptsetup.patch"
+		"${FILESDIR}/251-tmpfiles-ub.patch"
 	)
 
 	if use elibc_musl; then
@@ -113,9 +123,6 @@ src_prepare() {
 		# Applied upstream in 251.3
 		rm "${WORKDIR}/${MUSL_PATCHSET}/0001-Add-sys-file.h-for-LOCK_.patch" || die
 	fi
-
-	PATCHES+=( "${FILESDIR}/systemd-utils-001-fix-filesystem-checks.patch" )
-
 	default
 
 	# Remove install_rpath; we link statically

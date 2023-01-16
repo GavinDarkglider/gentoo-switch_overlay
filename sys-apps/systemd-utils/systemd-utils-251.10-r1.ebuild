@@ -123,6 +123,9 @@ src_prepare() {
 		# Applied upstream in 251.3
 		rm "${WORKDIR}/${MUSL_PATCHSET}/0001-Add-sys-file.h-for-LOCK_.patch" || die
 	fi
+
+	PATCHES+=( "${FILESDIR}/systemd-utils-001-fix-filesystem-checks.patch" )
+
 	default
 
 	# Remove install_rpath; we link statically

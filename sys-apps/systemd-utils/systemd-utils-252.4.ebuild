@@ -4,6 +4,15 @@
 EAPI=8
 PYTHON_COMPAT=( python3_{9..11} )
 
+if [[ ${PV} != 25[12].* ]] ; then
+	# The F_S=3 issues should be fixed in 253.
+	# - https://github.com/systemd/systemd/issues/22801
+	# - https://github.com/systemd/systemd/pull/25967
+	# - https://github.com/systemd/systemd/commit/7929e180aa47a2692ad4f053afac2857d7198758
+	# - https://github.com/systemd/systemd/commit/4f79f545b3c46c358666c9f5f2b384fe50aac4b4
+	die "Please remove the FORTIFY_SOURCE hacks in src_configure."
+fi
+
 QA_PKGCONFIG_VERSION=$(ver_cut 1)
 
 inherit bash-completion-r1 flag-o-matic meson-multilib python-any-r1 toolchain-funcs udev usr-ldscript
@@ -21,12 +30,12 @@ else
 	SRC_URI="https://github.com/systemd/systemd/archive/refs/tags/v${PV}.tar.gz -> ${MY_P}.tar.gz"
 fi
 
-MUSL_PATCHSET="systemd-musl-patches-251.2"
+MUSL_PATCHSET="systemd-musl-patches-252.4"
 SRC_URI+=" elibc_musl? ( https://dev.gentoo.org/~floppym/dist/${MUSL_PATCHSET}.tar.gz )"
 
 LICENSE="GPL-2 LGPL-2.1 MIT public-domain"
 SLOT="0"
-KEYWORDS="~alpha amd64 arm arm64 hppa ~ia64 ~loong ~m68k ~mips ppc ppc64 ~riscv ~s390 sparc x86"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~m68k ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 IUSE="+acl boot +kmod selinux split-usr sysusers +tmpfiles test +udev"
 REQUIRED_USE="|| ( boot tmpfiles sysusers udev )"
 RESTRICT="!test? ( test )"
@@ -105,13 +114,11 @@ QA_FLAGS_IGNORED="usr/lib/systemd/boot/efi/.*"
 
 src_prepare() {
 	local PATCHES=(
-		"${FILESDIR}/251-gpt-auto-no-cryptsetup.patch"
+		"${FILESDIR}/251-tmpfiles-ub.patch"
 	)
 
 	if use elibc_musl; then
 		PATCHES+=( "${WORKDIR}/${MUSL_PATCHSET}" )
-		# Applied upstream in 251.3
-		rm "${WORKDIR}/${MUSL_PATCHSET}/0001-Add-sys-file.h-for-LOCK_.patch" || die
 	fi
 
 	PATCHES+=( "${FILESDIR}/systemd-utils-001-fix-filesystem-checks.patch" )
@@ -119,7 +126,7 @@ src_prepare() {
 	default
 
 	# Remove install_rpath; we link statically
-	local rpath_pattern="install_rpath : rootlibexecdir,"
+	local rpath_pattern="install_rpath : rootpkglibdir,"
 	grep -q -e "${rpath_pattern}" meson.build || die
 	sed -i -e "/${rpath_pattern}/d" meson.build || die
 }
@@ -300,6 +307,7 @@ multilib_src_compile() {
 				systemd-tmpfiles.standalone
 				man/tmpfiles.d.5
 				man/systemd-tmpfiles.8
+				tmpfiles.d/{etc,static-nodes-permissions,var}.conf
 			)
 			if use test; then
 				targets+=( test-tmpfiles )
@@ -337,7 +345,6 @@ multilib_src_compile() {
 					test-fido-id-desc
 					test-udev-builtin
 					test-udev-event
-					test-udev-netlink
 					test-udev-node
 					test-udev-util
 				)
@@ -428,6 +435,8 @@ multilib_src_install() {
 			into "${rootprefix:-/}"
 			newbin systemd-tmpfiles{.standalone,}
 			doman man/{systemd-tmpfiles.8,tmpfiles.d.5}
+			insinto /usr/lib/tmpfiles.d
+			doins tmpfiles.d/{etc,static-nodes-permissions,var}.conf
 		fi
 		if use udev; then
 			into "${rootprefix:-/}"
@@ -475,6 +484,9 @@ multilib_src_install_all() {
 		doexe "${FILESDIR}"/systemd-tmpfiles-clean
 		insinto /usr/share/zsh/site-functions
 		doins shell-completion/zsh/_systemd-tmpfiles
+		insinto /usr/lib/tmpfiles.d
+		doins tmpfiles.d/{tmp,x11}.conf
+		doins "${FILESDIR}"/legacy.conf
 	fi
 	if use udev; then
 		doheader src/libudev/libudev.h

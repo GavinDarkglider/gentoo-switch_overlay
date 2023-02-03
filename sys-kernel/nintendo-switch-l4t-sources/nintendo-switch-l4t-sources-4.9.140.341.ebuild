@@ -78,7 +78,6 @@ src_prepare() {
 	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch
 	eapply "${FILESDIR}"/06-Revert-arm64-32bit-sigcontext-definition-to-uapi-signcontext.h.patch
-	eapply "${FILESDIR}"/07-temporary-sleep-fix-before-new-bootloader.patch
 	eapply "${FILESDIR}"/linux-headers-fix-no-uapi-header-provides-a-definition-of-struct-sockaddr.patch
         eapply "${FILESDIR}"/linux-headers-add-MAP_HUGE_2MB-and-MAP_HUGE_1MB.patch
 	eapply_user
@@ -92,6 +91,17 @@ src_configure() {
 
 pkg_postinst() {
 	kernel-2_pkg_postinst
+        einfo "Hekate L4T loader requires DTimage file nx-plat.dtimg to be made with mkdtboimg."
+        einfo "Proper command for making dtimage: mkdtboimg.py create nx-plat.dtimg --page_size=1000 \
+          tegra210-odin.dtb --id=0x4F44494E \
+          tegra210b01-odin.dtb --id=0x4F44494E --rev=0x00000b01 \
+          tegra210b01-vali.dtb --id=0x56414C49 \
+          tegra210b01-frig.dtb --id=0x46524947"
+        echo ""
+        einfo "Kernel Image file needs to be compressed GZ uimage."
+        einfo "Proper command  for creating GZ compressed kernel image: gzip Image; mkimage -A arm64 -O linux -T kernel -C gzip \
+               -a 0x80200000 -e 0x80200000 -n CTCKRN-5.0.0 -d Image.gz Image; rm Image.gz
+        echo "" 
 	einfo "For more info on this patchset, and how to report problems, see:"
 	einfo "${HOMEPAGE}"
 }

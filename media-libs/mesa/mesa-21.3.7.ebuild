@@ -3,7 +3,7 @@
 
 EAPI=7
 
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{9..11} )
 
 inherit llvm meson-multilib python-any-r1 linux-info
 
@@ -33,7 +33,7 @@ for card in ${VIDEO_CARDS}; do
 done
 
 IUSE="${IUSE_VIDEO_CARDS}
-	+classic cpu_flags_x86_sse2 d3d9 debug +egl +gallium +gbm gles1 +gles2 +llvm
+	+classic cpu_flags_x86_sse2 d3d9 debug +egl +gallium +gbm gles1 +gles2 llvm
 	lm-sensors opencl osmesa selinux test unwind vaapi valgrind vdpau vulkan
 	vulkan-overlay wayland +X xa xvmc zink +zstd"
 

@@ -5,7 +5,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="alsa bootstack dock-script egl elogind initramfs joystick kernel-sources kernel-bin reboot2hekate +wifi X"
+IUSE="alsa bootstack dock-script egl elogind initramfs joystick kernel-sources kernel-bin +wifi X"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -39,9 +39,6 @@ RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 
 # Compile and install the kernel
 RDEPEND+=" kernel-bin? ( sys-kernel/nintendo-switch-l4t-kernel )"
-
-# Install hekate to /lib/firmware/reboot_payload.bin
-RDEPEND+=" reboot2hekate? ( sys-boot/reboot2hekate-bin )"
 
 # Basic wifi manager
 RDEPEND+=" wifi? ( sys-libs/switch-l4t-configs[brcm] )"

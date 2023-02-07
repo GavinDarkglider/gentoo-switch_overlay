@@ -83,7 +83,6 @@ The package have the next USE flags for enabeling/disabeling things:
 | kernel-sources | sys-kernel/nintendo-switch-l4t-sources | Install l4t kernel sources, patched with nvidia sources inside. Use this package if you like to compile your kernel directly on the switch
 | kernel-bin | sys-kernel/nintendo-switch-l4t-kernel | Install the l4t kernel and some sources to compile external modules. USe this package if you use qemu build enviroment and binary packages
 |-kernel-sources -kernel-bin | | Of course you can disable kernel-sources and kernel-bin, and compile your kernel however you like
-| reboot2hekate | sys-boot/reboot2hekate-bin | Install hekate as /lib/firmware/reboot_payload.bin to reboot back into hekate
 | wifi | sys-libs/switch-l4t-configs[brcm] | Fimrware settings for wifi. Additional networking manager, like wpa_supplicant
 | X | sys-libs/jetson-tx1-drivers[X] app-accessibility/onboard or sys-libs/switch-l4t-configs[X] | Install all required for X-Server, including config and onscreen keyboard "onboard"
 

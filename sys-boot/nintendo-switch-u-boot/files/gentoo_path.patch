@@ -1,13 +1,11 @@
-diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 5dac96269f..76d7fad72a 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -331,7 +331,7 @@
+@@ -343,7 +343,7 @@
  	BOOTENV_SHARED_IDE \
  	BOOTENV_SHARED_UBIFS \
  	BOOTENV_SHARED_EFI \
--	"boot_prefixes=/ /switchroot/ubuntu/\0" \
+-	"boot_prefixes=/\0" \
 +	"boot_prefixes=/switchroot/gentoo/\0" \
- 	"boot_scripts=boot.scr.uimg boot.scr\0" \
+ 	"boot_scripts=boot.scr\0" \
  	"boot_script_dhcp=boot.scr.uimg\0" \
  	BOOTENV_BOOT_TARGETS \

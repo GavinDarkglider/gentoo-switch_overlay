@@ -1,40 +1,36 @@
 EAPI="6"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 SLOT="0"
 
 HOMEPAGE="https://gitlab.com/switchroot/switch-uboot"
 DESCRIPTION='"Das U-Boot" Source Tree for the Switch'
 
 inherit git-r3
+inherit sdcard-mount
 
 EGIT_REPO_URI="https://gitlab.com/switchroot/switch-uboot"
-EGIT_BRANCH="android"
+EGIT_BRANCH="linux-hekatf"
 EGIT_CHECKOUT_DIR="${S}"
 
 
 DEPEND="dev-lang/swig"
 
 PATCHES=(
-    "${FILESDIR}"/android_gentoo_path.patch
-    "${FILESDIR}"/extra_15_mb.patch
+    "${FILESDIR}"/gentoo_path.patch
+    "${FILESDIR}"/gcc-10-fix.patch
+    "${FILESDIR}"/dtb-build.patch
 )
 
 src_configure() {
     einfo "Use provided nintendo-switch_defconfig"
-    cp "${S}"/configs/nintendo-switch_defconfig  "${S}"/.config || die "copy failed"
-
-    einfo "Apply olddefconfig"
-    cd "${S}"
-    emake olddefconfig 2>/dev/null || die "emake olddefconfig failed"
+    emake nintendo-switch_defconfig
 }
 
 src_install() {
-	exeinto "/usr/share/u-boot"
-	doexe u-boot.elf
-}
+	insinto "/usr/share/u-boot"
+	doins u-boot.elf
+	doins u-boot-dtb.bin
 
-pkg_postinst() {
-	einfo "Update the coreboot.rom and boot.scr using "
-	einfo "   ebuild /var/db/repos/switch_overlay/sys-boot/l4s-bootstack/l4s-bootstack-9999.ebuild config"
-	einfo " or by sys-boot/l4s-bootstack rebuild"
+	insinto "${SDCARD_DESTDIR}"/switchroot/gentoo
+	newins u-boot-dtb.bin bl33.bin
 }

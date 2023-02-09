@@ -100,7 +100,7 @@ pkg_postinst() {
         echo ""
         einfo "Kernel Image file needs to be compressed GZ uimage."
         einfo "Proper command  for creating GZ compressed kernel image: gzip Image; mkimage -A arm64 -O linux -T kernel -C gzip \
-               -a 0x80200000 -e 0x80200000 -n CTCKRN-5.0.0 -d Image.gz Image; rm Image.gz
+               -a 0x80200000 -e 0x80200000 -n CTCKRN-5.0.0 -d Image.gz Image; rm Image.gz"
         echo "" 
 	einfo "For more info on this patchset, and how to report problems, see:"
 	einfo "${HOMEPAGE}"

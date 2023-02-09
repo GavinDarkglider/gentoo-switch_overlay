@@ -95,6 +95,7 @@ src_compile() {
 	# Workaround: /usr/bin/ld: unrecognized option '-Wl,-O1'
 	export LDFLAGS=""
 	export KCFLAGS="-Wno-error=stringop-overread" # GCC-11 support
+	export KCFLAGS+=" -Wno-error=address" # GCC-12 support
 	kernel-build_src_compile
 }
 

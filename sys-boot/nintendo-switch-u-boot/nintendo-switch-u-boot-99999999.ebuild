@@ -27,10 +27,6 @@ src_configure() {
 }
 
 src_install() {
-	insinto "/usr/share/u-boot"
-	doins u-boot.elf
-	doins u-boot-dtb.bin
-
 	insinto "${SDCARD_DESTDIR}"/switchroot/gentoo
 	newins u-boot-dtb.bin bl33.bin
 }

@@ -163,7 +163,7 @@ src_install() {
 	else
 		dopamd "${FILESDIR}"/pam.d-include/shadow
 
-		for x in chsh shfn ; do
+		for x in chsh chfn ; do
 			newpamd "${FILESDIR}"/pam.d-include/passwd ${x}
 		done
 

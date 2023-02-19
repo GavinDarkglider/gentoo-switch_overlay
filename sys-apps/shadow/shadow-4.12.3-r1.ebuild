@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -159,7 +159,7 @@ src_install() {
 	else
 		dopamd "${FILESDIR}"/pam.d-include/shadow
 
-		for x in chsh shfn ; do
+		for x in chsh chfn ; do
 			newpamd "${FILESDIR}"/pam.d-include/passwd ${x}
 		done
 

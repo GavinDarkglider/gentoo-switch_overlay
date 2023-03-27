@@ -56,6 +56,8 @@ src_prepare() {
 }
 
 src_configure() {
+	# -DBUILD_SHARED_LIBS=OFF is required for using internal glslang instead of system glslang.
+	# ppsspp-libretro is sometimes incompatible with system glslang.
 	local mycmakeargs=(
 		-DCMAKE_SKIP_RPATH=ON
 		-DLIBRETRO=ON
@@ -65,6 +67,7 @@ src_configure() {
 		-DUSE_SYSTEM_FFMPEG=ON
 		-DUSE_SYSTEM_LIBZIP=ON
 		-DUSE_SYSTEM_SNAPPY=ON
+		-DBUILD_SHARED_LIBS=OFF
 		-DUSING_QT_UI=OFF
 		-DUSING_GLES2=$(usex gles2)
 	)

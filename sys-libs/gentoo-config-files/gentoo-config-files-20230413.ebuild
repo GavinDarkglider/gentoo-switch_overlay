@@ -3,12 +3,15 @@
 
 EAPI=7
 
-inherit git-r3
-
 DESCRIPTION="Misc confirugation files for Gentoo on Nintendo Switch"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-config-files"
-EGIT_REPO_URI="https://gitlab.com/bell07/gentoo-config-files"
-EGIT_BRANCH="main"
+
+COMMIT="821c60b87739513ff1739956d6d1c33273fe134c"
+SRC_URI="$HOMEPAGE/-/archive/${COMMIT}/${PN}.zip -> ${P}.zip"
+
+RESTRICT="mirror"
+
+S="${WORKDIR}/gentoo-config-files-${COMMIT}"
 
 LICENSE="GPL-3"
 SLOT="0"

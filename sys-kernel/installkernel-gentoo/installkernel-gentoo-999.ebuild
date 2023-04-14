@@ -12,7 +12,6 @@ KEYWORDS="-* ~arm64"
 
 RDEPEND="
 	>=sys-apps/debianutils-4.9-r1
-	!<sys-apps/debianutils-4.9-r1[installkernel(+)]
 	!sys-kernel/installkernel-systemd-boot
 	dev-embedded/u-boot-tools"
 
@@ -20,7 +19,7 @@ S="${WORKDIR}"
 
 src_install() {
 	into /
-	#dosbin "${FILESDIR}"/installkernel
+	dosbin "${FILESDIR}"/installkernel
 	dosbin "${FILESDIR}"/mkdtboimg.py
 	keepdir /etc/kernel/postinst.d
 }

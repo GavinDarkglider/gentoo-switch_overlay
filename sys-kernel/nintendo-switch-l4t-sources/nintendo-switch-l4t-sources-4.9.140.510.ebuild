@@ -1,7 +1,7 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="8"
+EAPI=8
 ETYPE="sources"
 
 inherit kernel-2 git-r3
@@ -17,7 +17,6 @@ ADD_VERSION=510
 EXTRAVERSION="-l4t-gentoo"
 
 DESCRIPTION="Nintendo Switch kernel sources"
-SRC_URI="${GENPATCHES_URI} ${ARCH_URI}"
 
 S="${WORKDIR}"/linux-"${PVR}""${EXTRAVERSION}"
 
@@ -89,7 +88,7 @@ src_prepare() {
 }
 
 src_configure() {
-	EXTRAVERSION=".510-l4t-gentoo"
+	EXTRAVERSION=".${ADD_VERSION}${EXTRAVERSION}"
 	einfo "Adjust EXTRAVERSION to ${EXTRAVERSION} and reset LOCALVERSION in tegra_linux_defconfig"
 	unpack_set_extraversion
 	sed -i -e 's:^CONFIG_LOCALVERSION=".*:# CONFIG_LOCALVERSION is not set:g' arch/arm64/configs/tegra_linux_defconfig || die

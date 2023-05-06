@@ -1,10 +1,7 @@
 =dev-qt/qtcore-5.15.9
 =net-wireless/bluez-5.66-r1
 =sys-apps/shadow-4.13-r3
-=sys-apps/systemd-utils-251.10-r1
-=sys-apps/systemd-utils-252.6
-=sys-apps/systemd-utils-252.7
-=sys-apps/systemd-utils-252.8
+=sys-apps/systemd-utils-252.10
 =sys-apps/systemd-utils-252.9
 =x11-libs/libdrm-2.4.115
 =x11-libs/libdrm-9999

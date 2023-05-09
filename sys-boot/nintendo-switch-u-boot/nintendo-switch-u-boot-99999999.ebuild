@@ -16,7 +16,6 @@ EGIT_CHECKOUT_DIR="${S}"
 DEPEND="dev-lang/swig"
 
 PATCHES=(
-    "${FILESDIR}"/gentoo_path.patch
     "${FILESDIR}"/gcc-10-fix.patch
     "${FILESDIR}"/dtb-build.patch
 )

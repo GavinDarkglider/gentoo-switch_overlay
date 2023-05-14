@@ -120,7 +120,12 @@ src_prepare() {
 	)
 
 	if use elibc_musl; then
-		PATCHES+=( "${WORKDIR}/${MUSL_PATCHSET}" )
+		PATCHES+=(
+			"${WORKDIR}/${MUSL_PATCHSET}"
+			# The LFS patch should be fine unconditionally but
+			# let's keep it conditional until merged upstream.
+			"${FILESDIR}"/${PN}-253.4-musl-lfs.patch
+		)
 	fi
 
 	PATCHES+=( "${FILESDIR}/systemd-utils-001-fix-filesystem-checks.patch" )
@@ -275,6 +280,7 @@ multilib_src_compile() {
 				kernel-install
 				man/bootctl.1
 				man/kernel-install.8
+				90-loaderentry.install
 				src/boot/efi/linux$(efi_arch).{efi,elf}.stub
 				src/boot/efi/systemd-boot$(efi_arch).efi
 			)
@@ -412,6 +418,9 @@ multilib_src_install() {
 			into /usr
 			dobin bootctl kernel-install
 			doman man/{bootctl.1,kernel-install.8}
+			# 90-loaderentry.install is generated from 90-loaderentry.install.in
+			exeinto usr/lib/kernel/install.d
+			doexe src/kernel-install/*.install
 			insinto usr/lib/systemd/boot/efi
 			doins src/boot/efi/{linux$(efi_arch).{efi,elf}.stub,systemd-boot$(efi_arch).efi}
 		fi

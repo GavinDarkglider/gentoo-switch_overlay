@@ -30,7 +30,7 @@ DEPEND="
 "
 BDEPEND="
 	sys-devel/flex
-	virtual/yacc
+	app-alternatives/yacc
 	dbus? ( virtual/pkgconfig )
 "
 

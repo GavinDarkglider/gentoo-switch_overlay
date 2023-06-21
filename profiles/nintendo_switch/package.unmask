@@ -1,6 +1,8 @@
+=dev-qt/qtcore-5.15.10
 =dev-qt/qtcore-5.15.9
 =net-wireless/bluez-5.66-r1
 =sys-apps/shadow-4.13-r3
+=sys-apps/shadow-4.13-r4
 =sys-apps/systemd-utils-252.10
 =sys-apps/systemd-utils-252.9
 =sys-apps/systemd-utils-253.4-r1

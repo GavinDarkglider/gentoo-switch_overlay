@@ -81,7 +81,7 @@ src_unpack() {
 
 src_prepare() {
 	eapply "${FILESDIR}"/01-unify_l4t_sources.patch
-	eapply "${FILESDIR}"/02-gcc-10.patch
+	eapply "${FILESDIR}"/02-gcc-10-4.9.140.510.patch
 	eapply "${FILESDIR}"/03-nvidia_drivers_actmon_add__init_annotation_to_tegra_actmon_register.patch
 	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch

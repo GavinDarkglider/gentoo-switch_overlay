@@ -11,6 +11,8 @@
 
 # Downgrade because of old linux headers from l4t kernel
 >dev-libs/ell-0.30-r1
+>net-libs/libpcap-1.9.1-r3
+>sys-apps/systemd-utils-253
 
 # Mesa
 >media-libs/mesa-21.3.8
@@ -27,12 +29,8 @@
 dev-qt/qtcore
 net-wireless/bluez
 sys-apps/shadow
-sys-apps/systemd-utils
 x11-libs/libdrm
 
 #Weston / wayland
 >dev-libs/weston-10.1.0
 >x11-base/xwayland-23
-
-#libpcap
->net-libs/libpcap-1.9.1-r3

@@ -13,6 +13,10 @@
 >dev-libs/ell-0.30-r1
 >net-libs/libpcap-1.9.1-r3
 >sys-apps/systemd-utils-253
+# 2023-08-18 - pidfd symbols not in kernel headers. https://bugs.gentoo.org/911375
+>sys-libs/glibc-2.36
+# 2023-08-18 - fails to build with glibc-2.35
+>sys-devel/gcc-12
 
 # Mesa
 >media-libs/mesa-21.3.8
@@ -24,6 +28,10 @@
 >media-plugins/alsa-plugins-1.2.4
 >media-sound/alsa-utils-1.2.4
 
+#Weston / wayland
+>dev-libs/weston-10.1.0
+>x11-base/xwayland-23
+
 # Since no overlay masks are supported in profile, the whole package is masked.
 # The replaced versions in this overlay are unmasked by package.unmask
 dev-qt/qtcore
@@ -31,6 +39,3 @@ net-wireless/bluez
 sys-apps/shadow
 x11-libs/libdrm
 
-#Weston / wayland
->dev-libs/weston-10.1.0
->x11-base/xwayland-23

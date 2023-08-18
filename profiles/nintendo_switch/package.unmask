@@ -1,3 +1,7 @@
+# Compatible to the bastard headers
+=sys-libs/glibc-2.35*
+
+# Portage sync - modified
 =dev-qt/qtcore-5.15.10
 =dev-qt/qtcore-5.15.10-r1
 =net-wireless/bluez-5.66-r1

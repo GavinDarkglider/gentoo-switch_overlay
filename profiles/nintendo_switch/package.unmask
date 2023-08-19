@@ -2,11 +2,11 @@
 =sys-libs/glibc-2.35*
 
 # Portage sync - modified
-=dev-qt/qtcore-5.15.10
 =dev-qt/qtcore-5.15.10-r1
 =net-wireless/bluez-5.66-r1
 =net-wireless/bluez-5.68
 =sys-apps/shadow-4.13-r3
 =sys-apps/shadow-4.13-r4
+=sys-apps/shadow-4.14.0
 =x11-libs/libdrm-2.4.115
 =x11-libs/libdrm-9999

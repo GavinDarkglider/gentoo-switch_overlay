@@ -3,7 +3,6 @@
 
 # Portage sync - modified
 =dev-qt/qtcore-5.15.10-r1
-=net-wireless/bluez-5.66-r1
 =net-wireless/bluez-5.68
 =sys-apps/shadow-4.13-r3
 =sys-apps/shadow-4.13-r4

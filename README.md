@@ -59,6 +59,11 @@ Of course you can set the settings to your make.conf and leave the profile.
 ```
 eselect profile set switch:nintendo_switch/17.0/desktop
 ```
+## Installation
+The full guide from is decribed in [bootstrap.md](bootstrap.md). 
+Abbreviations exists. It is possible to use precompiled stage3 from [Releases](https://gitlab.com/bell07/gentoo-switch_overlay/-/releases) .
+It is possible to do full installation using Switch without PC. An other running Linux is required as live medium in this case.
+In any case Gentoo knowledge is required to do the Gentoo installation on the switch.
 
 ## Installation of packages
 Should be more simple than it probably is. This is still very much experimental, and most things havnt been tested properly.
@@ -70,11 +75,12 @@ Look through the overlay, and see what is there.
 ## Meta Package sys-apps/nintendo-switch-meta
 The starting point to install the basic files is the sys-apps/nintendo-switch-meta package, that just push other packages as dependency.
 The package have the next USE flags for enabeling/disabeling things:
+
 | USE | packages | Explanation
 | ------ | ------ | ------
 | | sys-libs/jetson-tx1-drivers[firmware] or sys-firmware/jetson-tx1-firmware | Firmware is mandatory, either drivers or firmware only package
 | alsa | sys-libs/switch-l4t-configs[alsa]  | Install alsa ucm configuration to get audio working
-| bootstack | sys-boot/switchroot-bootstack | Installs precompiled bootstack files (coreboot.rom, boot.scr, uenv.txt and more) into /usr/share/sdcard1. The ebuild supports to install the files directly to the vfat partition. Disable the flag if you like to manage this files byself
+| bootstack | sys-boot/switchroot-bootstack | Installs boot files into /usr/share/sdcard1. The ebuild supports to install the files directly to the vfat partition.
 | dock-script | x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler | Different scripts to manage the dock/undock events (swap screen and audio)
 | egl | gui-libs/tegra-udrm-gbm | DRM/KMS Dependencies
 | elogind | sys-libs/gentoo-config-files[elogind] | Deep Sleep and resume fixes, managed by elogind

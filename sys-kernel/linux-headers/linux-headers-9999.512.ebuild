@@ -6,8 +6,6 @@ EAPI=8
 ETYPE="headers"
 H_SUPPORTEDARCH="arm64"
 
-NVIDIA_VER="l4t/l4t-r32.5"
-
 inherit kernel-2 git-r3
 
 KEYWORDS="-* arm64"
@@ -23,14 +21,14 @@ DESCRIPTION="Nintendo Switch kernel Headers"
 src_unpack() {
 	EGIT_REPO_URI="https://github.com/CTCaer/switch-l4t-kernel-4.9"
 	EGIT_BRANCH=""
-	EGIT_TAG="linux-5.1.0_r2"
+	EGIT_TAG="linux-5.1.2"
 	EGIT_CHECKOUT_DIR="${S}"
 	git-r3_src_unpack
 	rm -Rf "${S}"/.git*
 
 	EGIT_REPO_URI="https://github.com/CTCaer/switch-l4t-kernel-nvidia"
 	EGIT_BRANCH=""
-	EGIT_TAG="linux-5.1.0"
+	EGIT_TAG="linux-5.1.2"
 	EGIT_CHECKOUT_DIR="${S}/nvidia"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
@@ -44,7 +42,7 @@ src_unpack() {
 
 	EGIT_REPO_URI="https://github.com/CTCaer/switch-l4t-platform-t210-nx"
 	EGIT_BRANCH=""
-	EGIT_TAG="linux-5.1.0"
+	EGIT_TAG="linux-5.1.2"
 	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/nx"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
@@ -80,7 +78,7 @@ src_unpack() {
 
 src_prepare() {
 	eapply "${FILESDIR}"/01-unify_l4t_sources.patch
-	eapply "${FILESDIR}"/02-gcc-10-4.9.140.510.patch
+	eapply "${FILESDIR}"/02-gcc-12-4.9.140.511.patch
 	eapply "${FILESDIR}"/03-nvidia_drivers_actmon_add__init_annotation_to_tegra_actmon_register.patch
 	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch

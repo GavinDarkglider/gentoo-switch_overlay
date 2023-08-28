@@ -12,7 +12,7 @@ KEYWORDS="-* arm64"
 HOMEPAGE="https://github.com/CTCaer/switch-l4t-kernel-4.9"
 IUSE=""
 
-ADD_VERSION=510
+ADD_VERSION=512
 
 EXTRAVERSION="-l4t-gentoo"
 
@@ -23,14 +23,14 @@ S="${WORKDIR}"/linux-"${PVR}""${EXTRAVERSION}"
 src_unpack() {
 	EGIT_REPO_URI="https://github.com/CTCaer/switch-l4t-kernel-4.9"
 	EGIT_BRANCH=""
-	EGIT_TAG="linux-5.1.0_r2"
+	EGIT_TAG="linux-5.1.2"
 	EGIT_CHECKOUT_DIR="${S}"
 	git-r3_src_unpack
 	rm -Rf "${S}"/.git*
 
 	EGIT_REPO_URI="https://github.com/CTCaer/switch-l4t-kernel-nvidia"
 	EGIT_BRANCH=""
-	EGIT_TAG="linux-5.1.0"
+	EGIT_TAG="linux-5.1.2"
 	EGIT_CHECKOUT_DIR="${S}/nvidia"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
@@ -44,7 +44,7 @@ src_unpack() {
 
 	EGIT_REPO_URI="https://github.com/CTCaer/switch-l4t-platform-t210-nx"
 	EGIT_BRANCH=""
-	EGIT_TAG="linux-5.1.0"
+	EGIT_TAG="linux-5.1.2"
 	EGIT_CHECKOUT_DIR="${S}/nvidia/platform/t210/nx"
 	git-r3_src_unpack
 	rm -Rf "${EGIT_CHECKOUT_DIR}"/.git*
@@ -80,7 +80,7 @@ src_unpack() {
 
 src_prepare() {
 	eapply "${FILESDIR}"/01-unify_l4t_sources.patch
-	eapply "${FILESDIR}"/02-gcc-10-4.9.140.510.patch
+	eapply "${FILESDIR}"/02-gcc-12-4.9.140.511.patch
 	eapply "${FILESDIR}"/03-nvidia_drivers_actmon_add__init_annotation_to_tegra_actmon_register.patch
 	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch
@@ -109,7 +109,7 @@ pkg_postinst() {
 	einfo "Kernel Image file needs to be compressed GZ uimage."
 	einfo "Proper command  for creating GZ compressed kernel image:"
 	einfo "# gzip Image; mkimage -A arm64 -O linux -T kernel -C gzip \\"
-	einfo "    -a 0x80200000 -e 0x80200000 -n CTCKRN-5.0.0 -d Image.gz Image; rm Image.gz"
+	einfo "    -a 0x80200000 -e 0x80200000 -n CTCKRN-5.1.2 -d Image.gz Image; rm Image.gz"
 	echo ""
 	einfo "if =sys-kernel/installkernel-gentoo-999 is installed, the \"make install\" do both for you."
 	echo ""

@@ -16,7 +16,7 @@ DESCRIPTION="Nintendo Switch kernel"
 inherit kernel-build git-r3
 
 DEPEND="initramfs? ( sys-libs/gentoo-config-files[initramfs] dev-embedded/u-boot-tools )
-   =sys-kernel/installkernel-gentoo-999"
+   =sys-kernel/installkernel-gentoo-999-r2"
 RDEPEND="${DEPEND}"
 
 S="${WORKDIR}"/linux-"${PVR}"

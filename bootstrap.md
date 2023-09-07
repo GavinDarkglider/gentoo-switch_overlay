@@ -139,7 +139,7 @@ But at the first I go into this folder and create some folders, special /dev and
 ```sh
 mkdir /gentoo-switch
 # Create skeleton folders
-mkdir -p /gentoo-switch/{boot,dev,mnt,root,run,sys,proc}
+mkdir -p /gentoo-switch/{boot,dev,etc,mnt,root,run,sys,proc}
 mkdir -p /gentoo-switch/etc/portage/repos.conf
 mkdir -p /gentoo-switch/var/cache/distfiles
 mkdir -p /gentoo-switch/var/db/repos/gentoo

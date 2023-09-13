@@ -4,9 +4,10 @@
 # Portage sync - modified
 =dev-qt/qtcore-5.15.10-r1
 =net-wireless/bluez-5.68
+=net-wireless/bluez-5.69
 =sys-apps/shadow-4.13-r3
 =sys-apps/shadow-4.13-r4
-=sys-apps/shadow-4.14.0
+=sys-apps/shadow-4.14.0-r2
 =x11-libs/libdrm-2.4.115
 =x11-libs/libdrm-2.4.116
 =x11-libs/libdrm-9999

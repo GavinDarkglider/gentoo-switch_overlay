@@ -224,8 +224,16 @@ kernel-build_src_test() {
 		targets+=( dtbs_install )
 	fi
 
+	# Use the kernel build system to strip, this ensures the modules
+	# are stripped *before* they are signed or compressed.
+	local strip_args
+	if use strip; then
+		strip_args="--strip-unneeded"
+	fi
+
 	emake O="${WORKDIR}"/build "${MAKEARGS[@]}" \
-		INSTALL_MOD_PATH="${T}" "${targets[@]}"
+		INSTALL_MOD_PATH="${T}" INSTALL_MOD_STRIP="${strip_args}" \
+		"${targets[@]}"
 
 	local dir_ver=${PV}${KV_LOCALVERSION}
 	local relfile=${WORKDIR}/build/include/config/kernel.release
@@ -433,20 +441,6 @@ kernel-build_merge_configs() {
 				die "MODULES_SIGN_KEY=${MODULES_SIGN_KEY} not found or not readable!"
 			fi
 			merge_configs+=( "${WORKDIR}/modules-sign.config" )
-		fi
-	fi
-
-	if [[ ${KERNEL_IUSE_SECUREBOOT} ]]; then
-		if use secureboot; then
-			# This only effects arm64 and riscv where the bootable image may
-			# contain its own decompressor (zboot). If enabled we get a
-			# sign-able efi file.
-			cat <<-EOF > "${WORKDIR}/secureboot.config" || die
-				## Enable zboot for signing
-				CONFIG_EFI_ZBOOT=y
-			EOF
-
-			merge_configs+=( "${WORKDIR}/secureboot.config" )
 		fi
 	fi
 

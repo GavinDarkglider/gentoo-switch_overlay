@@ -2,6 +2,13 @@
 >x11-base/xorg-drivers-21
 >x11-base/xorg-server-21
 
+# Mesa
+>media-libs/mesa-21.3.8
+
+# 2023-10-14 Does not work with old xorg-server. Maybe can be solved by reverting
+# https://cgit.freedesktop.org/xorg/driver/xf86-input-libinput/commit/?id=94a52a848801ff035ec4d1c604dac7c90708e562
+>x11-drivers/xf86-input-libinput-1.4
+
 #Mask newer libv4l/v4l-utils as patches will need ported forward
 >media-libs/libv4l-1.18.1
 >media-tv/v4l-utils-1.18.1
@@ -17,9 +24,6 @@
 >sys-libs/glibc-2.36
 # 2023-08-18 - fails to build with glibc-2.35
 >sys-devel/gcc-12
-
-# Mesa
->media-libs/mesa-21.3.8
 
 #Audio Stuff
 >media-libs/alsa-lib-1.2.4
@@ -38,4 +42,3 @@ dev-qt/qtcore
 net-wireless/bluez
 sys-apps/shadow
 x11-libs/libdrm
-

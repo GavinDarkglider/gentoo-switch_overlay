@@ -5,7 +5,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="alsa bootstack dock-script egl elogind initramfs joystick kernel-sources kernel-bin +wifi X"
+IUSE="alsa bootstack dock-handler egl elogind initramfs joystick kernel-sources kernel-bin +wifi X"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -20,7 +20,7 @@ RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"
 RDEPEND+=" alsa? ( sys-libs/switch-l4t-configs[alsa] )"
 
 # Script to manage dock / undock
-RDEPEND+=" dock-script? ( || ( x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler ) )"
+RDEPEND+=" dock-handler? ( || ( sys-libs/switch-l4t-configs[dock-handler] x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler ) )"
 
 #EGL DRM/KMS Dependencies
 RDEPEND+=" egl? ( gui-libs/tegra-udrm-gbm )"

@@ -81,7 +81,7 @@ The package have the next USE flags for enabeling/disabeling things:
 | | sys-libs/jetson-tx1-drivers[firmware] or sys-firmware/jetson-tx1-firmware | Firmware is mandatory, either drivers or firmware only package
 | alsa | sys-libs/switch-l4t-configs[alsa]  | Install alsa ucm configuration to get audio working
 | bootstack | sys-boot/switchroot-bootstack | Installs boot files into /usr/share/sdcard1. The ebuild supports to install the files directly to the vfat partition.
-| dock-script | x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler | Different scripts to manage the dock/undock events (swap screen and audio)
+| dock-handler | sys-libs/switch-l4t-configs[dock-handler] x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler | Different scripts to manage the dock/undock events (swap screen and audio)
 | egl | gui-libs/tegra-udrm-gbm | DRM/KMS Dependencies
 | elogind | sys-libs/gentoo-config-files[elogind] | Deep Sleep and resume fixes, managed by elogind
 | initramfs | sys-libs/gentoo-config-files[initramfs] | Installs configuration for dracut, for building initramfs. Note, the initramfs needs to be packed for u-boot using dev-embedded/u-boot-tools.

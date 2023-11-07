@@ -8,6 +8,7 @@ CXXFLAGS="${CFLAGS}"
 USE="pulseaudio"         # Without them the sound switch between TV and handheld mode is difficult
 USE="$USE vulkan"        # Graphics acceleration
 USE="$USE gstreamer v4l" # Video acceleration
+USE="$USE dock-handler"  # Enable l4t dock-handler by default
 
 INPUT_DEVICES="libinput joystick"
 

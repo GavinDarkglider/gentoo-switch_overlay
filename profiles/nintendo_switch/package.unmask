@@ -2,8 +2,6 @@
 =sys-libs/glibc-2.35*
 
 # Portage sync - modified
-=dev-qt/qtcore-5.15.10-r2
-=dev-qt/qtcore-5.15.11
 =dev-qt/qtcore-5.15.11-r1
 =net-wireless/bluez-5.68
 =net-wireless/bluez-5.69

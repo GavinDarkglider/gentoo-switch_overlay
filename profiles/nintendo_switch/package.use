@@ -2,7 +2,7 @@
 x11-base/xorg-server xcsecurity
 
 # Gavin 2022-04-25 Required in own ffmpeg fork
-media-video/ffmpeg nvv4l2 -david
+media-video/ffmpeg nvv4l2 -dav1d
 
 # bell07 2022-05-15 required for kernel less than 4.11.
 dev-qt/qtcore old-kernel

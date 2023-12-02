@@ -171,7 +171,7 @@ The switch overlay needs to be enabled by creating the file `/gentoo-switch/etc/
 [switch]
 location = /projects/switch_overlay
 sync-type = git
-sync-uri = https://gitlab.com/bell07/gentoo-switch_ovenarlay
+sync-uri = https://gitlab.com/bell07/gentoo-switch_overlay
 auto-sync = yes
 ```
 

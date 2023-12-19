@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of melonDS. (NintendoDS)"
 HOMEPAGE="https://github.com/libretro/melonDS"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

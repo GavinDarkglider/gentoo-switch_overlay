@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Commdoore 64 emulator for libretro"
 HOMEPAGE="https://github.com/libretro/frodo-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

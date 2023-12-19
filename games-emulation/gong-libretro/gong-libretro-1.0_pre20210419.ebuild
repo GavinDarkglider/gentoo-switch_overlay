@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Pong implementation for libretro"
 HOMEPAGE="https://github.com/libretro/gong"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

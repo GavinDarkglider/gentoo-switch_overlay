@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Port of blueMSX to the libretro API"
 HOMEPAGE="https://github.com/libretro/blueMSX-libretro"
-KEYWORDS="~amd64 ~x86 ~arm64"
+KEYWORDS="~arm64"
 
 LICENSE="bluemsx"
 SLOT="0"

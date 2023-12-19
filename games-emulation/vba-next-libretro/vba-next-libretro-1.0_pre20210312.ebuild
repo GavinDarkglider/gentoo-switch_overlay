@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of VBA Next. (Game Boy Advance)"
 HOMEPAGE="https://github.com/libretro/vba-next"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="vba"
 SLOT="0"

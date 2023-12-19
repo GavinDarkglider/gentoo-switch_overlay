@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro implementation for multiple Sega consoles"
 HOMEPAGE="https://github.com/drhelius/Gearsystem"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

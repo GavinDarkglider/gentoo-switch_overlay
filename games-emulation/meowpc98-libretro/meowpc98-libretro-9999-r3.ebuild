@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Neko Project 2 (PC98 emulator) port for libretro/RetroArch (XNP2)"
 HOMEPAGE="https://github.com/libretro/libretro-meowPC98"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="BSD"
 SLOT="0"

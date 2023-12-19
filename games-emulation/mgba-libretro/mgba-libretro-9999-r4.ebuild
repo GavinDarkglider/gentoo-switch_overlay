@@ -9,7 +9,7 @@ inherit git-r3 libretro-core cmake
 
 DESCRIPTION="libretro implementation of mGBA. (Game Boy Advance)"
 HOMEPAGE="https://github.com/libretro/mgba"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MPL-2.0"
 SLOT="0"

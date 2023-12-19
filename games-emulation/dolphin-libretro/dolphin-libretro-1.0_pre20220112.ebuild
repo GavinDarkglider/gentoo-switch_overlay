@@ -11,7 +11,7 @@ inherit libretro-core cmake
 
 DESCRIPTION="A Gamecube/Wii emulator core for libretro"
 HOMEPAGE="https://github.com/libretro/dolphin"
-KEYWORDS="~amd64 ~arm64"
+KEYWORDS="~arm64"
 IUSE="+opengl vulkan +X"
 
 LICENSE="GPL-2"

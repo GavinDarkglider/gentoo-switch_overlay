@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Mednafen SNES. (Super Nintendo Entertainment System)"
 HOMEPAGE="https://github.com/libretro/beetle-bsnes-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

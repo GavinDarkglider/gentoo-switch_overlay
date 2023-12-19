@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Neo Geo CD emulator for libretro"
 HOMEPAGE="https://github.com/libretro/neocd_libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

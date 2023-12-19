@@ -12,12 +12,12 @@ HOMEPAGE="https://github.com/libretro/retroarch-assets"
 if [[ ${PV} == *9999 ]]; then
 	SRC_URI=""
 	EGIT_REPO_URI="https://github.com/${LIBRETRO_REPO_NAME}.git"
-	KEYWORDS=""
+	KEYWORDS="~arm64"
 	inherit git-r3
 else
 	inherit vcs-snapshot
 	SRC_URI="https://github.com/${LIBRETRO_REPO_NAME}/archive/${LIBRETRO_COMMIT_SHA}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="~arm64"
 fi
 
 LICENSE="CC-BY-4.0"

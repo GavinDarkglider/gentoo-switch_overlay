@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="FFmpeg frontend for libretro"
 HOMEPAGE="https://github.com/libretro/FFmpeg"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="LGPL-2.1 GPL-2 GPL-3 LGPL-3"
 

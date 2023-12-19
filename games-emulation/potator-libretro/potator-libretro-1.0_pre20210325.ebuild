@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="A Watara Supervision Emulator based on Normmatt version"
 HOMEPAGE="https://github.com/libretro/potator"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro implementation of DeSmuME. (Nintendo DS)"
 HOMEPAGE="https://github.com/libretro/desmume"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

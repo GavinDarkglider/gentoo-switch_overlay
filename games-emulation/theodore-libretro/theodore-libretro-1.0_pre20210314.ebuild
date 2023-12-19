@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro core for Thomson TO8/TO8D/TO9/TO9+ emulation."
 HOMEPAGE="https://github.com/Zlika/theodore"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

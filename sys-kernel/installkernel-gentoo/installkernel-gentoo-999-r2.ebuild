@@ -9,10 +9,12 @@ HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="-* ~arm64"
+IUSE="+dracut"
 
 RDEPEND="
 	>=sys-apps/debianutils-4.9-r1
-	!sys-kernel/installkernel-systemd-boot
+	!<sys-apps/debianutils-4.9-r1[installkernel(+)]
+	!sys-kernel/installkernel-systemd
 	dev-embedded/u-boot-tools"
 
 S="${WORKDIR}"
@@ -22,4 +24,5 @@ src_install() {
 	dosbin "${FILESDIR}"/installkernel
 	dosbin "${FILESDIR}"/mkdtboimg.py
 	keepdir /etc/kernel/postinst.d
+	keepdir /etc/kernel/preinst.d
 }

@@ -11,4 +11,4 @@ EGIT_REPO_URI="https://github.com/libretro/common-shaders"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"

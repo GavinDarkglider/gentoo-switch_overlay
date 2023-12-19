@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Fork of Final Burn Alpha"
 HOMEPAGE="https://github.com/libretro/FBNeo"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="FBA"
 SLOT="0"

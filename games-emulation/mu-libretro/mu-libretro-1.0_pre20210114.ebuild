@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="A new Palm OS emulator targeting compatibility, speed and accuracy"
 HOMEPAGE="https://github.com/libretro/Mu"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="CC-BY-3.0"
 SLOT="0"

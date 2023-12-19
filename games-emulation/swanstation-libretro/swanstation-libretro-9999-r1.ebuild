@@ -9,7 +9,7 @@ inherit libretro-core cmake
 
 DESCRIPTION="Fast Sony Playstation emulator."
 HOMEPAGE="https://github.com/libretro/swanstation"
-KEYWORDS="~amd64 ~arm64"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

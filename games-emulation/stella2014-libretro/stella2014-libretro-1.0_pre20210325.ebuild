@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Stella 2014. (Atari 2600)"
 HOMEPAGE="https://github.com/libretro/stella2014-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

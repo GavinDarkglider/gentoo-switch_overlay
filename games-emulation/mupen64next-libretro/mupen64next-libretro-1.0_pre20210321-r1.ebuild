@@ -11,7 +11,7 @@ inherit libretro-core
 
 DESCRIPTION="Improved mupen64plus libretro core reimplementation"
 HOMEPAGE="https://github.com/libretro/mupen64plus-libretro-nx"
-KEYWORDS="~amd64 ~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

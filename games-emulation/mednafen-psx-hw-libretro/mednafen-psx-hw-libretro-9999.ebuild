@@ -9,7 +9,7 @@ inherit git-r3 libretro-core
 
 DESCRIPTION="Standalone port/fork of Mednafen PSX to the Libretro API."
 HOMEPAGE="https://github.com/libretro/beetle-psx-libretro"
-KEYWORDS="~amd64 ~x86 ~arm64"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

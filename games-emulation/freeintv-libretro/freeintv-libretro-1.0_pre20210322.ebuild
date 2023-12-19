@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="A libretro emulation core for the Mattel Intellivision"
 HOMEPAGE="https://github.com/libretro/FreeIntv"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

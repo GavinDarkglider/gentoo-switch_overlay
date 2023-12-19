@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="An emulator for development purposes"
 HOMEPAGE="https://github.com/libretro/libretro-uzem"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

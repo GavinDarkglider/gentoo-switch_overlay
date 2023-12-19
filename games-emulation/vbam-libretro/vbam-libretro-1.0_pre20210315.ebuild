@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of VBA-M. (Game Boy Advance)"
 HOMEPAGE="https://github.com/libretro/vbam-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="vba"
 SLOT="0"

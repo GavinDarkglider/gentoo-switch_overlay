@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Obscure nintendo handheld emulator."
 HOMEPAGE="https://github.com/libretro/PokeMini"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="pokemini"
 SLOT="0"

@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Standalone port of Mednafen PCFX to libretro."
 HOMEPAGE="https://github.com/libretro/beetle-pcfx-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

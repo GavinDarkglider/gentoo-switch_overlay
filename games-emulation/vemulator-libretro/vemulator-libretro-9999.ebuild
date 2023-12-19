@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="A port of the SEGA Visual Memory Unit emulator VeMUlator for libretro."
 HOMEPAGE="https://github.com/libretro/vemulator-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

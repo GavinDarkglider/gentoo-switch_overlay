@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Port of Virtual Jaguar to Libretro"
 HOMEPAGE="https://github.com/libretro/virtualjaguar-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

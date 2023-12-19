@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Modified ngpc emulator to run on psp, ported to libretro"
 HOMEPAGE="https://github.com/libretro/RACE"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

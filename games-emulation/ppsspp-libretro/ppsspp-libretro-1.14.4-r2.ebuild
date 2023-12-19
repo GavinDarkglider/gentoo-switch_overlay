@@ -14,7 +14,7 @@ SRC_URI="https://github.com/hrydgard/ppsspp/releases/download/v${PV}/ppsspp-${PV
 
 LICENSE="Apache-2.0 BSD BSD-2 GPL-2 JSON MIT"
 SLOT="0"
-KEYWORDS="~amd64 ~x86 ~arm64"
+KEYWORDS="~arm64"
 IUSE="opengl +gles2 vulkan X wayland gbm"
 RESTRICT="test"
 REQUIRED_USE="

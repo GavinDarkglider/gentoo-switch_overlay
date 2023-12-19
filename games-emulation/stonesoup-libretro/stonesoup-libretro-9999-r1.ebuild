@@ -8,7 +8,7 @@ inherit git-r3 libretro-core
 
 DESCRIPTION="Kibretro port of Dungeon Crawl - Stone Soup"
 HOMEPAGE="https://github.com/meancoot/stonesoup-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

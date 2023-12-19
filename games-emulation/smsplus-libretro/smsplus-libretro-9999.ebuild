@@ -8,7 +8,7 @@ inherit git-r3 libretro-core
 
 DESCRIPTION="Improved port of SMSPlus-GX by gameblabla for libretro"
 HOMEPAGE="https://github.com/libretro/smsplus-gx"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

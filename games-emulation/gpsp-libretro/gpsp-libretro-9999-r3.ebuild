@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="Gameboy gpSP for libretro."
 HOMEPAGE="https://github.com/libretro/gpsp"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

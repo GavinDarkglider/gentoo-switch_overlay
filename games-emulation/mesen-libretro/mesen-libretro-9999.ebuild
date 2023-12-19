@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro implementation of Mesen. (Nintendo Entertainment System)"
 HOMEPAGE="https://github.com/SourMesen/Mesen"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

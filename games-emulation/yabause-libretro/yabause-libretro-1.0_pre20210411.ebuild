@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Yabause/YabaSanshiro/Kronos libretro ports (Sega Saturn emulators)."
 HOMEPAGE="https://github.com/libretro/yabause"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

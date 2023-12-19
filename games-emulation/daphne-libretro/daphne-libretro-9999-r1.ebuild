@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Arcade laserdisc libretro core"
 HOMEPAGE="https://github.com/libretro/daphne"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

@@ -18,7 +18,7 @@ HOMEPAGE="https://github.com/libretro/citra"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 RDEPEND="
 	dev-libs/crypto++

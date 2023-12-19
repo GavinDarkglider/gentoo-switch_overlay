@@ -10,7 +10,7 @@ inherit libretro-core flag-o-matic
 
 DESCRIPTION="A fast and accurate Genesis emulator"
 HOMEPAGE="https://github.com/libretro/blastem"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

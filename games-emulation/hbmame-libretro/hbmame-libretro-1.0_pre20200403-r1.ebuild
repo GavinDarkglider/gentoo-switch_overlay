@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Emulator of homebrew and hacked games for arcade hardware"
 HOMEPAGE="https://github.com/libretro/hbmame-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MAME"
 SLOT="0"

@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro port of X Millennium Sharp X1 emulator"
 HOMEPAGE="https://github.com/libretro/xmil-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="BSD-3"
 SLOT="0"

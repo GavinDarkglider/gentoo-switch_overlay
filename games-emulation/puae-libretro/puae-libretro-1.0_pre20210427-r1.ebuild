@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="WIP libretro port of UAE (P-UAE and libco), a Commodore Amiga Emulator."
 HOMEPAGE="https://github.com/libretro/libretro-uae"
-KEYWORDS="~amd64 ~x86 ~arm64"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

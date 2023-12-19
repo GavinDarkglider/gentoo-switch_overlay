@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="A port of the EightyOne ZX81 Emulator to libretro"
 HOMEPAGE="https://github.com/libretro/81-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

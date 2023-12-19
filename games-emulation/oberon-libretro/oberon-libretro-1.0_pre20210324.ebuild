@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Emulator for the Oberon RISC machine"
 HOMEPAGE="https://github.com/libretro/oberon-risc-emu"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="BSD"
 SLOT="0"

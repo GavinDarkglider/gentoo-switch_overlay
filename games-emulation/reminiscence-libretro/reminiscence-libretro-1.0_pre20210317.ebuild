@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Flashback engine implementation for libretro"
 HOMEPAGE="https://github.com/libretro/REminiscence"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

@@ -9,7 +9,7 @@ SRC_URI="https://github.com/rednex/${PN}/releases/download/v${PV}/${P}.tar.gz"
 LICENSE="MIT"
 
 SLOT="0"
-KEYWORDS="arm64 ppc64"
+KEYWORDS="arm64"
 IUSE=""
 
 RDEPEND="

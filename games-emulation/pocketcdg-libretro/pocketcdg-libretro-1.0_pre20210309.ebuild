@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="PocketCDG libretro port."
 HOMEPAGE="https://github.com/libretro/libretro-pocketcdg"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MIT"
 SLOT="0"

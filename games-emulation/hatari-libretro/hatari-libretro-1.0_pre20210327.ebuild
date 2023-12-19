@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Hatari is an Atari ST/STE/TT/Falcon emulator core for libretro"
 HOMEPAGE="https://github.com/libretro/hatari"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

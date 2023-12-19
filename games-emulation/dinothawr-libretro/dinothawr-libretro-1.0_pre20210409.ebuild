@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Dinothawr is a block pushing puzzle game on slippery surfaces."
 HOMEPAGE="https://github.com/libretro/Dinothawr"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="CC-BY-NC-SA-3.0"
 SLOT="0"

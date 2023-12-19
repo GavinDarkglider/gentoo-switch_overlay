@@ -12,7 +12,7 @@ DESCRIPTION="Multiplatform Sega Dreamcast emulator"
 HOMEPAGE="https://github.com/libretro/flycast"
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 RDEPEND="virtual/opengl"
 DEPEND="${RDEPEND}"

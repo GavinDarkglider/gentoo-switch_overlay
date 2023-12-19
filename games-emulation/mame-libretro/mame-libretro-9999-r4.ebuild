@@ -8,7 +8,7 @@ inherit git-r3 check-reqs libretro-core
 
 DESCRIPTION="MAME (current) for libretro."
 HOMEPAGE="https://github.com/libretro/mame"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MAME-GPL"
 SLOT="0"

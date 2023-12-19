@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro implementation of Craft. (Minecraft clone)"
 HOMEPAGE="https://github.com/libretro/Craft"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="Craft"
 SLOT="0"

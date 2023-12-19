@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Rewritten Nintendo 64 emulator made specifically for Libretro."
 HOMEPAGE="https://github.com/libretro/parallel-n64"
-KEYWORDS="~amd64 ~x86 ~arm64"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

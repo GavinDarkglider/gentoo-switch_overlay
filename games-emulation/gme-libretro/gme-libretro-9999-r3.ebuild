@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="Port of blargg's Game_Music_Emu library."
 HOMEPAGE="https://github.com/libretro/libretro-gme"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

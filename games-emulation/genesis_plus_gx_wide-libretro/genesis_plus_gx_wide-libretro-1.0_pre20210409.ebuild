@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="libretro implementation of Genesis Plus GX. Wide Screen"
 HOMEPAGE="https://github.com/libretro/Genesis-Plus-GX-Wide"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPGX"
 SLOT="0"

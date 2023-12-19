@@ -9,7 +9,7 @@ inherit libretro
 
 DESCRIPTION="glsl shaders converted by hand from libretro's common-shaders repo"
 HOMEPAGE="https://github.com/libretro/glsl-shaders"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

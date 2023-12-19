@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="An experimental lua game framework for libretro following the LOVE API."
 HOMEPAGE="https://github.com/libretro/libretro-lutro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MIT"
 SLOT="0"

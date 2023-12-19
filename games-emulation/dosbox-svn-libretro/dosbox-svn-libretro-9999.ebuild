@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="DOSBox libretro core"
 HOMEPAGE="https://github.com/libretro/dosbox-svn"
-KEYWORDS="~amd64 ~arm64"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2+"
 SLOT="0"

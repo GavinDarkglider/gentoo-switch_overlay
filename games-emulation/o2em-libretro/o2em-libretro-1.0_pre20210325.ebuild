@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Port of O2EM to the libretro API, an Odyssey 2 / VideoPac emulator. "
 HOMEPAGE="https://github.com/libretro/libretro-o2em"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

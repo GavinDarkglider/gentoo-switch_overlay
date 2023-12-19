@@ -8,7 +8,7 @@ inherit libretro-core
 
 DESCRIPTION="3D Engine for libretro GL with additional features"
 HOMEPAGE="https://github.com/libretro/libretro-3dengine"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

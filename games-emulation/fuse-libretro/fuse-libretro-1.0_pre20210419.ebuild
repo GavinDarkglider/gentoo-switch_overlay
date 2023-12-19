@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="A port of the Fuse Unix Spectrum Emulator to libretro"
 HOMEPAGE="https://github.com/libretro/fuse-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

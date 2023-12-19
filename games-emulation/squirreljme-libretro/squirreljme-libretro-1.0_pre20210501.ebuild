@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="SquirrelJME is a Java ME 8 Virtual Machine for libretro"
 HOMEPAGE="https://github.com/SquirrelJME/SquirrelJME"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

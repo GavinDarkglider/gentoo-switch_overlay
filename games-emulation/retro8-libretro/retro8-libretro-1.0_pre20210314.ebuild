@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="PICO-8 implementation with SDL2 and RetroArch back-ends"
 HOMEPAGE="https://github.com/libretro/retro8"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

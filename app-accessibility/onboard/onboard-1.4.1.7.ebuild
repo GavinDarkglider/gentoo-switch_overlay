@@ -15,7 +15,7 @@ SRC_URI="https://github.com/linuxdeepin/${PN}/archive/${PV}.tar.gz -> ${P}.tar.g
 # po/* are licensed under BSD 3-clause
 LICENSE="GPL-3+ BSD"
 SLOT="0"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 COMMON_DEPEND="app-text/hunspell:=
 	dev-libs/dbus-glib

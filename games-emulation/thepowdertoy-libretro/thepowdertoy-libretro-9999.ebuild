@@ -12,7 +12,7 @@ HOMEPAGE="https://github.com/libretro/ThePowderToy"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 RDEPEND=""
 DEPEND="${RDEPEND}"

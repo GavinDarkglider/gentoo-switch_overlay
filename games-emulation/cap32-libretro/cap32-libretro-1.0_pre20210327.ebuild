@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Caprice32 libretro core"
 HOMEPAGE="https://github.com/libretro/libretro-cap32"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

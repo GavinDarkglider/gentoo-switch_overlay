@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="NP2kai a is PC-9801 series emulator"
 HOMEPAGE="https://github.com/libretro/NP2kai"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MIT"
 SLOT="0"

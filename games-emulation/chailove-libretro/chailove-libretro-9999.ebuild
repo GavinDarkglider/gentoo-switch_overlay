@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="2D Game Framework with ChaiScript"
 HOMEPAGE="https://github.com/libretro/libretro-chailove"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MIT"
 SLOT="0"

@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Multiplayer Bomberman clone for RetroArch/Libretro"
 HOMEPAGE="https://github.com/libretro/mrboom-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="MIT"
 SLOT="0"

@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Xrick is an open source implementation of Rick Dangerous for libretro."
 HOMEPAGE="https://github.com/libretro/xrick-libretro"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

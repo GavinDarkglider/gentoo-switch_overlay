@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Gearboy is a Nintendo Game Boy / GameBoy Color emulator for libretro"
 HOMEPAGE="https://github.com/libretro/Gearboy"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

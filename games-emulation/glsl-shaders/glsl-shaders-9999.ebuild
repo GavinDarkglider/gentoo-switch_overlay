@@ -7,7 +7,7 @@ inherit libretro git-r3
 
 DESCRIPTION="glsl shaders converted by hand from libretro's common-shaders repo"
 HOMEPAGE="https://github.com/libretro/glsl-shaders"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 EGIT_REPO_URI="https://github.com/libretro/glsl-shaders"
 
 LICENSE="GPL-3"

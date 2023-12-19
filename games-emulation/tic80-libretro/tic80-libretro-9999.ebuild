@@ -12,7 +12,7 @@ HOMEPAGE="https://github.com/nesbox/TIC-80"
 
 LICENSE="MIT"
 SLOT="0"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 RDEPEND=""
 DEPEND="${RDEPEND}"

@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Doom 3 GPL source port for libretro"
 HOMEPAGE="https://github.com/libretro/boom3"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

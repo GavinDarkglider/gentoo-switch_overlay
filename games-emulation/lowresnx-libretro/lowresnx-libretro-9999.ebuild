@@ -8,7 +8,7 @@ inherit git-r3 libretro-core
 
 DESCRIPTION="A simulated retro game console"
 HOMEPAGE="https://github.com/timoinutilis/lowres-nx"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="ZLIB"
 SLOT="0"

@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Libretro adaption of vecx, a Vectrex Emulator"
 HOMEPAGE="https://github.com/libretro/libretro-vecx"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

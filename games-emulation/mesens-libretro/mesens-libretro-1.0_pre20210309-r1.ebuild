@@ -10,7 +10,7 @@ inherit libretro-core
 
 DESCRIPTION="Mesen-S is a cross-platform (Windows & Linux) SNES emulator built in C++ and C#"
 HOMEPAGE="https://github.com/libretro/Mesen-S"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-3"
 SLOT="0"

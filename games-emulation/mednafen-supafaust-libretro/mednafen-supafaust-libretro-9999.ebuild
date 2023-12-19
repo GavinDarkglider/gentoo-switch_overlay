@@ -9,7 +9,7 @@ inherit libretro-core
 
 DESCRIPTION="Unsupported SNES emulator for multicore ARM linux plataforms"
 HOMEPAGE="https://github.com/libretro/supafaust"
-KEYWORDS="~arm64 ~x86"
+KEYWORDS="~arm64"
 
 LICENSE="GPL-2"
 SLOT="0"

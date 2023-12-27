@@ -5,6 +5,7 @@
 =dev-qt/qtcore-5.15.11-r1
 =net-wireless/bluez-5.70-r1
 =net-wireless/bluez-5.71
+=net-wireless/bluez-5.71-r1
 =sys-apps/shadow-4.13-r3
 =sys-apps/shadow-4.13-r4
 =sys-apps/shadow-4.14.0-r3

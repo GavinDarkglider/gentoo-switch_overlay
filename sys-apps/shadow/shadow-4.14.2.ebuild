@@ -72,7 +72,7 @@ else
 fi
 
 src_prepare() {
-	sed -i '1 s/^/#include <stddef.h>\n/' libmisc/btrfs.c
+	sed -i '1 s/^/#include <stddef.h>\n/' lib/btrfs.c
 	default
 	elibtoolize
 }

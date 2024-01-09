@@ -4,8 +4,9 @@
 
 ver=${1}
 img=${2}
-initrd=${img%/*}/initrd
-initramfs=${img%/*}/initramfs
+basedir="$(dirname "${img}")"
+initrd="${basedir}/initrd"
+initramfs="${basedir}/initramfs"
 
 # familiar helpers, we intentionally don't use Gentoo functions.sh
 die() {

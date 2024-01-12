@@ -64,7 +64,11 @@ sdcard-mount_pkg_setup() {
 	sdcard-mount_is_disabled && return
 
 	# Update setting / override the value in binary package
-	SDCARD_MOUNT_POINT="$(portageq envvar SDCARD_MOUNT_POINT)"
+	CR="${PORTAGE_CONFIGROOT}"
+	if [[ -z "${CR}" ]]; then 
+		CR="${ROOT}"
+	fi
+	SDCARD_MOUNT_POINT="$(cat "${CR}"/etc/portage/make.conf | grep SDCARD_MOUNT_POINT | sed 's/^.*="//g;s/"$//g')"
 
 	# Check if valid before start merging
 	sdcard-mount_check_status "${SDCARD_MOUNT_POINT}"

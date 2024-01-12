@@ -68,7 +68,8 @@ sdcard-mount_pkg_setup() {
 	if [[ -z "${CR}" ]]; then 
 		CR="${ROOT}"
 	fi
-	SDCARD_MOUNT_POINT="$(cat "${CR}"/etc/portage/make.conf | grep SDCARD_MOUNT_POINT | sed 's/^.*="//g;s/"$//g')"
+	SDCARD_MOUNT_POINT="$(cat "${CR}"/etc/portage/make.conf | grep SDCARD_MOUNT_POINT= | tail -n 1| sed 's/^.*="//g;s/"$//g')"
+	echo "${SDCARD_MOUNT_POINT}"
 
 	# Check if valid before start merging
 	sdcard-mount_check_status "${SDCARD_MOUNT_POINT}"

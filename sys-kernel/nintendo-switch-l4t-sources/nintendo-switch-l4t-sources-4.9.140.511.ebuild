@@ -111,7 +111,7 @@ pkg_postinst() {
 	einfo "# gzip Image; mkimage -A arm64 -O linux -T kernel -C gzip \\"
 	einfo "    -a 0x80200000 -e 0x80200000 -n CTCKRN-5.0.0 -d Image.gz Image; rm Image.gz"
 	echo ""
-	einfo "if =sys-kernel/installkernel-gentoo-999 is installed, the \"make install\" do both for you."
+	einfo "if =sys-kernel/installkernel-999 is installed, the \"make install\" do both for you."
 	echo ""
 	einfo "For more info on this patchset, and how to report problems, see:"
 	einfo "${HOMEPAGE}"

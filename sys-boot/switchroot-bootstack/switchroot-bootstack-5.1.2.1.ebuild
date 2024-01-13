@@ -9,7 +9,7 @@ inherit sdcard-mount unpacker
 
 SRC_URI="https://newrepo.switchroot.org/pool/unstable/s/switch-bsp/switch-bsp_5.1.2-1_all.deb"
 
-IUSE="ubuntu-bl33 ubuntu-scr"
+IUSE="+ubuntu-bl33 ubuntu-scr"
 
 # u-boot-tools required to build own scr
 BDEPEND="!ubuntu-scr? ( dev-embedded/u-boot-tools )"

@@ -42,3 +42,16 @@ dev-qt/qtcore
 net-wireless/bluez
 sys-apps/shadow
 x11-libs/libdrm
+
+# 13.01.2024 - bell07 - does not build.
+# https://gitlab.com/switchroot/bootstack/switch-uboot/-/issues/2
+# Masked till the issue is solved. Use the sys-boot/switchroot-bootstack[ubuntu-bl33] instead
+sys-boot/nintendo-switch-u-boot
+
+# 13.01.2024 - bell07 - deprecation
+# Not needed anymore to boot linux. Will be removed in some months
+sys-boot/nintendo-switch-coreboot
+
+# 13.01.2024 - bell07 - deprecation
+# Abadoned. Please use sys-libs/switch-l4t-configs[dock-handler] instead
+x11-misc/dock-hotplug

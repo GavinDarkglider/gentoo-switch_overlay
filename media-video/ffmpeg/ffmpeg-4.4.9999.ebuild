@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -128,7 +128,8 @@ PPC_CPU_REQUIRED_USE="
 	cpu_flags_ppc_vsx? ( cpu_flags_ppc_altivec )
 	cpu_flags_ppc_vsx2? ( cpu_flags_ppc_vsx )
 "
-X86_CPU_FEATURES_RAW=( 3dnow:amd3dnow 3dnowext:amd3dnowext aes:aesni avx:avx avx2:avx2 fma3:fma3 fma4:fma4 mmx:mmx mmxext:mmxext sse:sse sse2:sse2 sse3:sse3 ssse3:ssse3 sse4_1:sse4 sse4_2:sse42 xop:xop )
+X86_CPU_FEATURES_RAW=( 3dnow:amd3dnow 3dnowext:amd3dnowext aes:aesni avx:avx avx2:avx2 fma3:fma3 fma4:fma4 mmx:mmx
+					   mmxext:mmxext sse:sse sse2:sse2 sse3:sse3 ssse3:ssse3 sse4_1:sse4 sse4_2:sse42 xop:xop )
 X86_CPU_FEATURES=( ${X86_CPU_FEATURES_RAW[@]/#/cpu_flags_x86_} )
 X86_CPU_REQUIRED_USE="
 	cpu_flags_x86_avx2? ( cpu_flags_x86_avx )
@@ -163,12 +164,13 @@ CPU_REQUIRED_USE="
 	${X86_CPU_REQUIRED_USE}
 "
 
-FFTOOLS=( aviocat cws2fws ffescape ffeval ffhash fourcc2pixfmt graph2dot ismindex pktdumper qt-faststart sidxindex trasher )
+FFTOOLS=( aviocat cws2fws ffescape ffeval ffhash fourcc2pixfmt
+		  graph2dot ismindex pktdumper qt-faststart sidxindex trasher )
 IUSE="${IUSE} ${FFTOOLS[@]/#/+fftools_}"
 
 RDEPEND="
 	alsa? ( >=media-libs/alsa-lib-1.0.27.2[${MULTILIB_USEDEP}] )
-	amf? ( media-video/amdgpu-pro-amf )
+	amf? ( media-video/amdgpu-pro-amf:= )
 	amr? ( >=media-libs/opencore-amr-0.1.3-r1[${MULTILIB_USEDEP}] )
 	bluray? ( >=media-libs/libbluray-0.3.0-r1:=[${MULTILIB_USEDEP}] )
 	bs2b? ( >=media-libs/libbs2b-3.1.0-r1[${MULTILIB_USEDEP}] )
@@ -246,7 +248,7 @@ RDEPEND="
 		gnome-base/librsvg:2=[${MULTILIB_USEDEP}]
 		x11-libs/cairo[${MULTILIB_USEDEP}]
 	)
-	nvenc? ( >=media-libs/nv-codec-headers-9.1.23.1 )
+	nvenc? ( <media-libs/nv-codec-headers-12 )
 	svt-av1? ( >=media-libs/svt-av1-0.8.4[${MULTILIB_USEDEP}] )
 	truetype? ( >=media-libs/freetype-2.5.0.1:2[${MULTILIB_USEDEP}] )
 	vaapi? ( >=media-libs/libva-1.2.1-r1:0=[${MULTILIB_USEDEP}] )
@@ -286,12 +288,12 @@ DEPEND="${RDEPEND}
 
 # += for verify-sig above
 BDEPEND+="
-	>=sys-devel/make-3.81
+	>=dev-build/make-3.81
 	virtual/pkgconfig
 	cpu_flags_x86_mmx? ( || ( >=dev-lang/nasm-2.13 >=dev-lang/yasm-1.3 ) )
 	cuda? ( >=sys-devel/clang-7[llvm_targets_NVPTX] )
 	doc? ( sys-apps/texinfo )
-	test? ( net-misc/wget sys-devel/bc )
+	test? ( net-misc/wget app-alternatives/bc )
 "
 
 # Code requiring FFmpeg to be built under gpl license
@@ -310,8 +312,8 @@ GPL_REQUIRED_USE="
 "
 REQUIRED_USE="
 	cuda? ( nvenc )
-	libv4l? ( v4l )
 	fftools_cws2fws? ( zlib )
+	libv4l? ( v4l )
 	test? ( encode )
 	${GPL_REQUIRED_USE}
 	${CPU_REQUIRED_USE}"
@@ -328,6 +330,7 @@ PATCHES=(
 	"${FILESDIR}"/ffmpeg-4.4.2-libsdl2-new-version-scheme.patch
 	"${FILESDIR}"/ffmpeg-4.4.3-clang-14-ff_seek_frame_binary-crash.patch
 	"${FILESDIR}"/ffmpeg-fix-nvv4l2-linking-issues.patch
+	"${FILESDIR}"/${PN}-5.1.3-binutils-2.41.patch
 )
 
 MULTILIB_WRAPPED_HEADERS=(
@@ -473,9 +476,6 @@ multilib_src_configure() {
 	if tc-is-cross-compiler ; then
 		myconf+=( --enable-cross-compile --arch=$(tc-arch-kernel) --cross-prefix=${CHOST}- --host-cc="$(tc-getBUILD_CC)" )
 		case ${CHOST} in
-			*freebsd*)
-				myconf+=( --target-os=freebsd )
-				;;
 			*mingw32*)
 				myconf+=( --target-os=mingw32 )
 				;;
@@ -492,13 +492,7 @@ multilib_src_configure() {
 		$(multilib_native_enable manpages)
 	)
 
-	local extra_libs
-	if use arm || use ppc || use mips || [[ ${CHOST} == *i486* ]] ; then
-		# bug #782811
-		# bug #790590
-		extra_libs+="$(test-flags-CCLD -latomic) "
-	fi
-
+	# Use --extra-libs if needed for LIBS
 	set -- "${S}/configure" \
 		--prefix="${EPREFIX}/usr" \
 		--libdir="${EPREFIX}/usr/$(get_libdir)" \
@@ -514,7 +508,6 @@ multilib_src_configure() {
 		--ranlib="$(tc-getRANLIB)" \
 		--pkg-config="$(tc-getPKG_CONFIG)" \
 		--optflags="${CFLAGS}" \
-		--extra-libs="${extra_libs}" \
 		$(use_enable static-libs static) \
 		"${myconf[@]}" \
 		${EXTRA_FFMPEG_CONF}
@@ -561,7 +554,7 @@ multilib_src_compile() {
 
 multilib_src_test() {
 	LD_LIBRARY_PATH="${BUILD_DIR}/libpostproc:${BUILD_DIR}/libswscale:${BUILD_DIR}/libswresample:${BUILD_DIR}/libavcodec:${BUILD_DIR}/libavdevice:${BUILD_DIR}/libavfilter:${BUILD_DIR}/libavformat:${BUILD_DIR}/libavutil:${BUILD_DIR}/libavresample" \
-		emake V=1 fate
+		emake V=1 fate -k
 }
 
 multilib_src_install() {
@@ -595,5 +588,5 @@ multilib_src_install_all() {
 	dodoc Changelog README.md CREDITS doc/*.txt doc/APIchanges
 	[ -f "RELEASE_NOTES" ] && dodoc "RELEASE_NOTES"
 
-	use amf && doenvd "${FILESDIR}"/amf-env-vulkan-override
+	use amf && newenvd "${FILESDIR}"/amf-env-vulkan-override 99amf-env-vulkan-override
 }

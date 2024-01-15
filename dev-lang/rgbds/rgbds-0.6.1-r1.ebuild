@@ -16,7 +16,7 @@ RDEPEND="
 	media-libs/libpng:=
 "
 DEPEND="${RDEPEND}
-	virtual/yacc
+	app-alternatives/yacc
 	sys-devel/flex
 	virtual/pkgconfig
 "

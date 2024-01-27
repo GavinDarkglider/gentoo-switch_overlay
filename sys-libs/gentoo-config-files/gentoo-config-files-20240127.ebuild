@@ -6,7 +6,7 @@ EAPI=7
 DESCRIPTION="Misc confirugation files for Gentoo on Nintendo Switch"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-config-files"
 
-COMMIT="821c60b87739513ff1739956d6d1c33273fe134c"
+COMMIT="87e2b47443ee3a691ff629954095cca8f323170f"
 SRC_URI="$HOMEPAGE/-/archive/${COMMIT}/${PN}.zip -> ${P}.zip"
 
 RESTRICT="mirror"
@@ -17,13 +17,14 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="arm64 arm"
 
-IUSE="initramfs elogind"
+IUSE="initramfs +installkernel elogind"
 
 BDEPEND="!!sys-boot/nintendo-switch-dracut-config
 !!sys-libs/nintendo-switch-sleep"
 
 # dracut script copy xxd binary into initramfs
-DEPEND="initramfs? ( app-editors/vim-core )"
+DEPEND="initramfs? ( app-editors/vim-core )
+		installkernel? ( dev-embedded/u-boot-tools )"
 
 src_install() {
 	# Initramfs build with dracut
@@ -33,6 +34,18 @@ src_install() {
 
 		insinto /etc/dracut.conf.d/
 		doins "${S}"/dracut/NintendoSwitch.conf
+	fi
+
+	# installkernel enhancements
+	if use installkernel; then
+		exeinto /etc/kernel/preinst.d
+		doexe installkernel/80-switch-kernel-dts.install
+
+		exeinto /etc/kernel/postinst.d
+		doexe installkernel/80-set-switch-symlinks-and-clearup.install
+
+		into /
+		dosbin installkernel/mkdtboimg.py
 	fi
 
 	# Sleep fixes

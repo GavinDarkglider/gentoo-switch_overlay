@@ -5,3 +5,6 @@ media-video/ffmpeg david
 
 # Requires >=dev-libs/ell-0.39
 net-wireless/bluez btpclient mesh
+
+# Not supported on switch
+sys-kernel/installkernel grub uki ukify

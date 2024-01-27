@@ -6,7 +6,7 @@ ETYPE="sources"
 
 KEYWORDS="-* arm64"
 HOMEPAGE="https://github.com/CTCaer/switch-l4t-kernel-4.9"
-IUSE="+initramfs debug"
+IUSE="debug"
 
 ADD_VERSION=512
 KV_LOCALVERSION="-l4t-gentoo-dist"
@@ -14,10 +14,6 @@ KV_LOCALVERSION="-l4t-gentoo-dist"
 DESCRIPTION="Nintendo Switch kernel"
 
 inherit kernel-build git-r3
-
-DEPEND="initramfs? ( sys-libs/gentoo-config-files[initramfs] dev-embedded/u-boot-tools )
-   =sys-kernel/installkernel-999-r3"
-RDEPEND="${DEPEND}"
 
 S="${WORKDIR}"/linux-"${PVR}"
 

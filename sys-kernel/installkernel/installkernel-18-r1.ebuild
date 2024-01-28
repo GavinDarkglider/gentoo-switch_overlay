@@ -15,7 +15,7 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="arm64"
-IUSE="dracut grub module-rebuild +nsw systemd uki ukify"
+IUSE="dracut grub +nsw systemd uki ukify"
 
 PATCHES=( "${FILESDIR}"/add-nsw-install-18.patch )
 
@@ -52,7 +52,6 @@ src_install() {
 	keepdir /etc/kernel/preinst.d
 
 	exeinto /etc/kernel/preinst.d
-	use module-rebuild && doexe hooks/30-emerge-kernel-module-rebuild.install
 	use dracut && doexe hooks/50-dracut.install
 	use ukify && doexe hooks/60-ukify.install
 
@@ -63,7 +62,6 @@ src_install() {
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
-	use module-rebuild && doexe hooks/systemd/30-emerge-kernel-module-rebuild.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
 
 	if use systemd; then

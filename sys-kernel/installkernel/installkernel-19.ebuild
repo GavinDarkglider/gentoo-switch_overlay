@@ -103,6 +103,8 @@ src_install() {
 	into /
 	dosbin installkernel
 	doman installkernel.8
+
+	einstalldocs
 }
 
 pkg_postinst() {

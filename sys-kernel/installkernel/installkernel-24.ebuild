@@ -22,9 +22,9 @@ PATCHES=( "${FILESDIR}"/add-nsw-install-18.patch )
 REQUIRED_USE="systemd-boot? ( systemd )"
 
 RDEPEND="
-	nsw? ( sys-libs/gentoo-config-files[installkernel] )
 	!<=sys-kernel/installkernel-systemd-3
-	dracut? ( >=sys-kernel/dracut-060_pre20240104 sys-libs/gentoo-config-files[initramfs] )
+	nsw? ( sys-libs/gentoo-config-files[installkernel] )
+	dracut? ( >=sys-kernel/dracut-060_pre20240104-r1 sys-libs/gentoo-config-files[initramfs] )
 	grub? ( sys-boot/grub )
 	systemd? (
 		|| (
@@ -70,7 +70,7 @@ src_install() {
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/90-compat.install
-	doexe hooks/systemd/91-grub-mkconfig.install
+	use grub && doexe hooks/systemd/91-grub-mkconfig.install
 
 	if use systemd; then
 		sed -e 's/${SYSTEMD_KERNEL_INSTALL:=0}/${SYSTEMD_KERNEL_INSTALL:=1}/g' -i installkernel ||
@@ -93,7 +93,11 @@ src_install() {
 	if use dracut; then
 		echo "initrd_generator=dracut" >> "${T}/install.conf" || die
 		if ! use ukify; then
-			echo "uki_generator=dracut" >> "${T}/install.conf" || die
+			if use uki; then
+				echo "uki_generator=dracut" >> "${T}/install.conf" || die
+			else
+				echo "uki_generator=none" >> "${T}/install.conf" || die
+			fi
 		fi
 	else
 		echo "initrd_generator=none" >> "${T}/install.conf" || die

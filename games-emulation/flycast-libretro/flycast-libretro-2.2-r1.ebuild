@@ -9,9 +9,12 @@ DESCRIPTION="Multiplatform Sega Dreamcast emulator"
 HOMEPAGE="https://github.com/flyinghead/flycast"
 SRC_URI="
 	https://github.com/flyinghead/flycast/archive/v${PV}.tar.gz -> ${P}.tar.gz
-	https://github.com/libsdl-org/SDL/archive/b424665e0899769b200231ba943353a5fee1b6b6.tar.gz -> ${P}-core_deps_SDL.tar.gz
-	https://github.com/flyinghead/mingw-breakpad/archive/d2657e1267d2ce9399bcc6b9c5b01b465db057b1.tar.gz -> ${P}-core_deps_breakpad.tar.gz
-	https://github.com/rtissera/libchdr/archive/d3ffd20ca71686877372dea7f9eed359dbf65ba2.tar.gz -> ${P}-core_deps_libchdr.tar.gz
+	https://github.com/libsdl-org/SDL/archive/cc016b0046d563287f0aa9f09b958b5e70d43696.tar.gz -> ${P}-core_deps_SDL.tar.gz
+	https://github.com/KhronosGroup/Vulkan-Headers/archive/85c2334e92e215cce34e8e0ed8b2dce4700f4a50.tar.gz -> ${P}-core_deps_Vulkan-Headers.tar.gz
+	https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/6eb62e1515072827db992c2befd80b71b2d04329.tar.gz -> ${P}-core_deps_VulkanMemoryAllocator.tar.gz
+	https://github.com/flyinghead/mingw-breakpad/archive/1ab24bcc817ebe629bf77daa53529d02361cb1e9.tar.gz -> ${P}-core_deps_breakpad.tar.gz
+	https://github.com/KhronosGroup/glslang/archive/76b52ebf77833908dc4c0dd6c70a9c357ac720bd.tar.gz -> ${P}-core_deps_glslang.tar.gz
+	https://github.com/flyinghead/libchdr/archive/925400c4c4b67bafdff8dfad9a1474b22d980777.tar.gz -> ${P}-core_deps_libchdr.tar.gz
 	https://github.com/vinniefalco/LuaBridge/archive/fab7b33b896a42dcc865ba5ecdbacd9f409137f8.tar.gz -> ${P}-core_deps_luabridge.tar.gz
 "
 LICENSE="GPL-2"
@@ -31,13 +34,9 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
-	dev-util/ninja
-	dev-util/cmake
+	dev-build/ninja
+	dev-build/cmake
 "
-
-PATCHES=(
-    "${FILESDIR}/v2.0-vk:_don't_sort_triangles_in_per-strip_mode.patch"
-)
 
 S="${WORKDIR}/flycast-${PV}"
 BUILD_DIR="${WORKDIR}/${P}_build"
@@ -48,7 +47,10 @@ src_unpack() {
 	cd "${S}" || die
 	local list=(
 		core_deps_SDL
+		core_deps_Vulkan-Headers
+		core_deps_VulkanMemoryAllocator
 		core_deps_breakpad
+		core_deps_glslang
 		core_deps_libchdr
 		core_deps_luabridge
 	)

@@ -8,13 +8,13 @@ inherit multiprocessing
 DESCRIPTION="Multiplatform Sega Dreamcast emulator"
 HOMEPAGE="https://github.com/flyinghead/flycast"
 SRC_URI="
-	https://github.com/flyinghead/flycast/archive/v${PV}.tar.gz -> ${P}.tar.gz
-	https://github.com/libsdl-org/SDL/archive/cc016b0046d563287f0aa9f09b958b5e70d43696.tar.gz -> ${P}-core_deps_SDL.tar.gz
-	https://github.com/KhronosGroup/Vulkan-Headers/archive/85c2334e92e215cce34e8e0ed8b2dce4700f4a50.tar.gz -> ${P}-core_deps_Vulkan-Headers.tar.gz
-	https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/6eb62e1515072827db992c2befd80b71b2d04329.tar.gz -> ${P}-core_deps_VulkanMemoryAllocator.tar.gz
-	https://github.com/flyinghead/mingw-breakpad/archive/1ab24bcc817ebe629bf77daa53529d02361cb1e9.tar.gz -> ${P}-core_deps_breakpad.tar.gz
-	https://github.com/KhronosGroup/glslang/archive/76b52ebf77833908dc4c0dd6c70a9c357ac720bd.tar.gz -> ${P}-core_deps_glslang.tar.gz
-	https://github.com/flyinghead/libchdr/archive/925400c4c4b67bafdff8dfad9a1474b22d980777.tar.gz -> ${P}-core_deps_libchdr.tar.gz
+	https://github.com/flyinghead/flycast/archive/V${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/libsdl-org/SDL/archive/f070c83a6059c604cbd098680ddaee391b0a7341.tar.gz -> ${P}-core_deps_SDL.tar.gz
+	https://github.com/KhronosGroup/Vulkan-Headers/archive/b75e5a02b6933caf86c5822d019067b335492c85.tar.gz -> ${P}-core_deps_Vulkan-Headers.tar.gz
+	https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/a6bfc237255a6bac1513f7c1ebde6d8aed6b5191.tar.gz -> ${P}-core_deps_VulkanMemoryAllocator.tar.gz
+	https://github.com/flyinghead/mingw-breakpad/archive/4c3d5fce1a4fef4decfbfeaf20f3746ecd209775.tar.gz -> ${P}-core_deps_breakpad.tar.gz
+	https://github.com/KhronosGroup/glslang/archive/10423ec659d301a0ff2daac8bbf38980abf27590.tar.gz -> ${P}-core_deps_glslang.tar.gz
+	https://github.com/flyinghead/libchdr/archive/8e09bf2badf8866a360babbf722fada2393b26e3.tar.gz -> ${P}-core_deps_libchdr.tar.gz
 	https://github.com/vinniefalco/LuaBridge/archive/fab7b33b896a42dcc865ba5ecdbacd9f409137f8.tar.gz -> ${P}-core_deps_luabridge.tar.gz
 "
 LICENSE="GPL-2"
@@ -34,8 +34,8 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
-	dev-util/ninja
-	dev-util/cmake
+	dev-build/ninja
+	dev-build/cmake
 "
 
 S="${WORKDIR}/flycast-${PV}"

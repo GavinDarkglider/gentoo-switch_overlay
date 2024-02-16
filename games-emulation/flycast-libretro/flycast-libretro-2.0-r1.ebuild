@@ -8,13 +8,10 @@ inherit multiprocessing
 DESCRIPTION="Multiplatform Sega Dreamcast emulator"
 HOMEPAGE="https://github.com/flyinghead/flycast"
 SRC_URI="
-	https://github.com/flyinghead/flycast/archive/V${PV}.tar.gz -> ${P}.tar.gz
-	https://github.com/libsdl-org/SDL/archive/f070c83a6059c604cbd098680ddaee391b0a7341.tar.gz -> ${P}-core_deps_SDL.tar.gz
-	https://github.com/KhronosGroup/Vulkan-Headers/archive/b75e5a02b6933caf86c5822d019067b335492c85.tar.gz -> ${P}-core_deps_Vulkan-Headers.tar.gz
-	https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/a6bfc237255a6bac1513f7c1ebde6d8aed6b5191.tar.gz -> ${P}-core_deps_VulkanMemoryAllocator.tar.gz
-	https://github.com/flyinghead/mingw-breakpad/archive/4c3d5fce1a4fef4decfbfeaf20f3746ecd209775.tar.gz -> ${P}-core_deps_breakpad.tar.gz
-	https://github.com/KhronosGroup/glslang/archive/10423ec659d301a0ff2daac8bbf38980abf27590.tar.gz -> ${P}-core_deps_glslang.tar.gz
-	https://github.com/flyinghead/libchdr/archive/8e09bf2badf8866a360babbf722fada2393b26e3.tar.gz -> ${P}-core_deps_libchdr.tar.gz
+	https://github.com/flyinghead/flycast/archive/v${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/libsdl-org/SDL/archive/b424665e0899769b200231ba943353a5fee1b6b6.tar.gz -> ${P}-core_deps_SDL.tar.gz
+	https://github.com/flyinghead/mingw-breakpad/archive/d2657e1267d2ce9399bcc6b9c5b01b465db057b1.tar.gz -> ${P}-core_deps_breakpad.tar.gz
+	https://github.com/rtissera/libchdr/archive/d3ffd20ca71686877372dea7f9eed359dbf65ba2.tar.gz -> ${P}-core_deps_libchdr.tar.gz
 	https://github.com/vinniefalco/LuaBridge/archive/fab7b33b896a42dcc865ba5ecdbacd9f409137f8.tar.gz -> ${P}-core_deps_luabridge.tar.gz
 "
 LICENSE="GPL-2"
@@ -34,9 +31,13 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
-	dev-util/ninja
-	dev-util/cmake
+	dev-build/ninja
+	dev-build/cmake
 "
+
+PATCHES=(
+    "${FILESDIR}/v2.0-vk:_don't_sort_triangles_in_per-strip_mode.patch"
+)
 
 S="${WORKDIR}/flycast-${PV}"
 BUILD_DIR="${WORKDIR}/${P}_build"
@@ -47,10 +48,7 @@ src_unpack() {
 	cd "${S}" || die
 	local list=(
 		core_deps_SDL
-		core_deps_Vulkan-Headers
-		core_deps_VulkanMemoryAllocator
 		core_deps_breakpad
-		core_deps_glslang
 		core_deps_libchdr
 		core_deps_luabridge
 	)

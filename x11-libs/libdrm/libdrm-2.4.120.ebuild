@@ -16,7 +16,7 @@ DESCRIPTION="X.Org libdrm library"
 HOMEPAGE="https://dri.freedesktop.org/ https://gitlab.freedesktop.org/mesa/drm"
 if [[ ${PV} != 9999* ]]; then
 	SRC_URI="https://dri.freedesktop.org/libdrm/${P}.tar.xz"
-	KEYWORDS="~arm64"
+	KEYWORDS="arm64"
 fi
 
 VIDEO_CARDS="amdgpu exynos freedreno intel nouveau omap radeon tegra vc4 vivante vmware"

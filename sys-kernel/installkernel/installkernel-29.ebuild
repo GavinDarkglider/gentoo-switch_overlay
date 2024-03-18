@@ -3,6 +3,8 @@
 
 EAPI=8
 
+inherit linux-info
+
 DESCRIPTION="Gentoo fork of installkernel script from debianutils"
 HOMEPAGE="
 	https://github.com/projg2/installkernel-gentoo
@@ -14,18 +16,44 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 
 LICENSE="GPL-2+"
 SLOT="0"
-KEYWORDS="arm64"
-IUSE="dracut grub +nsw systemd systemd-boot uki ukify"
+KEYWORDS="~arm64"
+IUSE="dracut efistub +nsw grub refind systemd systemd-boot uki ukify"
 
 PATCHES=( "${FILESDIR}"/add-nsw-install-18.patch )
 
-REQUIRED_USE="systemd-boot? ( systemd )"
+REQUIRED_USE="
+	efistub? ( systemd )
+	systemd-boot? ( systemd )
+	ukify? ( uki )
+	?? ( efistub grub refind systemd-boot nsw )
+"
+# efistub requires systemd's kernel-install because:
+# - We need support for removal to clean-up the created entry
+# - We need to know the location of the ESP
+# - kernel-bootcfg at some point calls bootctl (to find ESP)
 
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
-	nsw? ( sys-libs/gentoo-config-files[installkernel] )
-	dracut? ( >=sys-kernel/dracut-060_pre20240104-r1 sys-libs/gentoo-config-files[initramfs] )
+	nsw? ( >=sys-libs/gentoo-config-files-20240127-r1[installkernel] )
+	dracut? (
+		>=sys-kernel/dracut-060_pre20240104-r4
+		sys-libs/gentoo-config-files[initramfs]
+		uki? (
+			|| (
+				sys-apps/systemd[boot(-)]
+				sys-apps/systemd-utils[boot(-)]
+			)
+		)
+	)
+	efistub? (
+		>=app-emulation/virt-firmware-24.2_p20240315-r2
+		|| (
+			sys-apps/systemd[boot(-)]
+			sys-apps/systemd-utils[boot(-)]
+		)
+	)
 	grub? ( sys-boot/grub )
+	refind? ( sys-boot/refind )
 	systemd? (
 		|| (
 			sys-apps/systemd[kernel-install(-)]
@@ -40,8 +68,8 @@ RDEPEND="
 	)
 	ukify? (
 		|| (
-			sys-apps/systemd[ukify(-)]
-			sys-apps/systemd-utils[ukify(-)]
+			sys-apps/systemd[boot(-),ukify(-)]
+			sys-apps/systemd-utils[boot(-),ukify(-)]
 		)
 	)
 	!=sys-apps/systemd-255.2-r1
@@ -54,23 +82,30 @@ RDEPEND="
 	!<=sys-apps/systemd-254.5-r1
 " # Block against systemd that still installs dummy install.conf
 
+pkg_setup() {
+	use efistub && CONFIG_CHECK="EFI_STUB" linux-info_pkg_setup
+}
+
 src_install() {
 	keepdir /etc/kernel/postinst.d
 	keepdir /etc/kernel/preinst.d
 
-	exeinto /etc/kernel/preinst.d
+	exeinto /usr/lib/kernel/preinst.d
 	use dracut && doexe hooks/50-dracut.install
 	use ukify && doexe hooks/60-ukify.install
 
-	exeinto /etc/kernel/postinst.d
+	exeinto /usr/lib/kernel/postinst.d
 	use uki && doexe hooks/90-uki-copy.install
 	use grub && doexe hooks/91-grub-mkconfig.install
+	use refind && doexe hooks/95-refind-copy-icon.install
 
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/90-compat.install
+	use efistub && doexe hooks/systemd/95-efistub-kernel-bootcfg.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
+	use refind && doexe hooks/systemd/95-refind-copy-icon.install
 
 	if use systemd; then
 		sed -e 's/${SYSTEMD_KERNEL_INSTALL:=0}/${SYSTEMD_KERNEL_INSTALL:=1}/g' -i installkernel ||
@@ -82,10 +117,12 @@ src_install() {
 	echo "# This file is managed by ${CATEGORY}/${PN}" >> "${T}/install.conf" || die
 	if use uki; then
 		echo "layout=uki" >> "${T}/install.conf" || die
-	elif use systemd-boot; then
-		echo "layout=bls" >> "${T}/install.conf" || die
+	elif use efistub; then
+		echo "layout=efistub" >> "${T}/install.conf" || die
 	elif use grub; then
 		echo "layout=grub" >> "${T}/install.conf" || die
+	elif use systemd-boot; then
+		echo "layout=bls" >> "${T}/install.conf" || die
 	else
 		echo "layout=compat" >> "${T}/install.conf" || die
 	fi
@@ -151,5 +188,12 @@ pkg_postinst() {
 				elog "in a layout that systemd-boot understands and to automatically"
 				elog "update systemd-boot's configuration on each kernel install."
 		fi
+	fi
+
+	if use efistub && ! has_version "${CATEGORY}/${PN}[efistub]"; then
+		ewarn "Automated EFI Stub booting is highly experimental. UEFI implementations"
+		ewarn "often differ between vendors and as a result EFI stub booting is not"
+		ewarn "guaranteed to work for all UEFI systems. Ensure an alternative method"
+		ewarn "of booting the system is available before rebooting."
 	fi
 }

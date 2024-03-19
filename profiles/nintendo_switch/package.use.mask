@@ -7,4 +7,4 @@ media-video/ffmpeg david
 net-wireless/bluez btpclient mesh
 
 # Not supported on switch
-sys-kernel/installkernel grub uki ukify
+sys-kernel/installkernel efistub grub refind uki ukify

@@ -149,6 +149,11 @@ src_install() {
 	dosym ${cudadir}/include/thrust/system/cuda/detail/cub ${cudadir}/include/cub
 	dosym targets/aarch64-linux/lib ${cudadir}/lib64
 
+	if use debugger; then
+		doheader ${ecudadir}/extras/Debugger/include/*.h
+		ldpathextradirs+=":${ecudadir}/extras/Debugger/lib64"
+	fi
+
 	newenvd - 99cuda <<-EOF
 		PATH=${ecudadir}/bin${pathextradirs}
 		ROOTPATH=${ecudadir}/bin

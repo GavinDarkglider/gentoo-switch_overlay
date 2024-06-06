@@ -146,7 +146,6 @@ src_install() {
 
 	# Add include and lib symlinks
 	dosym targets/aarch64-linux/include ${cudadir}/include
-	dosym ${cudadir}/include/thrust/system/cuda/detail/cub ${cudadir}/include/cub
 	dosym targets/aarch64-linux/lib ${cudadir}/lib64
 
 	if use debugger; then

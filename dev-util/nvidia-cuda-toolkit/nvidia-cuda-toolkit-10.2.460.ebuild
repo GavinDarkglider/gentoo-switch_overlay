@@ -7,41 +7,43 @@ inherit check-reqs toolchain-funcs unpacker
 
 DESCRIPTION="NVIDIA CUDA Toolkit (compiler and friends)"
 HOMEPAGE="https://developer.nvidia.com/cuda-zone"
+CUB_VER="1.7.5"
+MN_PV="10.2.300"
 MY_PV="$(ver_cut 1-2)"
 M_PV="${MY_PV//\./-}"
-SRC_URI="https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-command-line-tools-${M_PV}/cuda-command-line-tools-${M_PV}_10.2.460-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-compiler-${M_PV}/cuda-compiler-${M_PV}_10.2.460-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cudart/cuda-cudart-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cudart/cuda-cudart-dev-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cuobjdump/cuda-cuobjdump-${M_PV}_10.2.300-1_arm64.deb
+SRC_URI="https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-command-line-tools-${M_PV}/cuda-command-line-tools-${M_PV}_${PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-compiler-${M_PV}/cuda-compiler-${M_PV}_${PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cudart/cuda-cudart-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cudart/cuda-cudart-dev-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cuobjdump/cuda-cuobjdump-${M_PV}_${MN_PV}-1_arm64.deb
 	profiler? (
-		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cupti/cuda-cupti-${M_PV}_10.2.300-1_arm64.deb
-		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cupti/cuda-cupti-dev-${M_PV}_10.2.300-1_arm64.deb
+		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cupti/cuda-cupti-${M_PV}_${MN_PV}-1_arm64.deb
+		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cupti/cuda-cupti-dev-${M_PV}_${MN_PV}-1_arm64.deb
 	)
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-documentation/cuda-documentation-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cudart/cuda-driver-dev-${M_PV}_10.2.300-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-documentation/cuda-documentation-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cudart/cuda-driver-dev-${M_PV}_${MN_PV}-1_arm64.deb
 	debugger? (
-		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-gdb/cuda-gdb-${M_PV}_10.2.300-1_arm64.deb
-		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-gdb/cuda-gdb-src-${M_PV}_10.2.300-1_arm64.deb
+		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-gdb/cuda-gdb-${M_PV}_${MN_PV}-1_arm64.deb
+		https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-gdb/cuda-gdb-src-${M_PV}_${MN_PV}-1_arm64.deb
 	)
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-libraries-${M_PV}/cuda-libraries-${M_PV}_10.2.460-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-libraries-dev-${M_PV}/cuda-libraries-dev-${M_PV}_10.2.460-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-memcheck/cuda-memcheck-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-minimal-build-${M_PV}/cuda-minimal-build-${M_PV}_10.2.460-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvcc/cuda-nvcc-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvdisasm/cuda-nvdisasm-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvgraph/cuda-nvgraph-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvgraph/cuda-nvgraph-dev-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvml-dev/cuda-nvml-dev-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvprof/cuda-nvprof-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvprune/cuda-nvprune-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvrtc/cuda-nvrtc-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvrtc/cuda-nvrtc-dev-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvtx/cuda-nvtx-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-samples/cuda-samples-${M_PV}_10.2.300-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-toolkit-${M_PV}/cuda-toolkit-${M_PV}_10.2.460-1_arm64.deb
-	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-tools-${M_PV}/cuda-tools-${M_PV}_10.2.460-1_arm64.deb
-	vis-profiler? ( https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-visual-tools-${M_PV}/cuda-visual-tools-${M_PV}_10.2.460-1_arm64.deb )
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-libraries-${M_PV}/cuda-libraries-${M_PV}_${PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-libraries-dev-${M_PV}/cuda-libraries-dev-${M_PV}_${PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-memcheck/cuda-memcheck-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-minimal-build-${M_PV}/cuda-minimal-build-${M_PV}_${PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvcc/cuda-nvcc-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvdisasm/cuda-nvdisasm-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvgraph/cuda-nvgraph-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvgraph/cuda-nvgraph-dev-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvml-dev/cuda-nvml-dev-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvprof/cuda-nvprof-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvprune/cuda-nvprune-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvrtc/cuda-nvrtc-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvrtc/cuda-nvrtc-dev-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-nvtx/cuda-nvtx-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-samples/cuda-samples-${M_PV}_${MN_PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-toolkit-${M_PV}/cuda-toolkit-${M_PV}_${PV}-1_arm64.deb
+	https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-tools-${M_PV}/cuda-tools-${M_PV}_${PV}-1_arm64.deb
+	vis-profiler? ( https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-visual-tools-${M_PV}/cuda-visual-tools-${M_PV}_${PV}-1_arm64.deb )
 	https://repo.download.nvidia.com/jetson/common/pool/main/libc/libcublas/libcublas-dev_10.2.3.300-1_arm64.deb
 	https://repo.download.nvidia.com/jetson/common/pool/main/libc/libcublas/libcublas10_10.2.3.300-1_arm64.deb
 	https://repo.download.nvidia.com/jetson/common/pool/main/libc/libcufft/libcufft-${M_PV}_10.1.2.300-1_arm64.deb
@@ -54,6 +56,7 @@ SRC_URI="https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-command
 	https://repo.download.nvidia.com/jetson/common/pool/main/libc/libcusparse/libcusparse-dev-${M_PV}_10.3.1.300-1_arm64.deb
 	https://repo.download.nvidia.com/jetson/common/pool/main/libn/libnpp/libnpp-${M_PV}_10.2.1.300-1_arm64.deb
 	https://repo.download.nvidia.com/jetson/common/pool/main/libn/libnpp/libnpp-dev-${M_PV}_10.2.1.300-1_arm64.deb
+	https://github.com/NVIDIA/cub/archive/refs/tags/${CUB_VER}.tar.gz -> cub-${CUB_VER}.tar.gz
 "
 S="${WORKDIR}"
 
@@ -147,6 +150,9 @@ src_install() {
 	# Add include and lib symlinks
 	dosym targets/aarch64-linux/include ${cudadir}/include
 	dosym targets/aarch64-linux/lib ${cudadir}/lib64
+
+	insinto ${cudadir}/include
+	doins -r cub-${CUB_VER}/cub
 
 	if use debugger; then
 		doheader ${ecudadir}/extras/Debugger/include/*.h

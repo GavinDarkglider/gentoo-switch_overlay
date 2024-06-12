@@ -72,7 +72,7 @@ RESTRICT="bindist mirror"
 # https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cuda-major-component-versions
 RDEPEND="
 	sys-devel/gcc:8.5.0[cxx]
-	sys-libs/jetson-tx1-drivers
+	>=sys-libs/jetson-tx1-drivers-32.7.0
 	vis-profiler? (
 		>=virtual/jre-1.8:*
 	)"

@@ -62,7 +62,7 @@ src_prepare() {
     rm -v ../../share/egl/egl_external_platform.d/nvidia_wayland.json
 
 	if use v4l; then
-		#Remove in favor of our in tree built version 
+		#Remove in favor of our in tree built version
 		rm -v tegra/libnvv4l*.so*
 		rm -v libv4lconvert.so*
 		rm -v libv4l2.so*
@@ -200,9 +200,9 @@ src_install() {
 
 	if use firmware; then
 		insinto /lib
-		dosym lib/firmware/tegra21x/acr_ucode.bin lib/firmware/tegra21x/nv_acr_ucode_prod.bin
-		dosym lib/firmware/gm20b/acr_ucode.bin lib/firmware/tegra21x/acr_ucode.bin
 		doins -r lib/firmware || die "Install failed!"
+		dosym /lib/firmware/tegra21x/nv_acr_ucode_prod.bin /lib/firmware/tegra21x/acr_ucode.bin
+		dosym /lib/firmware/tegra21x/nv_acr_ucode_prod.bin /lib/firmware/gm20b/acr_ucode.bin
 	fi
 
 	if use usb-device; then

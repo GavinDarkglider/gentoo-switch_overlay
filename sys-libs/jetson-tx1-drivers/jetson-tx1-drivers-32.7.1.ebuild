@@ -200,6 +200,8 @@ src_install() {
 
 	if use firmware; then
 		insinto /lib
+		dosym lib/firmware/tegra21x/acr_ucode.bin lib/firmware/tegra21x/nv_acr_ucode_prod.bin
+		dosym lib/firmware/gm20b/acr_ucode.bin lib/firmware/tegra21x/acr_ucode.bin
 		doins -r lib/firmware || die "Install failed!"
 	fi
 

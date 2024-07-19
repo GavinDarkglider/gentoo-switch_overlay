@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-PYTHON_COMPAT=( python3_{9..12} )
+PYTHON_COMPAT=( python3_{9..13} )
 
-inherit autotools linux-info python-single-r1 systemd udev multilib-minimal #readme.gentoo-r1
+inherit autotools flag-o-matic linux-info python-single-r1 systemd udev multilib-minimal #readme.gentoo-r1
 
 DESCRIPTION="Bluetooth Tools and System Daemons for Linux"
 HOMEPAGE="http://www.bluez.org https://github.com/bluez/bluez"
@@ -12,7 +12,7 @@ SRC_URI="https://www.kernel.org/pub/linux/bluetooth/${P}.tar.xz"
 
 LICENSE="GPL-2+ LGPL-2.1+"
 SLOT="0/3"
-KEYWORDS="arm64"
+KEYWORDS="~arm64"
 IUSE="btpclient cups doc debug deprecated extra-tools experimental +mesh midi +obex +readline selinux systemd test test-programs +udev"
 
 # Since this release all remaining extra-tools need readline support, but this could
@@ -51,7 +51,7 @@ DEPEND="
 	readline? ( sys-libs/readline:0= )
 	systemd? ( sys-apps/systemd )
 	>=sys-apps/dbus-1.6:=
-	udev? ( >=virtual/udev-172 )
+	udev? ( >=virtual/udev-196 )
 "
 RDEPEND="${DEPEND}
 	selinux? ( sec-policy/selinux-bluetooth )
@@ -68,10 +68,6 @@ PATCHES=(
 	# https://bugs.gentoo.org/539844
 	# https://github.com/bluez/bluez/issues/268
 	"${FILESDIR}"/${PN}-udevadm-path-r1.patch
-
-	# Fedora patches
-	# https://lore.kernel.org/linux-bluetooth/20220901110719.176944-1-hadess@hadess.net/T/#m9c08d004cd5422783ee1d93154f42303bba9169f
-	"${FILESDIR}"/${PN}-5.66-power-state-adapter-property.patch
 )
 
 pkg_setup() {
@@ -106,24 +102,18 @@ pkg_setup() {
 src_prepare() {
 	default
 
-	# http://www.spinics.net/lists/linux-bluetooth/msg38490.html
-	if ! use systemd; then
-		eapply "${FILESDIR}"/0001-Allow-using-obexd-without-systemd-in-the-user-session-r2.patch
-	fi
+	# https://github.com/bluez/bluez/issues/806
+	eapply "${FILESDIR}"/0001-Allow-using-obexd-without-systemd-in-the-user-session-r3.patch
 
 	eautoreconf
-
-	if use cups; then
-		# Only not .am to not need to run eautoreconf only because of this
-		sed -i \
-			-e "s:cupsdir = \$(libdir)/cups:cupsdir = $(cups-config --serverbin):" \
-			Makefile.{in,tools} || die
-	fi
 
 	multilib_copy_sources
 }
 
 multilib_src_configure() {
+	# unit/test-vcp test fails with LTO (bug #925745)
+	filter-lto
+
 	local myconf=(
 		# readline is automagic when client is enabled
 		# --enable-client always needs readline, bug #504038
@@ -254,18 +244,9 @@ multilib_src_install_all() {
 
 	find "${D}" -name '*.la' -type f -delete || die
 
-	keepdir /var/lib/bluetooth
-
-	# Upstream don't want people to play with them
-	# But we keep installing them due to 'historical' reasons
-	insinto /etc/bluetooth
-	local d
-	for d in input network; do
-		doins profiles/${d}/${d}.conf
-	done
 	# Setup auto enable as Fedora does for allowing to use
 	# keyboards/mouse as soon as possible
-	sed -i 's/#\[Policy\]$/\[Policy\]/; s/#AutoEnable=false/AutoEnable=true/' src/main.conf || die
+	insinto /etc/bluetooth
 	doins src/main.conf
 
 	newinitd "${FILESDIR}"/bluetooth-init.d-r5 bluetooth
@@ -273,6 +254,16 @@ multilib_src_install_all() {
 
 	einstalldocs
 	use doc && dodoc doc/*.txt
+
+	# https://bugs.gentoo.org/929017
+	# https://github.com/bluez/bluez/issues/329#issuecomment-1102459104
+	fperms 0555 /etc/bluetooth
+
+	# https://bugs.gentoo.org/932172
+	if ! use systemd; then
+		keepdir /var/lib/bluetooth
+		fperms 0700 /var/lib/bluetooth
+	fi
 }
 
 pkg_postinst() {

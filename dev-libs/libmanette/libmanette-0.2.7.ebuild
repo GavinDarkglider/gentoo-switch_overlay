@@ -1,15 +1,15 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
-inherit gnome.org gnome2-utils meson vala xdg
+inherit gnome.org meson vala xdg
 
 DESCRIPTION="Simple GObject game controller library"
 HOMEPAGE="https://gitlab.gnome.org/aplazas/libmanette"
 
 LICENSE="LGPL-2.1+"
 SLOT="0"
-KEYWORDS="amd64 arm arm64 ppc ppc64 ~riscv x86"
+KEYWORDS="arm64"
 IUSE="gtk-doc +introspection +udev +vala test"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="vala? ( introspection )"
@@ -22,6 +22,10 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
+	gtk-doc? (
+		dev-util/gtk-doc
+		app-text/docbook-xml-dtd:4.3
+	)
 	vala? ( $(vala_depend) )
 	virtual/pkgconfig
 "

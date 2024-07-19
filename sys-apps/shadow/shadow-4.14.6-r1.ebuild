@@ -24,9 +24,7 @@ LANGS=( cs da de es fi fr hu id it ja ko pl pt_BR ru sv tr zh_CN zh_TW )
 
 REQUIRED_USE="?? ( cracklib pam )"
 
-# TODO: Revisit libbsd dep once glibc-2.28 is stable as it provides strlcpy.
 COMMON_DEPEND="
-	dev-libs/libbsd
 	virtual/libcrypt:=
 	acl? ( sys-apps/acl:= )
 	audit? ( >=sys-process/audit-2.6:= )
@@ -47,14 +45,6 @@ DEPEND="
 "
 RDEPEND="
 	${COMMON_DEPEND}
-	!<sys-apps/man-pages-5.11-r1
-	!=sys-apps/man-pages-5.12-r0
-	!=sys-apps/man-pages-5.12-r1
-	nls? (
-		!<app-i18n/man-pages-it-5.06-r1
-		!<app-i18n/man-pages-ja-20180315-r1
-		!<app-i18n/man-pages-ru-5.03.2390.2390.20191017-r1
-	)
 	pam? ( >=sys-auth/pambase-20150213 )
 	su? ( !sys-apps/util-linux[su(-)] )
 "
@@ -84,14 +74,14 @@ src_configure() {
 		--disable-account-tools-setuid
 		--disable-static
 		--with-btrfs
-		# shadow uses a bundled copy of readpassphrase if --without-libbsd
-		--with-libbsd
+		# Use bundled replacements for readpassphrase and freezero
+		--without-libbsd
 		--without-group-name-max-length
 		--without-tcb
 		--with-bcrypt
 		--with-yescrypt
 		$(use_enable nls)
-		# TODO: wire up upstream for elogind too
+		# TODO: wire up upstream for elogind too (bug #931119)
 		$(use_enable systemd logind)
 		$(use_with acl)
 		$(use_with audit)

@@ -4,7 +4,7 @@
 EAPI=8
 
 EGIT_REPO_URI="https://gitlab.freedesktop.org/mesa/drm.git"
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 if [[ ${PV} = 9999* ]]; then
 	GIT_ECLASS="git-r3"
@@ -24,15 +24,21 @@ for card in ${VIDEO_CARDS}; do
 	IUSE_VIDEO_CARDS+=" video_cards_${card}"
 done
 
-IUSE="${IUSE_VIDEO_CARDS} valgrind"
-RESTRICT="test" # see bug #236845
 LICENSE="MIT"
 SLOT="0"
+IUSE="${IUSE_VIDEO_CARDS} test tools udev valgrind"
+RESTRICT="!test? ( test )"
 
-RDEPEND="
+COMMON_DEPEND="
 	video_cards_intel? ( >=x11-libs/libpciaccess-0.13.1-r1:=[${MULTILIB_USEDEP}] )"
-DEPEND="${RDEPEND}
+DEPEND="${COMMON_DEPEND}
 	valgrind? ( dev-debug/valgrind )"
+RDEPEND="${COMMON_DEPEND}
+	video_cards_amdgpu? (
+		tools? ( >=dev-util/cunit-2.1 )
+		test?  ( >=dev-util/cunit-2.1 )
+	)
+	udev? ( virtual/udev )"
 BDEPEND="${PYTHON_DEPS}
 	$(python_gen_any_dep 'dev-python/docutils[${PYTHON_USEDEP}]')"
 
@@ -42,10 +48,15 @@ python_check_deps() {
 	python_has_version "dev-python/docutils[${PYTHON_USEDEP}]"
 }
 
+src_prepare() {
+	default
+	sed -i -e "/^PLATFORM_SYMBOLS/a '__gentoo_check_ldflags__'," \
+		symbols-check.py || die # bug #925550
+}
+
 multilib_src_configure() {
 	local emesonargs=(
-		# Udev is only used by tests now.
-		-Dudev=false
+		$(meson_use udev)
 		-Dcairo-tests=disabled
 		$(meson_feature video_cards_amdgpu amdgpu)
 		$(meson_feature video_cards_exynos exynos)
@@ -60,8 +71,14 @@ multilib_src_configure() {
 		$(meson_feature video_cards_vmware vmwgfx)
 		# valgrind installs its .pc file to the pkgconfig for the primary arch
 		-Dvalgrind=$(usex valgrind auto disabled)
-		-Dtests=false # Tests are restricted
+		$(meson_native_use_bool tools install-test-programs)
 	)
+
+	if use test || { multilib_is_native_abi && use tools; }; then
+		emesonargs+=( -Dtests=true  )
+	else
+		emesonargs+=( -Dtests=false )
+	fi
 	meson_src_configure
 }
 

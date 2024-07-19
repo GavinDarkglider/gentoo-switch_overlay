@@ -16,21 +16,35 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 
 LICENSE="GPL-2+"
 SLOT="0"
-KEYWORDS="~arm64"
-IUSE="dracut efistub +nsw grub refind systemd systemd-boot uki ukify"
+KEYWORDS="arm64"
+IUSE="dracut efistub grub +nsw refind systemd systemd-boot ugrd uki ukify"
 
-PATCHES=( "${FILESDIR}"/add-nsw-install-18.patch )
+PATCHES=( "${FILESDIR}"/add-nsw-install-39.patch )
 
 REQUIRED_USE="
-	efistub? ( systemd )
+	?? ( efistub grub nsw systemd-boot )
+	refind? ( !systemd-boot !grub )
 	systemd-boot? ( systemd )
 	ukify? ( uki )
-	?? ( efistub grub refind systemd-boot nsw )
+	?? ( dracut ugrd )
 "
-# efistub requires systemd's kernel-install because:
-# - We need support for removal to clean-up the created entry
-# - We need to know the location of the ESP
-# - kernel-bootcfg at some point calls bootctl (to find ESP)
+# Only select one flag that sets "layout=", except for uki since grub,
+# systemd-boot, and efistub booting are all compatible with UKIs and
+# the uki layout.
+#
+# Refind does not set a layout=, it is compatible with the compat, uki
+# and efistub layout. So block against only grub and systemd-boot.
+#
+# systemd-boot could be made to work without the systemd flag, but this
+# makes no sense since in systemd(-utils) the boot flag already
+# requires the kernel-install flag.
+#
+# Ukify hooks do nothing if the layout is not uki, so force this here.
+#
+# Only one initramfs generator flag can be selected. Note that while
+# both dracut and ukify are UKI generators we don't block those because
+# enabling both results in building an initramfs only with dracut and
+# building an UKI with ukify, which is a valid configuration.
 
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
@@ -46,11 +60,8 @@ RDEPEND="
 		)
 	)
 	efistub? (
-		>=app-emulation/virt-firmware-24.2_p20240315-r2
-		|| (
-			sys-apps/systemd[boot(-)]
-			sys-apps/systemd-utils[boot(-)]
-		)
+		systemd? ( >=app-emulation/virt-firmware-24.2_p20240315-r2 )
+		!systemd? ( sys-boot/uefi-mkconfig )
 	)
 	grub? ( sys-boot/grub )
 	refind? ( sys-boot/refind )
@@ -72,6 +83,7 @@ RDEPEND="
 			sys-apps/systemd-utils[boot(-),ukify(-)]
 		)
 	)
+	ugrd? ( sys-kernel/ugrd )
 	!=sys-apps/systemd-255.2-r1
 	!=sys-apps/systemd-255.2-r0
 	!~sys-apps/systemd-255.1
@@ -95,16 +107,16 @@ src_install() {
 	use ukify && doexe hooks/60-ukify.install
 
 	exeinto /usr/lib/kernel/postinst.d
-	use uki && doexe hooks/90-uki-copy.install
 	use grub && doexe hooks/91-grub-mkconfig.install
+	use efistub && doexe hooks/95-efistub-uefi-mkconfig.install
 	use refind && doexe hooks/95-refind-copy-icon.install
 
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/90-compat.install
-	use efistub && doexe hooks/systemd/95-efistub-kernel-bootcfg.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
+	use efistub && doexe hooks/systemd/95-efistub-kernel-bootcfg.install
 	use refind && doexe hooks/systemd/95-refind-copy-icon.install
 
 	if use systemd; then
@@ -123,6 +135,8 @@ src_install() {
 		echo "layout=grub" >> "${T}/install.conf" || die
 	elif use systemd-boot; then
 		echo "layout=bls" >> "${T}/install.conf" || die
+	elif use nsw; then
+		echo "layout=nsw" >> "${T}/install.conf" || die
 	else
 		echo "layout=compat" >> "${T}/install.conf" || die
 	fi
@@ -136,6 +150,8 @@ src_install() {
 				echo "uki_generator=none" >> "${T}/install.conf" || die
 			fi
 		fi
+	elif use ugrd; then
+		echo "initrd_generator=ugrd" >> "${T}/install.conf" || die
 	else
 		echo "initrd_generator=none" >> "${T}/install.conf" || die
 	fi
@@ -190,7 +206,7 @@ pkg_postinst() {
 		fi
 	fi
 
-	if use efistub && ! has_version "${CATEGORY}/${PN}[efistub]"; then
+	if use efistub; then
 		ewarn "Automated EFI Stub booting is highly experimental. UEFI implementations"
 		ewarn "often differ between vendors and as a result EFI stub booting is not"
 		ewarn "guaranteed to work for all UEFI systems. Ensure an alternative method"

@@ -15,7 +15,7 @@ S="${WORKDIR}/gentoo-config-files-${COMMIT}"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~arm64 ~arm" # Required for installkernel-28
+KEYWORDS="arm64 arm"
 
 IUSE="initramfs +installkernel elogind"
 

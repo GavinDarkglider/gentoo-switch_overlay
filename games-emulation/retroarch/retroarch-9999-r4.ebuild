@@ -1,7 +1,7 @@
-# Copyright 2021 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit flag-o-matic git-r3
 
@@ -16,9 +16,9 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~arm64"
 
-IUSE="alsa cg cpu_flags_x86_sse dbus egl ffmpeg flac freetype gles gles3 kms
-	libcaca libusb materialui miniupnpc openal +opengl opengl_core +ozone
-	parport plain_drm pulseaudio qt5 rgui sdl +sdl2 sixel subtitles ssl stripes
+IUSE="alsa cg cpu_flags_x86_sse dbus egl ffmpeg flac freetype gamemode gles gles3 kms
+	libcaca libusb materialui openal +opengl opengl_core +ozone
+	parport plain_drm pulseaudio qt5 raspberry-pi rgui sdl +sdl2 sixel subtitles ssl stripes
 	systemd tinyalsa udev vulkan X xrandr xmb xv wayland +zlib"
 
 MENU_REQUIRED_USE="|| ( gles opengl vulkan )"
@@ -57,13 +57,13 @@ RDEPEND="
 	ffmpeg? ( media-video/ffmpeg )
 	flac? ( media-libs/flac )
 	freetype? ( media-libs/freetype )
+	gamemode? ( games-util/gamemode )
 	kms? (
 		x11-libs/libdrm
 	)
 	libcaca? ( media-libs/libcaca )
 	libusb? ( virtual/libusb:= )
 	materialui? ( games-emulation/retroarch-assets[materialui] )
-	miniupnpc? ( net-libs/miniupnpc )
 	openal? ( media-libs/openal )
 	opengl? ( virtual/opengl )
 	ozone? ( games-emulation/retroarch-assets[ozone] )
@@ -143,7 +143,6 @@ src_configure() {
 		--disable-audioio \
 		--disable-builtinflac \
 		--disable-builtinmbedtls \
-		--disable-builtinminiupnpc \
 		--disable-builtinzlib \
 		--disable-coreaudio \
 		--disable-jack \
@@ -165,8 +164,8 @@ src_configure() {
 		$(use_enable kms) \
 		$(use_enable libcaca caca) \
 		$(use_enable libusb) \
+		$(use_enable libusb hid) \
 		$(use_enable materialui) \
-		$(use_enable miniupnpc) \
 		$(use_enable openal al) \
 		$(use_enable opengl) \
 		$(use_enable opengl_core) \

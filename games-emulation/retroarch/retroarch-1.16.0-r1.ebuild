@@ -1,7 +1,7 @@
-# Copyright 2021 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit flag-o-matic
 
@@ -164,6 +164,7 @@ src_configure() {
 		$(use_enable kms) \
 		$(use_enable libcaca caca) \
 		$(use_enable libusb) \
+		$(use_enable libusb hid) \
 		$(use_enable materialui) \
 		$(use_enable openal al) \
 		$(use_enable opengl) \

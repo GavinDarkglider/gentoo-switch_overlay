@@ -1,4 +1,4 @@
-EAPI="6"
+EAPI="8"
 KEYWORDS="arm64"
 SLOT="0"
 

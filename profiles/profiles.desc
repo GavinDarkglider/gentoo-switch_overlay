@@ -11,3 +11,17 @@ arm64 nintendo_switch/17.0/desktop/cuda/plasma/systemd exp
 arm64 nintendo_switch/17.0/desktop/cuda/systemd exp
 arm64 nintendo_switch/17.0/desktop/cuda/gnome exp
 arm64 nintendo_switch/17.0/desktop/cuda/gnome/systemd exp
+arm64 nintendo_switch/23.0 stable
+arm64 nintendo_switch/23.0/desktop stable
+arm64 nintendo_switch/23.0/desktop/gnome stable
+arm64 nintendo_switch/23.0/desktop/gnome/systemd exp
+arm64 nintendo_switch/23.0/desktop/plasma stable
+arm64 nintendo_switch/23.0/desktop/plasma/systemd exp
+arm64 nintendo_switch/23.0/desktop/systemd exp
+arm64 nintendo_switch/23.0/split-usr stable
+arm64 nintendo_switch/23.0/split-usr/desktop stable
+arm64 nintendo_switch/23.0/split-usr/desktop/gnome stable
+arm64 nintendo_switch/23.0/split-usr/desktop/gnome/systemd exp
+arm64 nintendo_switch/23.0/split-usr/desktop/plasma stable
+arm64 nintendo_switch/23.0/split-usr/desktop/plasma/systemd exp
+arm64 nintendo_switch/23.0/split-usr/desktop/systemd exp

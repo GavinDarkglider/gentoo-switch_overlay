@@ -61,7 +61,7 @@ RDEPEND="${DEPEND}
 RESTRICT="!test? ( test )"
 
 PATCHES=(
-	"${FILESDIR}"/bluez_ell_patch.patch
+	"${FILESDIR}"/bluez_ell_patch-5.76.patch
 
 	# Try both udevadm paths to cover udev/systemd vs. eudev locations (#539844)
 	# http://www.spinics.net/lists/linux-bluetooth/msg58739.html

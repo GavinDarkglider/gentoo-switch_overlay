@@ -99,14 +99,20 @@ pkg_setup() {
 }
 
 src_install() {
-	keepdir /etc/kernel/postinst.d
+	keepdir /etc/kernel/install.d
 	keepdir /etc/kernel/preinst.d
+	keepdir /etc/kernel/postinst.d
+	keepdir /usr/lib/kernel/install.d
+	keepdir /usr/lib/kernel/preinst.d
+	keepdir /usr/lib/kernel/postinst.d
 
 	exeinto /usr/lib/kernel/preinst.d
+	doexe hooks/99-check-diskspace.install
 	use dracut && doexe hooks/50-dracut.install
 	use ukify && doexe hooks/60-ukify.install
 
 	exeinto /usr/lib/kernel/postinst.d
+	doexe hooks/99-write-log.install
 	use grub && doexe hooks/91-grub-mkconfig.install
 	use efistub && doexe hooks/95-efistub-uefi-mkconfig.install
 	use refind && doexe hooks/95-refind-copy-icon.install
@@ -114,8 +120,10 @@ src_install() {
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
 	doexe hooks/systemd/10-copy-prebuilt.install
+	doexe hooks/systemd/85-check-diskspace.install
 	doexe hooks/systemd/90-compat.install
 	doexe hooks/systemd/90-zz-update-static.install
+	doexe hooks/systemd/99-write-log.install
 	use grub && doexe hooks/systemd/91-grub-mkconfig.install
 	use efistub && doexe hooks/systemd/95-efistub-kernel-bootcfg.install
 	use refind && doexe hooks/systemd/95-refind-copy-icon.install
@@ -168,6 +176,10 @@ src_install() {
 	insinto /usr/lib/kernel
 	doins "${T}/install.conf"
 
+	insinto /etc/logrotate.d
+	newins installkernel.logrotate installkernel
+	keepdir /var/lib/misc
+
 	into /
 	dosbin installkernel
 	doman installkernel.8
@@ -212,5 +224,23 @@ pkg_postinst() {
 		ewarn "often differ between vendors and as a result EFI stub booting is not"
 		ewarn "guaranteed to work for all UEFI systems. Ensure an alternative method"
 		ewarn "of booting the system is available before rebooting."
+	fi
+
+	# Initialize log file if there is none
+	local log=${ROOT}/var/log/installkernel.log
+	if [[ ! -f ${log} ]]; then
+		echo -e \
+"DATE\t"\
+"KI_VENDOR\t"\
+"VERSION\t"\
+"CONF_ROOT\t"\
+"LAYOUT\t"\
+"INITRD_GEN\t"\
+"UKI_GEN\t"\
+"BOOT_ROOT\t"\
+"KERNEL_REL_PATH\t"\
+"INITRD_REL_PATH\t"\
+"PLUGIN_OVERRIDE\t"\
+>> "${log}" || die
 	fi
 }

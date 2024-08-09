@@ -1,6 +1,9 @@
 # Compatible to the bastard headers
 =sys-libs/glibc-2.35*
 
+# Masked in portage
+=media-tv/v4l-utils-1.18.0
+
 # Portage sync - modified
 =dev-qt/qtcore-5.15.14
 =dev-libs/libmanette-0.2.7
@@ -10,8 +13,7 @@
 =sys-apps/shadow-4.14.6-r1
 =sys-apps/shadow-4.14.8
 =sys-kernel/installkernel-39-r2
-=sys-kernel/installkernel-40
-=sys-kernel/installkernel-41
+=sys-kernel/installkernel-48-r1
 =x11-libs/libdrm-2.4.120
 =x11-libs/libdrm-2.4.121
 =x11-libs/libdrm-2.4.122

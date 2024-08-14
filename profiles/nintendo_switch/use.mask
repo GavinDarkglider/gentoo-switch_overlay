@@ -1,0 +1,3 @@
+# 2024-08-12 bell07
+# dev-qt/qtbase does not build. Mask USE=qt6
+qt6

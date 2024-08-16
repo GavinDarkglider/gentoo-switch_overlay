@@ -5,6 +5,9 @@
 # Mesa
 >media-libs/mesa-21.3.8
 
+# 2024-08-16 bell07 - last buildeable version
+>x11-libs/libdrm-2.4.120
+
 # 2023-10-14 Does not work with old xorg-server. Maybe can be solved by reverting
 # https://cgit.freedesktop.org/xorg/driver/xf86-input-libinput/commit/?id=94a52a848801ff035ec4d1c604dac7c90708e562
 >x11-drivers/xf86-input-libinput-1.4
@@ -42,7 +45,6 @@ dev-qt/qtcore
 net-wireless/bluez
 sys-apps/shadow
 sys-kernel/installkernel
-x11-libs/libdrm
 
 # 13.01.2024 - bell07 - does not build.
 # https://gitlab.com/switchroot/bootstack/switch-uboot/-/issues/2

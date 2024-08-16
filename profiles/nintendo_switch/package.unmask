@@ -14,7 +14,3 @@
 =sys-apps/shadow-4.14.8
 =sys-kernel/installkernel-39-r2
 =sys-kernel/installkernel-48-r1
-=x11-libs/libdrm-2.4.120
-=x11-libs/libdrm-2.4.121
-=x11-libs/libdrm-2.4.122
-=x11-libs/libdrm-9999

@@ -35,9 +35,13 @@
 >media-plugins/alsa-plugins-1.2.4
 >media-sound/alsa-utils-1.2.4
 
-#Weston / wayland
+# Weston / wayland
 >dev-libs/weston-10.1.0
 >x11-base/xwayland-23
+
+# 2024-08-17 Networkmanager
+>net-misc/networkmanager-1.44.2
+>gnome-extra/nm-applet-1.34.0
 
 # Since no overlay masks are supported in profile, the whole package is masked.
 # The replaced versions in this overlay are unmasked by package.unmask

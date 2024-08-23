@@ -38,14 +38,13 @@ src_install() {
 
 	# installkernel enhancements
 	if use installkernel; then
+		dobin installkernel/mkdtboimg.py
+
 		exeinto /usr/lib/kernel/preinst.d
 		doexe installkernel/80-switch-kernel-dts.install
 
 		exeinto /usr/lib/kernel/postinst.d
 		doexe installkernel/80-set-switch-symlinks-and-clearup.install
-
-		into /
-		dolsbin installkernel/mkdtboimg.py
 	fi
 
 	# Sleep fixes

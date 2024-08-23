@@ -43,6 +43,10 @@
 >net-misc/networkmanager-1.44.2
 >gnome-extra/nm-applet-1.34.0
 
+# 2024-08-19 Last buildeable version
+# The previous versions are not secure! See https://bugs.gentoo.org/930116
+>=net-libs/webkit-gtk-2.43
+
 # Since no overlay masks are supported in profile, the whole package is masked.
 # The replaced versions in this overlay are unmasked by package.unmask
 dev-qt/qtcore

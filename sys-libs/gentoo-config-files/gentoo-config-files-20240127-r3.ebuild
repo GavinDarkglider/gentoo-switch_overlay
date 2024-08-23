@@ -22,9 +22,9 @@ IUSE="initramfs +installkernel elogind"
 BDEPEND="!!sys-boot/nintendo-switch-dracut-config
 !!sys-libs/nintendo-switch-sleep"
 
-# dracut script copy xxd binary into initramfs
-DEPEND="initramfs? ( app-editors/vim-core )
-		installkernel? ( dev-embedded/u-boot-tools )"
+# dracut script copy xxd binary from vim-core into initramfs
+RDEPEND="initramfs? ( sys-kernel/dracut app-editors/vim-core )
+		installkernel? ( sys-kernel/installkernel[nsw] dev-embedded/u-boot-tools )"
 
 src_install() {
 	# Initramfs build with dracut

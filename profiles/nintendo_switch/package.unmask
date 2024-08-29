@@ -9,8 +9,5 @@
 =dev-libs/libmanette-0.2.7
 =net-wireless/bluez-5.76-r1
 =net-wireless/bluez-5.77
-=sys-apps/shadow-4.14.2
-=sys-apps/shadow-4.14.6-r1
-=sys-apps/shadow-4.14.8
 =sys-kernel/installkernel-39-r2
 =sys-kernel/installkernel-48-r1

@@ -47,11 +47,14 @@
 # The previous versions are not secure! See https://bugs.gentoo.org/930116
 >=net-libs/webkit-gtk-2.43
 
+# 29.08.2024 - bell07 - requires glibc >= 2.38
+>sys-apps/shadow-4.14.2
+
 # Since no overlay masks are supported in profile, the whole package is masked.
 # The replaced versions in this overlay are unmasked by package.unmask
 dev-qt/qtcore
+dev-libs/libmanette
 net-wireless/bluez
-sys-apps/shadow
 sys-kernel/installkernel
 
 # 13.01.2024 - bell07 - does not build.

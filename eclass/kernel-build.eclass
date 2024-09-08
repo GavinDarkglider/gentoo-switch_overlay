@@ -296,7 +296,16 @@ kernel-build_src_configure() {
 kernel-build_src_compile() {
 	debug-print-function ${FUNCNAME} "${@}"
 
-	emake O="${WORKDIR}"/build "${MAKEARGS[@]}" all
+	local targets=( all )
+
+	if grep -q "CONFIG_CTF=y" "${WORKDIR}/modprep/.config"; then
+		targets+=( ctf )
+	fi
+
+	local target
+	for target in "${targets[@]}" ; do
+		emake O="${WORKDIR}"/build "${MAKEARGS[@]}" "${target}"
+	done
 }
 
 # @FUNCTION: kernel-build_src_test
@@ -306,6 +315,12 @@ kernel-build_src_compile() {
 kernel-build_src_test() {
 	debug-print-function ${FUNCNAME} "${@}"
 
+	local targets=( modules_install )
+
+	if grep -q "CONFIG_CTF=y" "${WORKDIR}/modprep/.config"; then
+		targets+=( ctf_install )
+	fi
+
 	# Use the kernel build system to strip, this ensures the modules
 	# are stripped *before* they are signed or compressed.
 	local strip_args
@@ -313,9 +328,12 @@ kernel-build_src_test() {
 		strip_args="--strip-unneeded"
 	fi
 
-	emake O="${WORKDIR}"/build "${MAKEARGS[@]}" \
-		INSTALL_MOD_PATH="${T}" INSTALL_MOD_STRIP="${strip_args}" \
-		modules_install
+	local target
+	for target in "${targets[@]}" ; do
+		emake O="${WORKDIR}"/build "${MAKEARGS[@]}" \
+			INSTALL_MOD_PATH="${T}" INSTALL_MOD_STRIP="${strip_args}" \
+			"${target}"
+	done
 
 	kernel-install_test "${KV_FULL}" \
 		"${WORKDIR}/build/$(dist-kernel_get_image_path)" \
@@ -337,6 +355,10 @@ kernel-build_src_install() {
 		targets+=( dtbs_install )
 	fi
 
+	if grep -q "CONFIG_CTF=y" "${WORKDIR}/modprep/.config"; then
+		targets+=( ctf_install )
+	fi
+
 	# Use the kernel build system to strip, this ensures the modules
 	# are stripped *before* they are signed or compressed.
 	local strip_args
@@ -355,9 +377,12 @@ kernel-build_src_install() {
 		)
 	fi
 
-	emake O="${WORKDIR}"/build "${MAKEARGS[@]}" \
-		INSTALL_MOD_PATH="${ED}" INSTALL_MOD_STRIP="${strip_args}" \
-		INSTALL_PATH="${ED}/boot" "${compress[@]}" "${targets[@]}"
+	local target
+	for target in "${targets[@]}" ; do
+		emake O="${WORKDIR}"/build "${MAKEARGS[@]}" \
+			INSTALL_MOD_PATH="${ED}" INSTALL_MOD_STRIP="${strip_args}" \
+			INSTALL_PATH="${ED}/boot" "${compress[@]}" "${target}"
+	done
 
 	# note: we're using mv rather than doins to save space and time
 	# install main and arch-specific headers first, and scripts
@@ -430,6 +455,7 @@ kernel-build_src_install() {
 			mv "build/vmlinux" "${ED}${kernel_dir}/vmlinux" || die
 		fi
 		dostrip -x "${kernel_dir}/vmlinux"
+		dostrip -x "${kernel_dir}/vmlinux.ctfa"
 	fi
 
 	# strip empty directories

@@ -16,7 +16,7 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 
 LICENSE="GPL-2+"
 SLOT="0"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 IUSE="dracut efistub grub +nsw refind systemd systemd-boot ugrd uki ukify"
 
 PATCHES=( "${FILESDIR}"/add-nsw-install-39.patch )

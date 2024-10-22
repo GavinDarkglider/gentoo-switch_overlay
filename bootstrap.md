@@ -38,17 +38,17 @@ The crossdev toolchain need the same old version numbers like the target system.
 Before setup check the curent versions for packages that you like to use. In my case I use 
 
 - sys-kernel/linux-headers-4.9-r1
-- sys-devel/gcc-11.3.1_p20230427
+- sys-devel/gcc-11.5.0
 - sys-libs/glibc-2.35-r11
 
 Then build the toolchain for this versions:
 
 ```sh
 emerge crossdev
-crossdev -S --kernel 4.9-r1 --libc 2.35-r11 --gcc 11.3.1_p20230427 -t aarch64-unknown-linux-gnu
+crossdev -S --kernel 4.9-r1 --libc 2.35-r11 --gcc 11.5.0 -t aarch64-unknown-linux-gnu
 ```
 
-If the toolchain is built, the toolchain packages are fixed to the given versions. To enable small updates if available (optional), the keywords and masks can be adjusted in  `/etc/portage/package.accept_keywords/cross-aarch64-unknown-linux-gnu`
+If the toolchain is built, the toolchain packages are fixed to the given versions. To enable small updates if available (optional), the keywords and masks can be adjusted in `/etc/portage/package.accept_keywords/cross-aarch64-unknown-linux-gnu`
 and `/etc/portage/package.mask/cross-aarch64-unknown-linux-gnu`
 
 My settings are:
@@ -77,20 +77,39 @@ Crete the file `/usr/aarch64-unknown-linux-gnu/etc/portage/repos.conf/switch_ove
 location = /projects/switch_overlay
 ```
 
-Set the overlay profile `switch_overlay:nintendo_switch/17.0/`
+Set the overlay profile `switch_overlay:nintendo_switch/23.0/`
 
 ```sh
-rm /usr/aarch64-unknown-linux-gnu/etc/portage/make.profile
-ln -s /projects/switch_overlay/profiles/nintendo_switch/17.0/ /usr/aarch64-unknown-linux-gnu/etc/portage/make.profile
+ln -svf /projects/switch_overlay/profiles/nintendo_switch/23.0/ /usr/aarch64-unknown-linux-gnu/etc/portage/make.profile
 ```
 
 Edit `/usr/aarch64-unknown-linux-gnu/etc/portage/make.conf`: 
 Remove USE, CFLAGS, CXXFLAGS lines. We use the settings from overlay profile. Set ACCEPT_KEYWORDS to your preference.
+Optional: Remove features "buildpkg". It is beter to generate packages in chroot
+
+## Optional: Replace the linux-headers in crossdev to the switch-version
+
+Check the symlink `ls -l /var/db/repos/crossdev/cross-aarch64-unknown-linux-gnu/linux-headers`
+Replace this symlink that should point to the switch_overlay version.
+
+```sh
+ln -svf /projects/switch_overlay/sys-kernel/linux-headers /var/db/repos/crossdev/cross-aarch64-unknown-linux-gnu/linux-headers`
+```
+
+Adjust the version in `/etc/portage/package.accept_keywords/cross-aarch64-unknown-linux-gnu`
+and `/etc/portage/package.mask/cross-aarch64-unknown-linux-gnu`, then downgrade cross-aarch64-unknown-linux-gnu/linux-headers to 9999* version and rebuild the glibc.
+
+```sh
+emerge -vp =cross-aarch64-unknown-linux-gnu/linux-headers-9999* cross-aarch64-unknown-linux-gnu/glibc
+```
+
+Unsure if needed, I did it some times ago. I enabled the switch overlay in my host's portage, just to have all ebuilds available for host. Of course without any profiles activations.
+All ebuilds in switch overlay are aarch64 only ant therefore masked on amd64 by missing keyword.
 
 
 ## Installing QEMU on host
 
-The official [Gentoo Howto](https://wiki.gentoo.org/wiki/Embedded_Handbook/General/Compiling_with_qemu_user_chroot) (slightly outdated)
+The official [Gentoo Howto](https://wiki.gentoo.org/wiki/Embedded_Handbook/General/Compiling_with_qemu_user_chroot)
 
 In a nutshell:
 
@@ -128,6 +147,7 @@ Then, add `--allow 127.0.0.0/24"` in `/etc/conf.d/distccd` to DISTCCD_OPTS.
 To enable cross-compiling in clang, set `USE=llvm_targets_AArch64` in make conf, or use the expand LLVM_TARGETS as you need. Recompile `sys-devel/clang` and `sys-devel/llvm` with the newly set USE flags.
 
 Gentoo does not set up cross-distcc configuration for clang yet. See https://bugs.gentoo.org/651908. To enable this feature, some symlinks are required. Please use [bell07's fix-clang-distcc.sh](https://github.com/bell07/bashscripts-switch_gentoo/blob/master/tools/fix-clang-distcc.sh) to create this links.
+This step needs to be repeated each llvm/clang upgrade.
 
 
 # Prepare the the target system skeleton
@@ -139,10 +159,12 @@ But at the first I go into this folder and create some folders, special /dev and
 ```sh
 mkdir /gentoo-switch
 # Create skeleton folders
-mkdir -p /gentoo-switch/{boot,dev,etc,mnt,root,run,sys,proc}
-mkdir -p /gentoo-switch/etc/portage/repos.conf
-mkdir -p /gentoo-switch/var/cache/distfiles
-mkdir -p /gentoo-switch/var/db/repos/gentoo
+mkdir -p /gentoo-switch/{boot,dev,etc,mnt,root,run,sys,proc,usr/bin,usr/lib,usr/lib64}
+ln -s usr/bin /gentoo-switch/bin
+ln -s usr/bin /gentoo-switch/sbin
+ln -s bin /gentoo-switch/usr/sbin
+ln -s usr/lib /gentoo-switch/lib
+ln -s usr/lib64 /gentoo-switch/lib64
 
 # Minimal devices https://tldp.org/LDP/lfs/LFS-BOOK-6.1.1-HTML/chapter06/devices.html
 mknod -m 622 /gentoo-switch/dev/console c 5 1
@@ -157,12 +179,18 @@ mknod -m 444 /gentoo-switch/dev/urandom c 1 9
 chown -v root:tty /gentoo-switch/dev/{console,ptmx,tty}
 
 # Bind-mount hosts folders
+mkdir -p /gentoo-switch/var/cache/distfiles
 mount -o bind /var/cache/distfiles /gentoo-switch/var/cache/distfiles
+mkdir -p /gentoo-switch/var/db/repos/gentoo
 mount -o bind /var/db/repos/gentoo /gentoo-switch/var/db/repos/gentoo
 
-# Set switch_overlay:nintendo_switch/17.0/ profile that contain all needed setup
-ln -s /projects/switch_overlay/profiles/nintendo_switch/17.0/ /gentoo-switch/etc/portage/make.profile
+# Required for cross and for chroot emerge
+mkdir -p /gentoo-switch/usr/share/openpgp-keys
+cp -v /usr/share/openpgp-keys/gentoo-release.asc /gentoo-switch/usr/share/openpgp-keys/gentoo-release.asc
 
+# Set switch_overlay:nintendo_switch/23.0/ profile that contain all needed setup
+mkdir -p /gentoo-switch/etc/portage/
+ln -s /projects/switch_overlay/profiles/nintendo_switch/23.0/ /gentoo-switch/etc/portage/make.profile
 ```
 
 The switch overlay needs to be enabled by creating the file `/gentoo-switch/etc/portage/repos.conf/switch_overlay.conf`
@@ -295,7 +323,7 @@ eselect profile list
 Select the switch profile avalaible that you wish to use. 
 
 ```sh
-eselect profile set switch:nintendo_switch/17.0/desktop
+eselect profile set switch:nintendo_switch/23.0/desktop
 ```
 
 Verify that the profile has been correctly set:
@@ -322,12 +350,6 @@ emerge -a --autounmask y nintendo-switch-meta
 Accept the proposed keywords and licenses, let autounmask write the `/etc/portage/package.accept_keywords` and `/etc/portage/package.license` for you.
 
 You should run `etc-update` or `dispatch-conf` to resolve conflict in your config files.
-
-If the following message appears "*Multiple package instances within a single package slot have been pulled...*" (eg. because of bindist USE and because the world was not updated in previous step) This can be solved by rebuilding/updating affected packages:
-
-```sh
-emerge -a --oneshot dev-libs/openssl net-misc/openssh
-```
 
 Then try again:
 

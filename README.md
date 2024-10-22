@@ -25,43 +25,48 @@ The overlay provides profiles that enhances the gentoo portage profile by NSW sp
 ```
 # eselect profile list
 Available profile symlink targets:
-  [1]   default/linux/arm64/17.0 (stable)
-  [2]   default/linux/arm64/17.0/desktop (stable)
-  [3]   default/linux/arm64/17.0/desktop/gnome (stable)
-  [4]   default/linux/arm64/17.0/desktop/gnome/systemd (stable)
-  [5]   default/linux/arm64/17.0/desktop/plasma (stable)
-  [6]   default/linux/arm64/17.0/desktop/plasma/systemd (stable)
-  [7]   default/linux/arm64/17.0/desktop/systemd (stable)
-  [8]   default/linux/arm64/17.0/developer (stable)
-  [9]   default/linux/arm64/17.0/systemd (stable)
-  [10]  default/linux/arm64/17.0/big-endian (exp)
-  [11]  default/linux/arm64/17.0/musl (exp)
-  [12]  default/linux/arm64/17.0/musl/hardened (exp)
-  [13]  switch:nintendo_switch/17.0 (stable)
-  [14]  switch:nintendo_switch/17.0/desktop (stable)
-  [15]  switch:nintendo_switch/17.0/desktop/plasma (exp)
-  [16]  switch:nintendo_switch/17.0/desktop/plasma/systemd (exp)
-  [17]  switch:nintendo_switch/17.0/desktop/systemd (exp)
-  [18]  switch:nintendo_switch/17.0/desktop/gnome (exp)
-  [19]  switch:nintendo_switch/17.0/desktop/gnome/systemd (exp)
-  [20]  switch:nintendo_switch/17.0/desktop/cuda (exp)
-  [21]  switch:nintendo_switch/17.0/desktop/cuda/plasma (exp)
-  [22]  switch:nintendo_switch/17.0/desktop/cuda/plasma/systemd (exp)
-  [23]  switch:nintendo_switch/17.0/desktop/cuda/systemd (exp)
-  [24]  switch:nintendo_switch/17.0/desktop/cuda/gnome (exp)
-  [25]  switch:nintendo_switch/17.0/desktop/cuda/gnome/systemd (exp)
+  [55]  switch:nintendo_switch/17.0 (stable)
+  [56]  switch:nintendo_switch/17.0/desktop (stable)
+  [57]  switch:nintendo_switch/17.0/desktop/plasma (exp)
+  [58]  switch:nintendo_switch/17.0/desktop/plasma/systemd (exp)
+  [59]  switch:nintendo_switch/17.0/desktop/systemd (exp)
+  [60]  switch:nintendo_switch/17.0/desktop/gnome (exp)
+  [61]  switch:nintendo_switch/17.0/desktop/gnome/systemd (exp)
+  [62]  switch:nintendo_switch/17.0/desktop/cuda (exp)
+  [63]  switch:nintendo_switch/17.0/desktop/cuda/plasma (exp)
+  [64]  switch:nintendo_switch/17.0/desktop/cuda/plasma/systemd (exp)
+  [65]  switch:nintendo_switch/17.0/desktop/cuda/systemd (exp)
+  [66]  switch:nintendo_switch/17.0/desktop/cuda/gnome (exp)
+  [67]  switch:nintendo_switch/17.0/desktop/cuda/gnome/systemd (exp)
+  [68]  switch:nintendo_switch/23.0 (stable)
+  [69]  switch:nintendo_switch/23.0/desktop (stable)
+  [70]  switch:nintendo_switch/23.0/desktop/gnome (stable)
+  [71]  switch:nintendo_switch/23.0/desktop/gnome/systemd (exp)
+  [72]  switch:nintendo_switch/23.0/desktop/plasma (stable)
+  [73]  switch:nintendo_switch/23.0/desktop/plasma/systemd (exp)
+  [74]  switch:nintendo_switch/23.0/desktop/systemd (exp)
+  [75]  switch:nintendo_switch/23.0/split-usr (stable)
+  [76]  switch:nintendo_switch/23.0/split-usr/desktop (stable)
+  [77]  switch:nintendo_switch/23.0/split-usr/desktop/gnome (stable)
+  [78]  switch:nintendo_switch/23.0/split-usr/desktop/gnome/systemd (exp)
+  [79]  switch:nintendo_switch/23.0/split-usr/desktop/plasma (stable)
+  [80]  switch:nintendo_switch/23.0/split-usr/desktop/plasma/systemd (exp)
+  [81]  switch:nintendo_switch/23.0/split-usr/desktop/systemd (exp)
+
 ```
-The `switch:nintendo_switch/17.0/desktop`is recommended, since most tested by me. The cuda profiles are for further use and just forces older gcc atm.
+The `switch:nintendo_switch/23.0/desktop`is recommended, since most tested by me. The 17.0 are deprecated by upstream. The cuda profiles are for further use and just forces older gcc atm.
+Pls. note, the 23.0 profiles are merged-usr by default, so in case of upgrade from previously 17.0, you need to migrate merged-usr first or use the split-usr profiles.
+Read the file `/var/db/repos/gentoo/profiles/default/linux/arm64/17.0/deprecated` for more details.
 
 Using the profile you do not need to setup the usual settings like CFLAGS because included in [make.defaults](https://gitlab.com/bell07/gentoo-switch_overlay/-/blob/master/profiles/nintendo_switch/make.defaults)
 Of course you can set the settings to your make.conf and leave the profile.
 
 ```
-eselect profile set switch:nintendo_switch/17.0/desktop
+eselect profile set switch:nintendo_switch/23.0/desktop
 ```
 ## Installation
 The full guide from is decribed in [bootstrap.md](bootstrap.md). 
-Abbreviations exists. It is possible to use precompiled stage3 from [Releases](https://gitlab.com/bell07/gentoo-switch_overlay/-/releases) .
+Abbreviations exists. It is possible to use precompiled stage3 from [bell07's releases](https://github.com/bell07/bashscripts-switch_gentoo/releases) .
 It is possible to do full installation using Switch without PC. An other running Linux is required as live medium in this case.
 In any case Gentoo knowledge is required to do the Gentoo installation on the switch.
 

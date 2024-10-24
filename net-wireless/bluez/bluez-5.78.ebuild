@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-PYTHON_COMPAT=( python3_{9..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit autotools flag-o-matic linux-info python-single-r1 systemd udev multilib-minimal #readme.gentoo-r1
 
@@ -68,6 +68,9 @@ PATCHES=(
 	# https://bugs.gentoo.org/539844
 	# https://github.com/bluez/bluez/issues/268
 	"${FILESDIR}"/${PN}-udevadm-path-r1.patch
+	# bug #926344
+	# https://github.com/bluez/bluez/issues/843
+	"${FILESDIR}"/${PN}-5.78-musl-1.2.5.patch
 )
 
 pkg_setup() {
@@ -101,9 +104,6 @@ pkg_setup() {
 
 src_prepare() {
 	default
-
-	# https://github.com/bluez/bluez/issues/773
-	eapply "${FILESDIR}"/${PN}-5.73-configure-cups.patch
 
 	# https://github.com/bluez/bluez/issues/806
 	eapply "${FILESDIR}"/0001-Allow-using-obexd-without-systemd-in-the-user-session-r3.patch
@@ -249,7 +249,6 @@ multilib_src_install_all() {
 
 	# Setup auto enable as Fedora does for allowing to use
 	# keyboards/mouse as soon as possible
-	sed -i 's/#\[Policy\]$/\[Policy\]/; s/#AutoEnable=false/AutoEnable=true/' src/main.conf || die
 	insinto /etc/bluetooth
 	doins src/main.conf
 
@@ -260,6 +259,7 @@ multilib_src_install_all() {
 	use doc && dodoc doc/*.txt
 
 	# https://bugs.gentoo.org/929017
+	# https://github.com/bluez/bluez/issues/329#issuecomment-1102459104
 	fperms 0555 /etc/bluetooth
 
 	# https://bugs.gentoo.org/932172

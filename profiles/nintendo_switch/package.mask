@@ -1,3 +1,6 @@
+# Mask all portage versions
+<sys-kernel/linux-headers-9999
+
 # Does not work with jetson-tx1-drivers-32.7
 >x11-base/xorg-drivers-21
 >x11-base/xorg-server-21
@@ -27,6 +30,8 @@
 >sys-libs/glibc-2.36
 # 2023-08-18 - fails to build with glibc-2.35
 >sys-devel/gcc-12
+# 2024-10-23 - fails to build. Requires x25_hdlc_proto usage
+>sys-auth/elogind-247
 
 #Audio Stuff
 >media-libs/alsa-lib-1.2.4

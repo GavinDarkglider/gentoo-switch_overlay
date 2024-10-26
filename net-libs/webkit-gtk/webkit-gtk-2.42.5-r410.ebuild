@@ -169,25 +169,6 @@ src_configure() {
 	# ODR violations (bug #915230, https://bugs.webkit.org/show_bug.cgi?id=233007)
 	filter-lto
 
-	# It does not compile on alpha without this in LDFLAGS
-	# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=648761
-	use alpha && append-ldflags "-Wl,--no-relax"
-
-	# ld segfaults on ia64 with LDFLAGS --as-needed, bug #555504
-	use ia64 && append-ldflags "-Wl,--no-as-needed"
-
-	# Sigbuses on SPARC with mcpu and co., bug #???
-	use sparc && filter-flags "-mvis"
-
-	# https://bugs.webkit.org/show_bug.cgi?id=42070 , #301634
-	use ppc64 && append-flags "-mminimal-toc"
-
-	# Try to use less memory, bug #469942 (see Fedora .spec for reference)
-	# --no-keep-memory doesn't work on ia64, bug #502492
-	if ! use ia64; then
-		append-ldflags $(test-flags-CCLD "-Wl,--no-keep-memory")
-	fi
-
 	# Ruby situation is a bit complicated. See bug 513888
 	local rubyimpl
 	local ruby_interpreter=""

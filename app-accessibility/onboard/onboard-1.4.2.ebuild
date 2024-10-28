@@ -1,21 +1,24 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
-PYTHON_COMPAT=( python3_{8,9,10,11} )
-DISTUTILS_USE_SETUPTOOLS="no"
+DISTUTILS_USE_PEP517=setuptools
+DISTUTILS_EXT=1
+PYTHON_COMPAT=( python3_{8..12} )
 
-inherit distutils-r1 gnome2-utils
+inherit distutils-r1
 
 DESCRIPTION="An onscreen keyboard useful for tablet PC users and for mobility impaired users"
 HOMEPAGE="https://launchpad.net/onboard"
-SRC_URI="https://github.com/linuxdeepin/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="https://github.com/dr-ni/${PN}/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz"
+
 
 # po/* are licensed under BSD 3-clause
 LICENSE="GPL-3+ BSD"
 SLOT="0"
 KEYWORDS="~arm64"
+IUSE="+accessibility debug"
 
 COMMON_DEPEND="app-text/hunspell:=
 	dev-libs/dbus-glib
@@ -27,8 +30,6 @@ COMMON_DEPEND="app-text/hunspell:=
 	gnome-base/gsettings-desktop-schemas
 	gnome-base/librsvg
 	media-libs/libcanberra
-	sys-apps/dbus
-	x11-libs/gdk-pixbuf
 	x11-libs/gtk+:3[introspection]
 	x11-libs/libX11
 	x11-libs/libXi
@@ -38,35 +39,18 @@ COMMON_DEPEND="app-text/hunspell:=
 DEPEND="${COMMON_DEPEND}
 	dev-util/intltool"
 RDEPEND="${COMMON_DEPEND}
-	app-accessibility/at-spi2-core
 	app-text/iso-codes
-	gnome-extra/mousetweaks
+	accessibility? (
+		app-accessibility/at-spi2-core:2
+		gnome-extra/mousetweaks
+	)
 	x11-libs/libxkbfile"
 
-RESTRICT="mirror"
+RESTRICT="mirror test"
 
 src_prepare() {
-	distutils-r1_src_prepare
-	eapply_user
-}
-
-src_install() {
-	distutils-r1_src_install
-}
-
-pkg_preinst() {
-	gnome2_icon_savelist
-	gnome2_schemas_savelist
-}
-
-pkg_postinst() {
-	gnome2_icon_cache_update
-	gnome2_schemas_update
-	xdg_desktop_database_update
-}
-
-pkg_postrm() {
-	gnome2_icon_cache_update
-	gnome2_schemas_update
-	xdg_desktop_database_update
+	default
+	# Patch documentation paths
+	einfo "Patch documentation path in ${S}/setup.py"
+	sed -i 's:share/doc/onboard:share/doc/'${P}':g' "${S}/setup.py"
 }

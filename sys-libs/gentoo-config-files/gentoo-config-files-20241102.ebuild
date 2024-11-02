@@ -6,7 +6,7 @@ EAPI=7
 DESCRIPTION="Misc confirugation files for Gentoo on Nintendo Switch"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-config-files"
 
-COMMIT="87e2b47443ee3a691ff629954095cca8f323170f"
+COMMIT="72c44bd2481e3b5e7303c1ff31a05b9fe6df178a"
 SRC_URI="$HOMEPAGE/-/archive/${COMMIT}/${PN}.zip -> ${P}.zip"
 
 RESTRICT="mirror"

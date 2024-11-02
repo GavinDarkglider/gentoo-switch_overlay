@@ -1,0 +1,39 @@
+--- a/c10/util/Registry.h
++++ b/c10/util/Registry.h
+@@ -21,6 +21,7 @@
+ 
+ #include <c10/macros/Macros.h>
+ #include <c10/util/Type.h>
++#include <stdexcept>
+ 
+ namespace c10 {
+ 
+--- a/torch/csrc/jit/passes/quantization/quantization_type.h
++++ b/torch/csrc/jit/passes/quantization/quantization_type.h
+@@ -1,5 +1,6 @@
+ #pragma once
+ #include <ostream>
++#include <cstdint>
+ 
+ namespace torch {
+ namespace jit {
+--- a/torch/csrc/jit/runtime/logging.cpp
++++ b/torch/csrc/jit/runtime/logging.cpp
+@@ -1,6 +1,7 @@
+ #include <torch/csrc/jit/runtime/logging.h>
+ 
+ #include <atomic>
++#include <stdexcept>
+ #include <mutex>
+ #include <unordered_map>
+ 
+--- a/torch/csrc/lazy/core/multi_wait.cpp
++++ b/torch/csrc/lazy/core/multi_wait.cpp
+@@ -1,6 +1,7 @@
+ #include <torch/csrc/lazy/core/multi_wait.h>
+ 
+ #include <chrono>
++#include <stdexcept>
+ #include <exception>
+ 
+ namespace torch {

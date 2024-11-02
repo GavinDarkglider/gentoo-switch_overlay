@@ -1,0 +1,11 @@
+--- a/torch/utils/cpp_extension.py
++++ b/torch/utils/cpp_extension.py
+@@ -49,7 +49,7 @@
+ # summarizes the minimum valid major versions of g++/clang++ for each supported
+ # CUDA version: https://gist.github.com/ax3l/9489132
+ CUDA_GCC_VERSIONS = {
+-    '10.2': (MINIMUM_GCC_VERSION, (8, 0, 0)),
++    '10.2': (MINIMUM_GCC_VERSION, (8, 5, 0)),
+     '11.1': (MINIMUM_GCC_VERSION, (10, 0, 0)),
+     '11.2': (MINIMUM_GCC_VERSION, (10, 2, 1)),
+     '11.3': (MINIMUM_GCC_VERSION, (10, 2, 1)),

@@ -7,6 +7,6 @@
 # Portage sync - modified
 =dev-qt/qtcore-5.15.14
 =dev-libs/libmanette-0.2.7
-=net-wireless/bluez-5.77
 =net-wireless/bluez-5.78
+=net-wireless/bluez-5.79
 =sys-kernel/installkernel-48-r1

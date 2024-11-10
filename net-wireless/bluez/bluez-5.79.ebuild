@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-PYTHON_COMPAT=( python3_{9..13} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit autotools flag-o-matic linux-info python-single-r1 systemd udev multilib-minimal #readme.gentoo-r1
 
@@ -12,8 +12,8 @@ SRC_URI="https://www.kernel.org/pub/linux/bluetooth/${P}.tar.xz"
 
 LICENSE="GPL-2+ LGPL-2.1+"
 SLOT="0/3"
-KEYWORDS="arm64"
-IUSE="btpclient cups doc debug deprecated extra-tools experimental +mesh midi +obex +readline selinux systemd test test-programs +udev"
+KEYWORDS="~arm64"
+IUSE="btpclient cups doc debug deprecated extra-tools experimental man +mesh midi +obex +readline selinux systemd test test-programs +udev"
 
 # Since this release all remaining extra-tools need readline support, but this could
 # change in the future, hence, this REQUIRED_USE constraint could be dropped
@@ -33,8 +33,8 @@ TEST_DEPS="${PYTHON_DEPS}
 	')
 "
 BDEPEND="
-	dev-python/docutils
 	virtual/pkgconfig
+	man? ( dev-python/docutils )
 	test? ( ${TEST_DEPS} )
 "
 DEPEND="
@@ -68,6 +68,13 @@ PATCHES=(
 	# https://bugs.gentoo.org/539844
 	# https://github.com/bluez/bluez/issues/268
 	"${FILESDIR}"/${PN}-udevadm-path-r1.patch
+
+	# https://github.com/bluez/bluez/commit/9d69dba21f1e46b34cdd8ae27fec11d0803907ee
+	"${FILESDIR}"/${P}-musl-gdbus.patch
+
+	# https://bugs.gentoo.org/928365
+	# https://github.com/bluez/bluez/issues/726
+	"${FILESDIR}"/${PN}-disable-test-vcp.patch
 )
 
 pkg_setup() {
@@ -103,7 +110,7 @@ src_prepare() {
 	default
 
 	# https://github.com/bluez/bluez/issues/806
-	eapply "${FILESDIR}"/0001-Allow-using-obexd-without-systemd-in-the-user-session-r3.patch
+	eapply "${FILESDIR}"/0001-Allow-using-obexd-without-systemd-in-the-user-session-r4.patch
 
 	eautoreconf
 
@@ -139,7 +146,6 @@ multilib_src_configure() {
 		--enable-threads \
 		--enable-library \
 		--enable-tools \
-		--enable-manpages \
 		--enable-monitor \
 		--with-systemdsystemunitdir="$(systemd_get_systemunitdir)" \
 		--with-systemduserunitdir="$(systemd_get_userunitdir)" \
@@ -148,6 +154,7 @@ multilib_src_configure() {
 		$(multilib_native_use_enable cups) \
 		$(multilib_native_use_enable deprecated) \
 		$(multilib_native_use_enable experimental) \
+		$(multilib_native_use_enable man manpages) \
 		$(multilib_native_use_enable mesh) \
 		$(multilib_native_use_enable mesh external-ell) \
 		$(multilib_native_use_enable midi) \

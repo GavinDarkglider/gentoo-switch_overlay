@@ -26,10 +26,13 @@
 >dev-libs/ell-0.30-r1
 >net-libs/libpcap-1.9.1-r3
 >sys-apps/systemd-utils-253
+
 # 2023-08-18 - pidfd symbols not in kernel headers. https://bugs.gentoo.org/911375
 >sys-libs/glibc-2.36
+
 # 2023-08-18 - fails to build with glibc-2.35
 >sys-devel/gcc-12
+
 # 2024-10-23 - fails to build. Requires x25_hdlc_proto usage
 >sys-auth/elogind-247
 

@@ -1,15 +1,19 @@
-EAPI=7
+EAPI=8
 
 inherit udev
 
 DESCRIPTION="NVIDIA Jetson TX1 Accelerated Graphics Driver"
 HOMEPAGE="https://developer.nvidia.com/embedded/linux-tegra"
 
-SRC_URI="https://developer.nvidia.com/embedded/dlc/r32-3-1_Release_v1.0/t210ref_release_aarch64/Tegra210_Linux_R32.3.1_aarch64.tbz2"
+MARIKO_FIRMWARE_SOURCE="https://github.com/libretro/Lakka-LibreELEC/raw/adfb67ff3c36d9080138dd227b07052d5a2b013d/projects/L4T/devices/Switch/custom-tegra-firmware"
+MARIKO_FIRMWARE_VERSION="lakka-5.0"
+
+SRC_URI="https://developer.nvidia.com/embedded/l4t/r32_release_v7.1/t210/jetson-210_linux_r32.7.1_aarch64.tbz2
+${MARIKO_FIRMWARE_SOURCE}/tegra210b01_xusb_firmware -> tegra210b01_xusb_firmware-${MARIKO_FIRMWARE_VERSION}.bin"
 
 SLOT="0"
-KEYWORDS="-* arm64"
-IUSE="alsa doc +egl firmware gstreamer usb-device vulkan X v4l pulseaudio"
+KEYWORDS="-* ~arm64"
+IUSE="alsa doc +egl firmware gstreamer usb-device vulkan wayland X v4l pulseaudio"
 RESTRICT="preserve-libs mirror"
 
 DEPEND="app-arch/bzip2
@@ -17,9 +21,8 @@ DEPEND="app-arch/bzip2
 
 RDEPEND="
 	X? ( <x11-base/xorg-server-21 )
-	egl? ( x11-libs/libdrm[video_cards_tegra] )
-	gstreamer? ( media-libs/gst-plugins-bad
-            media-libs/gst-plugins-ugly )
+	egl? ( >media-libs/mesa-21.1 x11-libs/libdrm[video_cards_tegra] )
+	gstreamer? ( media-libs/gst-plugins-bad media-libs/gst-plugins-ugly )
 	vulkan? ( media-libs/vulkan-loader )
 	v4l? ( =media-libs/libv4l-1.18.0[video_cards_tegra] )"
 
@@ -50,23 +53,20 @@ src_prepare() {
 	cd "${S}"/usr/lib/aarch64-linux-gnu/
 
 	use egl       || rm -rv tegra-egl \
-					 tegra/libnvvulkan-producer.so* \
-	                 gstreamer-1.0/libgstnvcompositor.so gstreamer-1.0/libgstnveglglessink.so
+		tegra/libnvvulkan-producer.so* \
+		gstreamer-1.0/libgstnvcompositor.so gstreamer-1.0/libgstnveglglessink.so
 	use gstreamer || rm -rv gstreamer-1.0 tegra/libnvdsbufferpool.so*
 	use vulkan    || rm -v tegra/lib*vulkan*so*
 
-	use v4l       || rm -r tegra/libnvv4l*.so* tegra/libv4l2*.so* tegra/libtegrav4l2.so libv4l
+	#Remove in favor of our in tree built version
+	rm -v tegra/libnvv4l*.so*
+	rm -v libv4lconvert.so*
+	rm -v libv4l2.so*
+	rm -rv libv4l
 
-    #Remove useless egl stuff, we will build upstream with special patches.
-    #rm -v tegra/libnvidia-egl-wayland.so*
-    #rm -v ../../share/egl/egl_external_platform.d/nvidia_wayland.json
+	use v4l       || rm -r  tegra/libv4l2*.so* tegra/libtegrav4l2.so
 
 	if use v4l; then
-		#Remove in favor of our in tree built version 
-		rm -v tegra/libnvv4l*.so*
-		rm -v libv4lconvert.so*
-		rm -v libv4l2.so*
-		rm -r libv4l
 		mkdir -p libv4l/plugins
 		mv tegra/libv4l2_nvvideocodec.so libv4l/plugins/
 		mv tegra/libv4l2_nvvidconv.so libv4l/plugins/
@@ -74,61 +74,16 @@ src_prepare() {
 		mv tegra/libtegrav4l2.so ./
 	fi
 
+	#Remove useless egl stuff, we will build upstream with special patches.
+	use wayland      || rm -v tegra/libnvidia-egl-wayland.so* \
+		../../share/egl/egl_external_platform.d/nvidia_wayland.json \
+		gstreamer-1.0/libgstnveglglessink.so \
+		tegra/libnvvulkan-producer.so
+
 	rm -v "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/ld.so.conf
 	eapply_user
 }
 
-
-#my_do_lib_recursive() {
-	# $1 is the source / target path
-	# $2 is the path for additional symlinks
-#	for f in "$1"/*; do
-#		if [ -h "${f}" ]; then
-#			target="$(readlink "${f}")"
-#			if [[ "$target" = /* ]]; then
-#				relative="$(realpath --relative-to=/"$(dirname "${f}")" /"$(dirname "$target")")"
-#				if [ "$relative" == '.' ]; then
-#					dosym "$(basename "$target")" "${f}"
-#				else
-#					dosym "$relative/$(basename "$target")" "${f}"
-#				fi
-#			else
-#				dosym "$target" "${f}"
-#			fi
-#			# Compatibility symlink at original location
-#			relative="$(realpath --relative-to="/$2" "/$1")"
-#			dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
-#
-#		elif [ -f "${f}" ]; then
-#			if [ -n "$(echo "$f" | grep -e [.]so[.] -e [.]so$)" ]
-#			then
-#				insinto "$1"
-#				doins "${f}"
-#				# Compatibility symlink at original location
-#				relative="$(realpath --relative-to="/$2" "/$1")"
-#				dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
-#			elif [ -x "${f}" ]
-#			then
-#				exeinto "$1"
-#				doexe "${f}"
-#			else
-#				insinto "$1"
-#				doins "${f}"
-#			fi
-#
-#		elif [ -d "${f}" ]; then
-#			if [ "$(basename "${f}")" == 'gstreamer-1.0' ] ; then
-#				my_do_lib_recursive "${f}" "${2}/gstreamer-1.0"
-#			else
-#				my_do_lib_recursive "${f}" "${2}"
-#				relative="$(realpath --relative-to="/$2" "/$1")"
-#				dosym "$relative/$(basename "${f}")" "$2"/"$(basename "${f}")"
-#			fi
-#		else
-#			ewarn "skipped broken file in my_do_lib_recursive ${f}"
-#		fi
-#	done
-#}
 
 my_do_lib_recursive() {
 	# $1 is the source path
@@ -176,7 +131,7 @@ src_install() {
 
 	# Missed soname links
 	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
-	dosym libnvidia-ptxjitcompiler.so.32.3.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
+	dosym libnvidia-ptxjitcompiler.so.440.18 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
 	dosym libdrm_nvdc.so /usr/lib64/libdrm.so.2
 
 	#EGL Config
@@ -201,6 +156,10 @@ src_install() {
 	if use firmware; then
 		insinto /lib
 		doins -r lib/firmware || die "Install failed!"
+		insinto /lib/firmware
+		newins "${DISTDIR}"/tegra210b01_xusb_firmware-"${MARIKO_FIRMWARE_VERSION}".bin tegra210b01_xusb_firmware
+		dosym /lib/firmware/tegra21x/nv_acr_ucode_prod.bin /lib/firmware/tegra21x/acr_ucode.bin
+		dosym /lib/firmware/tegra21x/nv_acr_ucode_prod.bin /lib/firmware/gm20b/acr_ucode.bin
 	fi
 
 	if use usb-device; then
@@ -229,8 +188,8 @@ pkg_postinst() {
 
 	ldconfig
 	if use pulseaudio && ! [[ -f /etc/asound.conf ]]; then
-               einfo "No /etc/asound.conf found, create default Pulseaudio asound.conf"
-               cat << EOF >> /etc/asound.conf
+		einfo "No /etc/asound.conf found, create default Pulseaudio asound.conf"
+		cat << EOF >> /etc/asound.conf
 # This file is referred to from files in /usr/share/alsa/alsa.conf.d/ in order
 # to set up the pulse device as the default if required.
 

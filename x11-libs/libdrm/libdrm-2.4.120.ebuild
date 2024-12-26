@@ -38,6 +38,7 @@ RDEPEND="${COMMON_DEPEND}
 		tools? ( >=dev-util/cunit-2.1 )
 		test?  ( >=dev-util/cunit-2.1 )
 	)
+	video_cards_tegra? ( sys-libs/jetson-tx1-drivers )
 	udev? ( virtual/udev )"
 BDEPEND="${PYTHON_DEPS}
 	$(python_gen_any_dep 'dev-python/docutils[${PYTHON_USEDEP}]')"

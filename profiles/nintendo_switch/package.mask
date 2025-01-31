@@ -60,6 +60,9 @@
 # The previous versions are not secure! See https://bugs.gentoo.org/930116
 >=net-libs/webkit-gtk-2.43
 
+# 31.01.2025 - bell07 - break build of old net-libs/webkit-gtk-2.42.5-r600::switch
+>dev-libs/icu-76
+
 # 29.08.2024 - bell07 - requires glibc >= 2.38
 >sys-apps/shadow-4.14.2
 

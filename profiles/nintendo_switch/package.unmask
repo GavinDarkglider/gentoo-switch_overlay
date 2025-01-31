@@ -5,9 +5,8 @@
 =media-tv/v4l-utils-1.18.0
 
 # Portage sync - modified
-=dev-qt/qtcore-5.15.14
 =dev-qt/qtcore-5.15.16
 =dev-libs/libmanette-0.2.7
 =net-wireless/bluez-5.78
 =net-wireless/bluez-5.79
-=sys-kernel/installkernel-48-r1
+=sys-kernel/installkernel-50

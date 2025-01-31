@@ -1,4 +1,4 @@
-# Copyright 2019-2024 Gentoo Authors
+# Copyright 2019-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -227,8 +227,9 @@ pkg_postinst() {
 	fi
 
 	# Initialize log file if there is none
+	dodir /var/log
 	local log=${ROOT}/var/log/installkernel.log
-	if [[ ! -f ${log} ]]; then
+	if [[ ! -s ${log} ]]; then
 		echo -e \
 "DATE\t"\
 "KI_VENDOR\t"\

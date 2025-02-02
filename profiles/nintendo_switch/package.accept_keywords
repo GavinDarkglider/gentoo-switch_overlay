@@ -2,7 +2,7 @@
 
 #Bookworm dependencies
 dev-libs/granite *
-dev-python/html2text *
+dev-python/html2text ~arm64
 
 #wayland dependencies
 gui-libs/egl-wayland ~arm64
@@ -11,4 +11,7 @@ gui-libs/eglexternalplatform ~arm64
 x11-drivers/xf86-input-joystick ~arm64
 
 #Gnome
-gnome-base/gnome-light *
+gnome-base/gnome-light ~arm64
+
+# 2025-02-01. Stable 2.40.2 does not build
+=sys-apps/util-linux-2.40.4 ~arm64

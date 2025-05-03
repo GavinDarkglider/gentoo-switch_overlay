@@ -36,7 +36,7 @@ esac
 if [[ -z ${_KERNEL_BUILD_ECLASS} ]]; then
 _KERNEL_BUILD_ECLASS=1
 
-PYTHON_COMPAT=( python3_{10..13} )
+PYTHON_COMPAT=( python3_{11..13} )
 if [[ ${KERNEL_IUSE_MODULES_SIGN} ]]; then
 	inherit secureboot
 fi
@@ -207,6 +207,7 @@ kernel-build_src_configure() {
 	tc-export_build_env
 	MAKEARGS=(
 		V=1
+		WERROR=0
 
 		HOSTCC="$(tc-getBUILD_CC)"
 		HOSTCXX="$(tc-getBUILD_CXX)"
@@ -741,18 +742,19 @@ kernel-build_merge_configs() {
 	fi
 
 	if [[ ${KERNEL_IUSE_MODULES_SIGN} ]] && use modules-sign; then
+		local modules_sign_key=${MODULES_SIGN_KEY}
 		if [[ -n ${MODULES_SIGN_KEY_CONTENTS} ]]; then
-			(umask 066 && touch "${T}/kernel_key.pem" || die)
-			echo "${MODULES_SIGN_KEY_CONTENTS}" > "${T}/kernel_key.pem" || die
+			modules_sign_key="${T}/kernel_key.pem"
+			(umask 066 && touch "${modules_sign_key}" || die)
+			echo "${MODULES_SIGN_KEY_CONTENTS}" > "${modules_sign_key}" || die
 			unset MODULES_SIGN_KEY_CONTENTS
-			export MODULES_SIGN_KEY="${T}/kernel_key.pem"
 		fi
-		if [[ ${MODULES_SIGN_KEY} == pkcs11:* || -r ${MODULES_SIGN_KEY} ]]; then
-			echo "CONFIG_MODULE_SIG_KEY=\"${MODULES_SIGN_KEY}\"" \
+		if [[ ${modules_sign_key} == pkcs11:* || -r ${modules_sign_key} ]]; then
+			echo "CONFIG_MODULE_SIG_KEY=\"${modules_sign_key}\"" \
 				>> "${WORKDIR}/modules-sign-key.config"
 			merge_configs+=( "${WORKDIR}/modules-sign-key.config" )
-		elif [[ -n ${MODULES_SIGN_KEY} ]]; then
-			die "MODULES_SIGN_KEY=${MODULES_SIGN_KEY} not found or not readable!"
+		elif [[ -n ${modules_sign_key} ]]; then
+			die "MODULES_SIGN_KEY=${modules_sign_key} not found or not readable!"
 		fi
 	fi
 

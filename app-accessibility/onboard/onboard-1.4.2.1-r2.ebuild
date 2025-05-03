@@ -7,17 +7,16 @@ DISTUTILS_USE_PEP517=setuptools
 DISTUTILS_EXT=1
 PYTHON_COMPAT=( python3_{8..12} )
 
-inherit distutils-r1
+inherit distutils-r1 gnome2-utils xdg
 
 DESCRIPTION="An onscreen keyboard useful for tablet PC users and for mobility impaired users"
 HOMEPAGE="https://launchpad.net/onboard"
 SRC_URI="https://github.com/dr-ni/${PN}/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz"
 
-
 # po/* are licensed under BSD 3-clause
 LICENSE="GPL-3+ BSD"
 SLOT="0"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 IUSE="+accessibility debug"
 
 COMMON_DEPEND="app-text/hunspell:=
@@ -53,4 +52,14 @@ src_prepare() {
 	# Patch documentation paths
 	einfo "Patch documentation path in ${S}/setup.py"
 	sed -i 's:share/doc/onboard:share/doc/'${P}':g' "${S}/setup.py"
+}
+
+pkg_postinst() {
+	xdg_pkg_postinst
+	gnome2_schemas_update
+}
+
+pkg_postrm() {
+	xdg_pkg_postrm
+	gnome2_schemas_update
 }

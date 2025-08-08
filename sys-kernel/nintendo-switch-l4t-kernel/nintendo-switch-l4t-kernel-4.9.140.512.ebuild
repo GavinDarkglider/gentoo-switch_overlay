@@ -81,6 +81,7 @@ src_prepare() {
 	eapply "${FILESDIR}"/03-nvidia_drivers_actmon_add__init_annotation_to_tegra_actmon_register.patch
 	eapply "${FILESDIR}"/04-nvidia_drivers_eventlib_use_existing_kernel_sync_bitops.patch
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch
+	eapply "${FILESDIR}"/06-add_wan_hdlc_x25.patch
 
 	emake tegra_linux_defconfig
 	EXTRAVERSION=".${ADD_VERSION}${KV_LOCALVERSION}"

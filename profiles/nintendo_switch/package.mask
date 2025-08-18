@@ -1,3 +1,10 @@
+# Since no overlay masks are supported in profile, the whole package is masked.
+# The replaced versions in this overlay are unmasked by package.unmask
+dev-qt/qtcore
+net-wireless/bluez
+sys-kernel/installkernel
+sys-libs/glibc
+
 # Mask all portage versions
 <sys-kernel/linux-headers-9999
 
@@ -22,20 +29,6 @@
 # Use version in overlay
 >media-video/ffmpeg-4.4.9999
 
-# Downgrade because of old linux headers from l4t kernel
->dev-libs/ell-0.30-r1
->net-libs/libpcap-1.9.1-r3
->sys-apps/systemd-utils-253
-
-# 2023-08-18 - pidfd symbols not in kernel headers. https://bugs.gentoo.org/911375
->sys-libs/glibc-2.36
-
-# 2023-08-18 - fails to build with glibc-2.35
->sys-devel/gcc-12
-
-# 2024-10-23 - fails to build. Requires x25_hdlc_proto usage
->sys-auth/elogind-247
-
 #Audio Stuff
 >media-libs/alsa-lib-1.2.4
 >media-libs/alsa-topology-conf-1.2.4
@@ -56,23 +49,6 @@
 >net-misc/networkmanager-1.44.2
 >gnome-extra/nm-applet-1.34.0
 
-# 2024-08-19 Last buildeable version
-# The previous versions are not secure! See https://bugs.gentoo.org/930116
->=net-libs/webkit-gtk-2.43
-
-# 31.01.2025 - bell07 - break build of old net-libs/webkit-gtk-2.42.5-r600::switch
->dev-libs/icu-76
-
-# 29.08.2024 - bell07 - requires glibc >= 2.38
->sys-apps/shadow-4.14.2
-
-# Since no overlay masks are supported in profile, the whole package is masked.
-# The replaced versions in this overlay are unmasked by package.unmask
-dev-qt/qtcore
-dev-libs/libmanette
-net-wireless/bluez
-sys-kernel/installkernel
-
 # 13.01.2024 - bell07 - does not build.
 # https://gitlab.com/switchroot/bootstack/switch-uboot/-/issues/2
 # Masked till the issue is solved. Use the sys-boot/switchroot-bootstack[ubuntu-bl33] instead
@@ -82,5 +58,6 @@ sys-boot/nintendo-switch-u-boot
 # Abadoned. Please use sys-libs/switch-l4t-configs[dock-handler] instead
 x11-misc/dock-hotplug
 
-# 19.12.2024 - bell07 - cannot find old X11. media-libs/freeglut fails to build with this cmake for example
->dev-build/cmake-3.30
+# 09.08.2025 - bell07 - Does not build. manette-evdev-backend.c:142:39: error: ‘struct input_event’ has no member named ‘input_event_usec’
+# Existing patch fix-4.x-kernel-evdev.patch needs to be enhanced to patch manette-evdev-backend.c
+>dev-libs/libmanette-0.2.7

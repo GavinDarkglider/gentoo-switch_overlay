@@ -37,9 +37,11 @@ pkg_setup() {
 }
 
 src_prepare() {
+	# This patch is required if older glibc ≤ 2.32
+	#  "${FILESDIR}"/0002-Replace-stat-fstat-calls-with-__xstat-__fxstat.patch \
+
 	if use video_cards_tegra; then
 		PATCHES+=( "${FILESDIR}"/0001-Make-plugin-directory-relative-to-ORIGIN.patch \
-                           "${FILESDIR}"/0002-Replace-stat-fstat-calls-with-__xstat-__fxstat.patch \
                            "${FILESDIR}"/0003-Update-conversion-defaults-to-match-NVIDIA-sources.patch )
 	fi
 	default
@@ -58,6 +60,7 @@ multilib_src_configure() {
 }
 
 multilib_src_compile() {
+	CFLAGS+=" -Wno-unused-result -Wno-implicit-function-declaration"
 	emake -C lib
 }
 

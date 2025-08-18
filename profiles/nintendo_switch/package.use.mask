@@ -8,6 +8,3 @@ net-wireless/bluez btpclient mesh
 
 # Not supported on switch
 sys-kernel/installkernel efistub grub refind uki ukify
-
-# 2024-11-24 - requires net-libs/libqrtr-glib that does not build
-net-misc/networkmanager modemmanager

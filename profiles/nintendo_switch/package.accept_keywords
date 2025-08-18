@@ -12,6 +12,3 @@ x11-drivers/xf86-input-joystick ~arm64
 
 #Gnome
 gnome-base/gnome-light ~arm64
-
-# 2025-02-01. Stable 2.40.2 does not build
-=sys-apps/util-linux-2.40.4 ~arm64

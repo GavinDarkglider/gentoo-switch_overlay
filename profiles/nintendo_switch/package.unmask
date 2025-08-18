@@ -1,7 +1,5 @@
 # Portage sync - modified
 =dev-qt/qtcore-5.15.17
-=net-wireless/bluez-5.79
-=net-wireless/bluez-5.82
 =sys-apps/shadow-4.14.8
 =sys-kernel/installkernel-50
 =sys-libs/glibc-2.41-r5

@@ -1,7 +1,6 @@
 # Since no overlay masks are supported in profile, the whole package is masked.
 # The replaced versions in this overlay are unmasked by package.unmask
 dev-qt/qtcore
-net-wireless/bluez
 sys-kernel/installkernel
 sys-libs/glibc
 

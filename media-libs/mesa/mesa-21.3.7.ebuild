@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{10..12} )
+PYTHON_COMPAT=( python3_{10..13} )
 
 inherit flag-o-matic llvm meson-multilib python-any-r1 linux-info
 
@@ -16,7 +16,7 @@ if [[ ${PV} == 9999 ]]; then
 	EGIT_REPO_URI="https://gitlab.freedesktop.org/mesa/mesa.git"
 	inherit git-r3
 else
-	SRC_URI="https://archive.mesa3d.org/${MY_P}.tar.xz"
+	SRC_URI="https://archive.mesa3d.org/older-versions/21.x/${MY_P}.tar.xz"
 	KEYWORDS="arm64"
 fi
 
@@ -141,11 +141,11 @@ RDEPEND="${RDEPEND}
 LLVM_MAX_SLOT="13"
 LLVM_DEPSTR="
 	|| (
-		sys-devel/llvm:13[${MULTILIB_USEDEP}]
-		sys-devel/llvm:12[${MULTILIB_USEDEP}]
-		sys-devel/llvm:11[${MULTILIB_USEDEP}]
+		llvm-core/llvm:13[${MULTILIB_USEDEP}]
+		llvm-core/llvm:12[${MULTILIB_USEDEP}]
+		llvm-core/llvm:11[${MULTILIB_USEDEP}]
 	)
-	<sys-devel/llvm-$((LLVM_MAX_SLOT + 1)):=[${MULTILIB_USEDEP}]
+	<llvm-core/llvm-$((LLVM_MAX_SLOT + 1)):=[${MULTILIB_USEDEP}]
 "
 LLVM_DEPSTR_AMDGPU=${LLVM_DEPSTR//]/,llvm_targets_AMDGPU(-)]}
 CLANG_DEPSTR=${LLVM_DEPSTR//llvm/clang}
@@ -246,9 +246,9 @@ llvm_check_deps() {
 	fi
 
 	if use opencl; then
-		has_version "sys-devel/clang:${LLVM_SLOT}[${flags}]" || return 1
+		has_version "llvm-core/clang:${LLVM_SLOT}[${flags}]" || return 1
 	fi
-	has_version "sys-devel/llvm:${LLVM_SLOT}[${flags}]"
+	has_version "llvm-core/llvm:${LLVM_SLOT}[${flags}]"
 }
 
 pkg_pretend() {
@@ -327,8 +327,8 @@ python_check_deps() {
 
 pkg_setup() {
 	# warning message for bug 459306
-	if use llvm && has_version sys-devel/llvm[!debug=]; then
-		ewarn "Mismatch between debug USE flags in media-libs/mesa and sys-devel/llvm"
+	if use llvm && has_version llvm-core/llvm[!debug=]; then
+		ewarn "Mismatch between debug USE flags in media-libs/mesa and llvm-core/llvm"
 		ewarn "detected! This can cause problems. For details, see bug 459306."
 	fi
 

@@ -27,7 +27,7 @@ RDEPEND=">=media-libs/libv4l-${PV}[jpeg]
 	!<media-tv/ivtv-utils-1.4.0-r2"
 DEPEND="${RDEPEND}"
 BDEPEND="
-	bpf? ( sys-devel/clang:*[llvm_targets_BPF] )
+	bpf? ( llvm-core/clang:*[llvm_targets_BPF] )
 	sys-devel/gettext
 	virtual/pkgconfig"
 

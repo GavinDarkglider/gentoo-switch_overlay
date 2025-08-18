@@ -24,9 +24,7 @@ LANGS=( cs da de es fi fr hu id it ja ko pl pt_BR ru sv tr zh_CN zh_TW )
 
 REQUIRED_USE="?? ( cracklib pam )"
 
-# TODO: Revisit libbsd dep once glibc-2.28 is stable as it provides strlcpy.
 COMMON_DEPEND="
-	dev-libs/libbsd
 	virtual/libcrypt:=
 	acl? ( sys-apps/acl:= )
 	audit? ( >=sys-process/audit-2.6:= )
@@ -40,6 +38,7 @@ COMMON_DEPEND="
 	)
 	systemd? ( sys-apps/systemd:= )
 	xattr? ( sys-apps/attr:= )
+	!<sys-libs/glibc-2.38
 "
 DEPEND="
 	${COMMON_DEPEND}
@@ -76,8 +75,8 @@ src_configure() {
 		--disable-account-tools-setuid
 		--disable-static
 		--with-btrfs
-		# shadow uses a bundled copy of readpassphrase if --without-libbsd
-		--with-libbsd
+		# Use bundled replacements for readpassphrase and freezero
+		--without-libbsd
 		--without-group-name-max-length
 		--without-tcb
 		--with-bcrypt

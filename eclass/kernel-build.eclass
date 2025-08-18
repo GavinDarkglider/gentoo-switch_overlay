@@ -36,7 +36,7 @@ esac
 if [[ -z ${_KERNEL_BUILD_ECLASS} ]]; then
 _KERNEL_BUILD_ECLASS=1
 
-PYTHON_COMPAT=( python3_{11..13} )
+PYTHON_COMPAT=( python3_{11..14} )
 if [[ ${KERNEL_IUSE_MODULES_SIGN} ]]; then
 	inherit secureboot
 fi
@@ -47,6 +47,7 @@ BDEPEND="
 	${PYTHON_DEPS}
 	app-alternatives/cpio
 	app-alternatives/bc
+	app-arch/tar
 	dev-lang/perl
 	sys-devel/bison
 	sys-devel/flex
@@ -226,6 +227,7 @@ kernel-build_src_configure() {
 		OBJCOPY="$(tc-getOBJCOPY)"
 		OBJDUMP="$(tc-getOBJDUMP)"
 		READELF="$(tc-getREADELF)"
+		TAR=gtar
 
 		# we need to pass it to override colliding Gentoo envvar
 		ARCH=$(tc-arch-kernel)
@@ -263,6 +265,9 @@ kernel-build_src_configure() {
 	# on the name of the output image. Set this variable to track this setting.
 	if grep -q "CONFIG_EFI_ZBOOT=y" .config; then
 		KERNEL_EFI_ZBOOT=1
+	elif { use arm64 || use riscv || use loong ;} &&
+		[[ ${KERNEL_IUSE_GENERIC_UKI} ]] && use generic-uki; then
+			die "USE=generic-uki requires enabling CONFIG_EFI_ZBOOT"
 	fi
 
 	mkdir -p "${WORKDIR}"/modprep || die
@@ -497,7 +502,15 @@ kernel-build_src_install() {
 	fi
 
 	if [[ ${KERNEL_IUSE_MODULES_SIGN} ]]; then
-		secureboot_sign_efi_file "${image}"
+		if [[ ${image} == *.gz ]]; then
+			# Backwards compatibility with pre-zboot images
+			gunzip "${image}" || die
+			secureboot_sign_efi_file "${image%.gz}"
+			# Use same gzip options as the kernel Makefile
+			gzip -n -f -9 "${image%.gz}" || die
+		else
+			secureboot_sign_efi_file "${image}"
+		fi
 	fi
 
 	if [[ ${KERNEL_IUSE_GENERIC_UKI} ]]; then
@@ -514,10 +527,10 @@ kernel-build_src_install() {
 				kernel-network-modules kernel-modules-extra lunmask lvm nbd
 				mdraid modsign network network-manager nfs nvdimm nvmf pcsc
 				pkcs11 plymouth qemu qemu-net resume rngd rootfs-block shutdown
-				systemd systemd-ac-power systemd-ask-password systemd-initrd
-				systemd-integritysetup systemd-pcrphase systemd-sysusers
-				systemd-udevd systemd-veritysetup terminfo tpm2-tss udev-rules
-				uefi-lib usrmount virtiofs
+				systemd systemd-ac-power systemd-ask-password systemd-cryptsetup
+				systemd-initrd systemd-integritysetup systemd-pcrphase
+				systemd-sysusers systemd-udevd systemd-veritysetup terminfo
+				tpm2-tss udev-rules uefi-lib usrmount virtiofs
 			)
 
 			local dracut_args=(

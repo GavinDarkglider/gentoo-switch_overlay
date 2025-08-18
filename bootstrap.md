@@ -144,7 +144,7 @@ Then, add `--allow 127.0.0.0/24"` in `/etc/conf.d/distccd` to DISTCCD_OPTS.
 
 ### Optional: Enable cross-distcc for llvm/clang compiler
 
-To enable cross-compiling in clang, set `USE=llvm_targets_AArch64` in make conf, or use the expand LLVM_TARGETS as you need. Recompile `sys-devel/clang` and `sys-devel/llvm` with the newly set USE flags.
+To enable cross-compiling in clang, set `USE=llvm_targets_AArch64` in make conf, or use the expand LLVM_TARGETS as you need. Recompile `llvm-core/clang` and `llvm-core/llvm` with the newly set USE flags.
 
 Gentoo does not set up cross-distcc configuration for clang yet. See https://bugs.gentoo.org/651908. To enable this feature, some symlinks are required. Please use [bell07's fix-clang-distcc.sh](https://github.com/bell07/bashscripts-switch_gentoo/blob/master/tools/fix-clang-distcc.sh) to create this links.
 This step needs to be repeated each llvm/clang upgrade.

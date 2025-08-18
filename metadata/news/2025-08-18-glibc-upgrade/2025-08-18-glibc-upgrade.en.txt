@@ -1,0 +1,22 @@
+Title: Glibc upgrade to the portage upstream version
+Author: Alexander Weber <web.alexander@web.de>
+Content-Type: text/plain
+Posted: 2025-08-18
+Revision: 1
+News-Item-Format: 1.0
+
+Using some backported patches for linux-headers the current stable
+sys-libs/glibc-2.41 is useable again for gentoo. The sys-libs/glibc 
+is copied into overlay because of some additional patches that disables
+some symbols not available in kernel.
+
+There is a risk to break the system! Please follow the next steps to
+avoid the break.
+
+1. Take a full backup of your installation, and hope not to need them
+2. Rebuild sys-kernel/linux-headers from overlay to get the backported
+   patches.
+3. Upgrade glibc
+4. Reboot
+5. Rebuild gcc and binutils
+6. Do emerge -e world (Recommended, but maybe optional)

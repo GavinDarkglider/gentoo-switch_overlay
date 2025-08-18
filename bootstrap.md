@@ -32,20 +32,16 @@ git clone https://gitlab.com/bell07/gentoo-switch_overlay /projects/switch_overl
 The crossdev toolchain need the same old version numbers like the target system.
 
  - Linux Headers: 4.9 like the switchroot kernel
- - Glibc: 2.35 is for kernel 5.19, but I did not noticed issues with them. Maybe we need to go to more older version
-- Gcc: 11 for old glibc compatibility
 
 Before setup check the curent versions for packages that you like to use. In my case I use 
 
 - sys-kernel/linux-headers-4.9-r1
-- sys-devel/gcc-11.5.0
-- sys-libs/glibc-2.35-r11
 
 Then build the toolchain for this versions:
 
 ```sh
 emerge crossdev
-crossdev -S --kernel 4.9-r1 --libc 2.35-r11 --gcc 11.5.0 -t aarch64-unknown-linux-gnu
+crossdev -S --kernel 4.9-r1 -t aarch64-unknown-linux-gnu
 ```
 
 If the toolchain is built, the toolchain packages are fixed to the given versions. To enable small updates if available (optional), the keywords and masks can be adjusted in `/etc/portage/package.accept_keywords/cross-aarch64-unknown-linux-gnu`
@@ -54,16 +50,14 @@ and `/etc/portage/package.mask/cross-aarch64-unknown-linux-gnu`
 My settings are:
 ```sh
 cross-aarch64-unknown-linux-gnu/binutils arm64 -amd64 -~amd64 # Stable version for arm64 only
-=cross-aarch64-unknown-linux-gnu/gcc-11* arm64 -amd64 -~amd64 # Stable 11* version for arm64 only
+cross-aarch64-unknown-linux-gnu/gcc arm64 -amd64 -~amd64 # Stable version for arm64 only
 =cross-aarch64-unknown-linux-gnu/linux-headers-4.9* ~arm64 -amd64 -~amd64  # Testing 4.9* version for arm64 only. There is no stable version :-(
-=cross-aarch64-unknown-linux-gnu/glibc-2.35* arm64 -amd64 -~amd64  # Stable 2.35* version for arm64 only
+cross-aarch64-unknown-linux-gnu/glibc arm64 -amd64 -~amd64  # Stable version for arm64 only
 cross-aarch64-unknown-linux-gnu/gdb arm64 -amd64 -~amd64 # Do not use it, but stable preferred
 ```
 
 ```sh
->cross-aarch64-unknown-linux-gnu/gcc-12
 >cross-aarch64-unknown-linux-gnu/linux-headers-4.10
->cross-aarch64-unknown-linux-gnu/glibc-2.36
 ```
 
 
@@ -151,7 +145,10 @@ This step needs to be repeated each llvm/clang upgrade.
 
 
 # Prepare the the target system skeleton
-Because no up-to date stage3 is available for older glibc, we start with empty folder and build the stage from scratch.
+In the past, we used the old Glibc because there was no official Stage3 image. Therefore, the next steps describe building Stage3 from scratch.
+In the meantime, you can simply download the official Stage3 image and proceed with the next step "Configuring the Created Stage for QEMU/Chroot".
+
+
 For simplicity I create an folder `/gentoo-switch` This folder will contain target system files, I can use as buildhost or just to copy into root partition on SD-Card later.
 But at the first I go into this folder and create some folders, special /dev and portage configuration files as skeleton.
 

@@ -2,4 +2,9 @@
 =dev-qt/qtcore-5.15.17
 =sys-apps/shadow-4.14.8
 =sys-kernel/installkernel-50
+=sys-kernel/installkernel-60
+=sys-kernel/installkernel-62
+=sys-libs/glibc-2.40-r11
 =sys-libs/glibc-2.41-r5
+=sys-libs/glibc-2.42
+=sys-libs/glibc-9999

@@ -1411,7 +1411,7 @@ glibc_do_src_install() {
 	# Hacky version, just remove from target file before installation
 	sed -i \
 		-e "s:# define STATX_BASIC_STATS 0x07ffU::g" \
-		"${ED}"/usr/include/bits/statx-generic.h \
+		"${ED}"/"$(alt_headers)"/bits/statx-generic.h \
 		|| die "patching statx-generic.h failed"
 	# NSW old kernel end
 

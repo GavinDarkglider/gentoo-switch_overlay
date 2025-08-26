@@ -4,6 +4,7 @@
 =sys-kernel/installkernel-50
 =sys-kernel/installkernel-60
 =sys-kernel/installkernel-62
+=sys-kernel/installkernel-63
 =sys-libs/glibc-2.40-r11
 =sys-libs/glibc-2.41-r5
 =sys-libs/glibc-2.42

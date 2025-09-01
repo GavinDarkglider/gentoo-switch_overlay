@@ -17,7 +17,7 @@ KEYWORDS="amd64 arm64"
 RDEPEND="!app-eselect/eselect-nintendo-switch-dock-handler
          app-admin/sudo
          x11-apps/xrandr
-         media-sound/pulseaudio"
+         media-libs/libpulse"
 
 src_install() {
 	dobin dock-hotplug

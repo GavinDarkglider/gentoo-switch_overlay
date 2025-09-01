@@ -38,7 +38,6 @@ sys-libs/glibc
 # 2024-11-25 breaks audio swap in dock scripts. The profile name is changed
 >media-libs/libpulse-17
 >media-sound/pulseaudio-daemon-17
->media-sound/pulseaudio-17
 
 # Weston / wayland
 >dev-libs/weston-10.1.0

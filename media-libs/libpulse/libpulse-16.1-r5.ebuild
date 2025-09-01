@@ -44,7 +44,6 @@ RDEPEND="
 		x11-libs/libX11[${MULTILIB_USEDEP}]
 		>=x11-libs/libxcb-1.6[${MULTILIB_USEDEP}]
 	)
-	!<media-sound/pulseaudio-15.0-r100
 	!<media-sound/pulseaudio-daemon-16.1-r8
 "
 
@@ -68,7 +67,6 @@ PDEPEND="
 	|| (
 		media-video/pipewire[sound-server(+)]
 		media-sound/pulseaudio-daemon
-		media-sound/pulseaudio[daemon(+)]
 	)
 "
 

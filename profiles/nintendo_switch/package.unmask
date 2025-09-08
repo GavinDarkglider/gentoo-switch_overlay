@@ -7,5 +7,7 @@
 =sys-kernel/installkernel-63
 =sys-libs/glibc-2.40-r11
 =sys-libs/glibc-2.41-r5
+=sys-libs/glibc-2.41-r6
 =sys-libs/glibc-2.42
+=sys-libs/glibc-2.42-r1
 =sys-libs/glibc-9999

@@ -3,6 +3,7 @@
 dev-qt/qtcore
 sys-kernel/installkernel
 sys-libs/glibc
+x11-libs/libdrm
 
 # Mask all portage versions
 <sys-kernel/linux-headers-9999
@@ -13,9 +14,6 @@ sys-libs/glibc
 
 # Mesa
 >media-libs/mesa-21.4
-
-# 2024-08-16 bell07 - last buildeable version
->x11-libs/libdrm-2.4.120
 
 # 2023-10-14 Does not work with old xorg-server. Maybe can be solved by reverting
 # https://cgit.freedesktop.org/xorg/driver/xf86-input-libinput/commit/?id=94a52a848801ff035ec4d1c604dac7c90708e562
@@ -56,6 +54,9 @@ sys-boot/nintendo-switch-u-boot
 # Abadoned. Please use sys-libs/switch-l4t-configs[dock-handler] instead
 x11-misc/dock-hotplug
 
-# 09.08.2025 - bell07 - Does not build. manette-evdev-backend.c:142:39: error: ‘struct input_event’ has no member named ‘input_event_usec’
+# 09.08.2025 - bell07 - manette-evdev-backend.c:142:39: error: ‘struct input_event’ has no member named ‘input_event_usec’
 # Existing patch fix-4.x-kernel-evdev.patch needs to be enhanced to patch manette-evdev-backend.c
 >dev-libs/libmanette-0.2.7
+
+# 12.09.2025 - bell07 - error: use of undeclared identifier 'GBM_FORMAT_GR1616'
+>www-client/firefox-140

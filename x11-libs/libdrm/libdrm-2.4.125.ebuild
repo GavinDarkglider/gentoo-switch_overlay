@@ -1,10 +1,10 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
-EGIT_REPO_URI="https://gitlab.freedesktop.org/mesa/drm.git"
-PYTHON_COMPAT=( python3_{10..13} )
+EGIT_REPO_URI="https://gitlab.freedesktop.org/mesa/libdrm.git"
+PYTHON_COMPAT=( python3_{11..14} )
 
 if [[ ${PV} = 9999* ]]; then
 	GIT_ECLASS="git-r3"
@@ -26,7 +26,7 @@ done
 
 LICENSE="MIT"
 SLOT="0"
-IUSE="${IUSE_VIDEO_CARDS} test tools udev valgrind"
+IUSE="${IUSE_VIDEO_CARDS} doc test tools udev valgrind"
 RESTRICT="!test? ( test )"
 
 COMMON_DEPEND="
@@ -38,16 +38,12 @@ RDEPEND="${COMMON_DEPEND}
 		tools? ( >=dev-util/cunit-2.1 )
 		test?  ( >=dev-util/cunit-2.1 )
 	)
-	video_cards_tegra? ( sys-libs/jetson-tx1-drivers )
 	udev? ( virtual/udev )"
 BDEPEND="${PYTHON_DEPS}
-	$(python_gen_any_dep 'dev-python/docutils[${PYTHON_USEDEP}]')"
-
-PATCHES=( "${FILESDIR}/${PN}-2.4.120-backport-pr353.patch" )
-
-PATCHES=( "${FILESDIR}"/libdrm.patch )
+	doc? ( $(python_gen_any_dep 'dev-python/docutils[${PYTHON_USEDEP}]') )"
 
 python_check_deps() {
+	use doc || return 0
 	python_has_version "dev-python/docutils[${PYTHON_USEDEP}]"
 }
 
@@ -75,6 +71,7 @@ multilib_src_configure() {
 		# valgrind installs its .pc file to the pkgconfig for the primary arch
 		-Dvalgrind=$(usex valgrind auto disabled)
 		$(meson_native_use_bool tools install-test-programs)
+		$(meson_native_use_feature doc man-pages)
 	)
 
 	if use test || { multilib_is_native_abi && use tools; }; then

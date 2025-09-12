@@ -11,3 +11,5 @@
 =sys-libs/glibc-2.42
 =sys-libs/glibc-2.42-r1
 =sys-libs/glibc-9999
+=x11-libs/libdrm-2.4.125
+=x11-libs/libdrm-9999

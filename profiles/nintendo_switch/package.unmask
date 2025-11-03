@@ -1,15 +1,19 @@
 # Portage sync - modified
 =dev-qt/qtcore-5.15.17
+=dev-qt/qtcore-5.15.18
 =sys-apps/shadow-4.14.8
+=sys-apps/shadow-4.14.8-r1
 =sys-kernel/installkernel-50
 =sys-kernel/installkernel-60
 =sys-kernel/installkernel-62
 =sys-kernel/installkernel-63
+=sys-kernel/installkernel-64
+=sys-kernel/installkernel-9999
 =sys-libs/glibc-2.40-r11
-=sys-libs/glibc-2.41-r5
 =sys-libs/glibc-2.41-r6
-=sys-libs/glibc-2.42
 =sys-libs/glibc-2.42-r1
+=sys-libs/glibc-2.42-r2
 =sys-libs/glibc-9999
 =x11-libs/libdrm-2.4.125
+=x11-libs/libdrm-2.4.127
 =x11-libs/libdrm-9999

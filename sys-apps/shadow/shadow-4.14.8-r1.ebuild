@@ -17,7 +17,7 @@ SRC_URI+=" verify-sig? ( https://github.com/shadow-maint/shadow/releases/downloa
 LICENSE="BSD GPL-2"
 # Subslot is for libsubid's SONAME.
 SLOT="0/4"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 IUSE="acl audit cracklib nls pam selinux skey split-usr su systemd xattr"
 # Taken from the man/Makefile.am file.
 LANGS=( cs da de es fi fr hu id it ja ko pl pt_BR ru sv tr zh_CN zh_TW )

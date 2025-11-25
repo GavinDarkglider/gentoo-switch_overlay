@@ -3,7 +3,6 @@
 dev-qt/qtcore
 sys-kernel/installkernel
 sys-libs/glibc
-www-client/firefox
 x11-libs/libdrm
 
 # Mask all portage versions
@@ -13,8 +12,8 @@ x11-libs/libdrm
 >x11-base/xorg-drivers-21
 >x11-base/xorg-server-21
 
-# Mesa
->media-libs/mesa-21.4
+# https://www.phoronix.com/news/Mesa-25.2-Drops-DRI2-Bonfire
+>=media-libs/mesa-25.2
 
 # 2023-10-14 Does not work with old xorg-server. Maybe can be solved by reverting
 # https://cgit.freedesktop.org/xorg/driver/xf86-input-libinput/commit/?id=94a52a848801ff035ec4d1c604dac7c90708e562

@@ -12,15 +12,6 @@
 =sys-libs/glibc-2.41-r6
 =sys-libs/glibc-2.42-r2
 =sys-libs/glibc-9999
-=www-client/firefox-140.3.1
-=www-client/firefox-140.4.0
-=www-client/firefox-140.5.0
-=www-client/firefox-143.0.3
-=www-client/firefox-143.0
-=www-client/firefox-144.0.2
-=www-client/firefox-144.0-r1
-=www-client/firefox-145.0.1
-=www-client/firefox-145.0
 =x11-libs/libdrm-2.4.125
 =x11-libs/libdrm-2.4.127
 =x11-libs/libdrm-2.4.128

@@ -1,7 +1,7 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit cmake
 
@@ -18,8 +18,9 @@ fi
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~arm64"
-IUSE="+gtk systemd"
-RESTRICT="primaryuri"
+IUSE="daemon +gtk systemd"
+
+REQUIRED_USE="systemd? ( daemon )"
 
 RDEPEND="
 	dev-libs/libinput
@@ -42,6 +43,8 @@ DOCS=( "README.md" )
 src_configure() {
 	local mycmakeargs=(
 		-DAUTO_COLORS="$(usex gtk)"
+		# https://github.com/JoseExposito/touchegg/issues/481
+		-DUSE_SYSTEMD="$(usex systemd)"
 	)
 
 	cmake_src_configure
@@ -52,11 +55,22 @@ src_install() {
 
 	cmake_src_install
 
-	newinitd "${FILESDIR}"/touchegg.initd touchegg
+	if use daemon; then
+		if use systemd; then
+			systemd_dounit "${FILESDIR}/touchegg.service"
+		else
+			newinitd "${FILESDIR}/touchegg.initd" touchegg
+		fi
+	fi
 }
 
 pkg_postinst() {
-	elog "On update run: 'systemctl daemon-reload && systemctl restart touchegg'"
-	elog "See https://github.com/JoseExposito/touchegg#configuration for more information."
-	elog "For manual config, copy '/usr/share/${PN}/${PN}.conf' to '~/.config/${PN}'"
+	if use daemon; then
+		elog "On update, don't forget to restart the system daemon and userspace client"
+	else
+		elog "Not using system daemon; in addition to 'touchegg', you have to manually"
+		elog "run 'touchegg --daemon' as root or an user in the 'input' group"
+		elog "On update, don't forget to restart both"
+	fi
+	elog "See https://github.com/JoseExposito/touchegg#configuration for config information"
 }

@@ -1,4 +1,4 @@
-# Copyright 2019-2025 Gentoo Authors
+# Copyright 2019-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -16,7 +16,7 @@ S="${WORKDIR}/${PN}-gentoo-${PV}"
 
 LICENSE="GPL-2+"
 SLOT="0"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 IUSE="dracut efistub grub +nsw refind systemd systemd-boot ugrd uki ukify"
 
 PATCHES=( "${FILESDIR}"/add-nsw-install-60.patch )

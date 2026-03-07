@@ -60,3 +60,6 @@ x11-misc/dock-hotplug
 
 # 24.11.2025 - bell07 - requires =media-video/ffmpeg-6.1*
 >=media-video/ffmpegthumbnailer-2.2.3
+
+# 07.03.2026 - bell07 - error: 'ILA_ATTR_IDENT_TYPE' undeclared (is in kernel 5.13)
+>=dev-libs/libnl-3.12

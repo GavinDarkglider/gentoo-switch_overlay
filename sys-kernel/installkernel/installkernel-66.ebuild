@@ -1,4 +1,4 @@
-# Copyright 2019-2025 Gentoo Authors
+# Copyright 2019-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -10,17 +10,21 @@ HOMEPAGE="
 	https://github.com/projg2/installkernel-gentoo
 	https://wiki.gentoo.org/wiki/Installkernel
 "
-SRC_URI="https://github.com/projg2/installkernel-gentoo/archive/v${PV}.tar.gz
-	-> ${P}.tar.gz"
-S="${WORKDIR}/${PN}-gentoo-${PV}"
+
+if [[ ${PV} == 9999 ]]; then
+	inherit git-r3
+	EGIT_REPO_URI="https://github.com/projg2/installkernel-gentoo.git"
+else
+	SRC_URI="https://github.com/projg2/installkernel-gentoo/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+	S="${WORKDIR}/${PN}-gentoo-${PV}"
+	KEYWORDS="~arm64"
+fi
 
 LICENSE="GPL-2+"
 SLOT="0"
-KEYWORDS="~arm64"
 IUSE="dracut efistub grub +nsw refind systemd systemd-boot ugrd uki ukify"
 
 PATCHES=( "${FILESDIR}"/add-nsw-install-60.patch )
-
 REQUIRED_USE="
 	systemd-boot? ( systemd )
 	ukify? ( uki )
@@ -41,7 +45,7 @@ RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	nsw? ( >=sys-libs/gentoo-config-files-20240127-r1[installkernel] )
 	dracut? (
-		>=sys-kernel/dracut-108
+		>=sys-kernel/dracut-110
 		sys-libs/gentoo-config-files[initramfs]
 		uki? (
 			|| (
@@ -70,8 +74,8 @@ RDEPEND="
 	)
 	ukify? (
 		|| (
-			sys-apps/systemd[boot(-),ukify(-)]
-			sys-apps/systemd-utils[boot(-),ukify(-)]
+			>=sys-apps/systemd-256[boot(-),ukify(-)]
+			>=sys-apps/systemd-utils-256[boot(-),ukify(-)]
 		)
 	)
 	ugrd? ( >=sys-kernel/ugrd-1.31.2 )
@@ -98,6 +102,7 @@ src_install() {
 	keepdir /usr/lib/kernel/postinst.d
 
 	exeinto /usr/lib/kernel/preinst.d
+	doexe hooks/05-check-chroot.install
 	doexe hooks/99-check-diskspace.install
 	use dracut && doexe hooks/52-dracut.install
 	use ukify && doexe hooks/60-ukify.install
@@ -110,6 +115,8 @@ src_install() {
 
 	exeinto /usr/lib/kernel/install.d
 	doexe hooks/systemd/00-00machineid-directory.install
+	doexe hooks/systemd/05-check-chroot.install
+	doexe hooks/systemd/05-check-config.install
 	doexe hooks/systemd/10-copy-prebuilt.install
 	doexe hooks/systemd/85-check-diskspace.install
 	doexe hooks/systemd/90-compat.install

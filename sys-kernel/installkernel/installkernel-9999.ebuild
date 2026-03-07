@@ -1,4 +1,4 @@
-# Copyright 2019-2025 Gentoo Authors
+# Copyright 2019-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -45,7 +45,7 @@ RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	nsw? ( >=sys-libs/gentoo-config-files-20240127-r1[installkernel] )
 	dracut? (
-		>=sys-kernel/dracut-108-r3
+		>=sys-kernel/dracut-110
 		sys-libs/gentoo-config-files[initramfs]
 		uki? (
 			|| (

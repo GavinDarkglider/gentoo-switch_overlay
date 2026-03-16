@@ -63,3 +63,6 @@ x11-misc/dock-hotplug
 
 # 07.03.2026 - bell07 - error: 'ILA_ATTR_IDENT_TYPE' undeclared (is in kernel 5.13)
 >=dev-libs/libnl-3.12
+
+# 16.03.2026 - bell07 - error: ‘NS_GET_NSTYPE’ undeclared (is in kernel 4.11)
+>=sys-apps/systemd-utils-259.3

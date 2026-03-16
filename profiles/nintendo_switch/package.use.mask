@@ -8,3 +8,6 @@ sys-kernel/installkernel efistub grub refind uki ukify
 
 # Not Alternative to dracut, but NSW hooks not implemented yet
 sys-kernel/installkernel ugrd
+
+# Does not build in this version
+=media-video/ffmpeg-6.1.9999 vulkan

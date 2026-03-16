@@ -5,7 +5,7 @@ EAPI=8
 
 inherit flag-o-matic multilib-minimal toolchain-funcs
 
-FFMPEG_SUBSLOT=56.58.100 # avutil.avcodec.avformat SONAME
+FFMPEG_SUBSLOT=58.134.100 # avutil.avcodec.avformat SONAME
 
 EGIT_REPO_URI="https://gitlab.com/switchroot/switch-l4t-multimedia/FFmpeg.git"
 EGIT_BRANCH="4.4-nvv4l2"

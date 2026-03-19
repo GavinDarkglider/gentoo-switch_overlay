@@ -151,7 +151,15 @@ if [[ ${CATEGORY} == cross-* ]] ; then
 		>=${CATEGORY}/binutils-2.27
 		>=${CATEGORY}/gcc-6.2
 	)"
-	[[ ${CATEGORY} == *-linux* ]] && DEPEND+=" ${CATEGORY}/linux-headers"
+
+	case ${CATEGORY} in
+		*-linux*)
+			DEPEND+=" ${CATEGORY}/linux-headers"
+			;;
+		*-gnu)
+			DEPEND+=" ${CATEGORY}/gnumach[-headers-only]"
+			;;
+	esac
 else
 	BDEPEND+="
 		>=sys-devel/binutils-2.27
@@ -498,6 +506,16 @@ setup_flags() {
 
 	# #829583
 	filter-lfs-flags
+
+	case ${CTARGET} in
+		*-linux*)
+			;;
+		*-gnu)
+			# -g3 confuses MIG which relies on preprocessed input
+			replace-flags -ggdb[3-9] -ggdb2
+			replace-flags -g3 -g
+			;;
+	esac
 
 	unset CBUILD_OPT CTARGET_OPT
 	if use multilib ; then
@@ -992,6 +1010,9 @@ src_prepare() {
 		einfo "Applying Gentoo Glibc patchset ${patchsetname}"
 		eapply "${WORKDIR}"/patches
 		einfo "Done."
+
+		# TODO: Put into our patchset
+		eapply "${FILESDIR}"/glibc-2.43-hurd-link-helpers.patch
 	fi
 
 	case ${CTARGET} in
@@ -1104,7 +1125,6 @@ glibc_do_configure() {
 		--with-bugurl=https://bugs.gentoo.org/
 		--with-pkgversion="$(glibc_banner)"
 		$(use_multiarch || echo --disable-multi-arch)
-		$(use_enable systemtap)
 		$(use_enable nscd)
 
 		# /usr/bin/mtrace has a Perl shebang. Gentoo Prefix QA checks fail if
@@ -1129,6 +1149,12 @@ glibc_do_configure() {
 
 	# We rely on sys-libs/timezone-data for timezone tools normally.
 	myconf+=( $(use_enable vanilla timezone-tools) )
+
+	if is_crosscompile ; then
+		myconf+=( --disable-systemtap )
+	else
+		myconf+=( $(use_enable systemtap) )
+	fi
 
 	# These libs don't have configure flags.
 	ac_cv_lib_audit_audit_log_user_avc_message=$(usex audit || echo no)

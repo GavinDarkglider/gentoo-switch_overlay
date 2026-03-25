@@ -4,11 +4,10 @@
 
 # Portage sync - modified
 =dev-qt/qtcore-5.15.18
-=sys-apps/shadow-4.14.8
 =sys-apps/shadow-4.14.8-r1
 =sys-apps/shadow-4.14.8-r2
-=sys-apps/shadow-4.19.2
 =sys-apps/shadow-4.19.3
+=sys-apps/shadow-4.19.4
 =sys-kernel/installkernel-63
 =sys-kernel/installkernel-65
 =sys-kernel/installkernel-66

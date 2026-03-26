@@ -58,9 +58,6 @@ x11-misc/dock-hotplug
 # Existing patch fix-4.x-kernel-evdev.patch needs to be enhanced to patch manette-evdev-backend.c
 >dev-libs/libmanette-0.2.7
 
-# 24.11.2025 - bell07 - requires =media-video/ffmpeg-6.1*
->=media-video/ffmpegthumbnailer-2.2.3
-
 # 07.03.2026 - bell07 - error: 'ILA_ATTR_IDENT_TYPE' undeclared (is in kernel 5.13)
 >=dev-libs/libnl-3.12
 

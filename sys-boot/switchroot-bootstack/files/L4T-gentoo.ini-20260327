@@ -1,0 +1,10 @@
+[L4T Gentoo]
+l4t=1
+mainline=0
+boot_prefixes=/switchroot/gentoo/
+r2p_action=normal
+id=SWR-GEN
+fbconsole=0
+bootargs_extra=fbcon=rotate:3
+gentoo_bootpart=2
+gentoo_boot_dir=/boot

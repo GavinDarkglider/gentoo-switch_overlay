@@ -7,8 +7,9 @@ DESCRIPTION="Switchroot bootstack files"
 
 inherit sdcard-mount unpacker
 
-SRC_URI="https://gitlab.com/l4t-community/gnu-linux/switchroot-pipeline/-/jobs/artifacts/master/raw/switchroot-fedora-boot.zip?job=bootstack_full_fedora#/switchroot-fedora-boot.zip -> switchroot-fedora-boot-5.1.2.2.zip"
-
+SRC_URI="https://gitlab.com/l4t-community/gnu-linux/switchroot-pipeline/-/jobs/artifacts/master/raw/switchroot-fedora-boot.zip?job=bootstack_full_fedora#/switchroot-fedora-boot.zip -> switchroot-fedora-boot-20260327.zip"
+SRC_URI+=" https://gitlab.com/switchroot/bootstack/bootstack-build-scripts/-/raw/master/assets/Hekate-Icons/gentoo/icon_gentoo.bmp -> icon_gentoo.bmp-20210326"
+SRC_URI+=" https://gitlab.com/switchroot/bootstack/bootstack-build-scripts/-/raw/master/assets/Hekate-Icons/gentoo/icon_gentoo_hue.bmp -> icon_gentoo_hue.bmp-20210326"
 IUSE="+switchroot-bl33 switchroot-scr"
 
 # u-boot-tools required to build own scr
@@ -45,8 +46,8 @@ src_install() {
 	fi
 
 #	dodoc "${S}"/opt/switchroot/bootstack/README_CONFIG.txt
-#	doins bootlogo_gentoo.bmp
-#	doins icon_gentoo_hue_bmp
+	newins "${DISTDIR}"/icon_gentoo.bmp-20210326 icon_gentoo.bmp
+	newins "${DISTDIR}"/icon_gentoo_hue.bmp-20210326 icon_gentoo_hue.bmp
 }
 
 pkg_postinst() {

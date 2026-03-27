@@ -8,3 +8,5 @@ fbconsole=0
 bootargs_extra=fbcon=rotate:3
 gentoo_bootpart=2
 gentoo_boot_dir=/boot
+icon=switchroot/gentoo/icon_gentoo_hue.bmp
+logopath=switchroot/gentoo/icon_gentoo.bmp

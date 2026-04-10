@@ -393,6 +393,11 @@ setup_target_flags() {
 				# For compatibility with older binaries at slight performance cost.
 				use stack-realign && export CFLAGS_x86+=" -mstackrealign"
 			fi
+
+			if is_hurd ; then
+				# doesnt build with -march=native and probably other values, debugging required
+				filter-flags '-march=*'
+			fi
 		;;
 		mips)
 			# The mips abi cannot support the GNU style hashes. #233233
@@ -1417,7 +1422,7 @@ run_locale_gen() {
 	# number of processors saved in the environment of a binary package may
 	# differ strongly from the number of processes available during postinst
 	if [[ ${EMERGE_FROM} != binary ]]; then
-		localegen_args+=( --jobs "$(makeopts_jobs)" )
+		localegen_args+=( --jobs "$(get_makeopts_jobs)" )
 	fi
 
 	printf 'Executing: locale-gen %s\n' "${localegen_args[*]@Q}" >&2

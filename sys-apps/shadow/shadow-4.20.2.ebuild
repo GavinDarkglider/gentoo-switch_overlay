@@ -19,12 +19,13 @@ S="${WORKDIR}/${MY_P}"
 
 LICENSE="BSD GPL-2"
 # Subslot is for libsubid's SONAME.
-SLOT="0/5"
-KEYWORDS="arm64"
-IUSE="acl audit nls pam selinux skey split-usr su systemd test xattr"
+SLOT="0/6"
+KEYWORDS="~arm64"
+IUSE="acl audit nls pam selinux skey split-usr su systemd test"
 RESTRICT="!test? ( test )"
 
 COMMON_DEPEND="
+	acct-group/shadow
 	virtual/libcrypt:=
 	acl? ( sys-apps/acl:= )
 	audit? ( >=sys-process/audit-2.6:= )
@@ -36,21 +37,19 @@ COMMON_DEPEND="
 		sys-libs/libsemanage:=
 	)
 	systemd? ( sys-apps/systemd:= )
-	xattr? ( sys-apps/attr:= )
 	!<sys-libs/glibc-2.38
 "
 DEPEND="
 	${COMMON_DEPEND}
+	acl? ( sys-apps/attr )
 	kernel_linux? ( >=sys-kernel/linux-headers-4.14 )
 "
 RDEPEND="
 	${COMMON_DEPEND}
-	acct-group/shadow
 	pam? ( >=sys-auth/pambase-20150213 )
 	su? ( !sys-apps/util-linux[su(-)] )
 "
 BDEPEND="
-	acct-group/shadow
 	app-arch/xz-utils
 	sys-devel/gettext
 	test? ( dev-util/cmocka )
@@ -85,7 +84,6 @@ src_configure() {
 	local myeconfargs=(
 		# Negate new upstream default of disabling for now
 		--enable-lastlog
-		--disable-account-tools-setuid
 		--disable-static
 		$(use_with kernel_linux btrfs)
 		# Use bundled replacements for readpassphrase and freezero
@@ -104,7 +102,6 @@ src_configure() {
 		$(use_with selinux)
 		$(use_with skey)
 		$(use_with su)
-		$(use_with xattr attr)
 	)
 
 	econf "${myeconfargs[@]}"
@@ -154,8 +151,8 @@ src_configure() {
 src_install() {
 	emake DESTDIR="${D}" suidperms=4755 install
 
-	fowners :shadow /usr/bin/{chage,expiry}
-	fperms u-s,g+s /usr/bin/{chage,expiry}
+	fowners :shadow /usr/bin/chage
+	fperms u-s,g+s /usr/bin/chage
 
 	# 4.9 regression: https://github.com/shadow-maint/shadow/issues/389
 	emake DESTDIR="${D}" -C man install
@@ -185,17 +182,10 @@ src_install() {
 	fi
 
 	if use pam; then
-		dopamd "${FILESDIR}"/pam.d-include/shadow
-
+		local x
 		for x in chsh chfn ; do
 			newpamd "${FILESDIR}"/pam.d-include/passwd ${x}
 		done
-
-		for x in chpasswd newusers ; do
-			newpamd "${FILESDIR}"/pam.d-include/chpasswd ${x}
-		done
-
-		newpamd "${FILESDIR}"/pam.d-include/shadow-r1 groupmems
 
 		# Remove manpages that pam will install for us
 		# and/or don't apply when using pam
@@ -225,7 +215,7 @@ src_install() {
 
 	if use kernel_Hurd ; then
 		# sys-kernel/hurd provides this instead
-		rm "${ED}"/bin/login || die
+		mv "${ED}"/bin/login "${ED}"/bin/login.shadow || die
 	fi
 }
 

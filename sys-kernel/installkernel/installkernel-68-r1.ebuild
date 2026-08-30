@@ -44,6 +44,7 @@ REQUIRED_USE="
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	nsw? ( >=sys-libs/gentoo-config-files-20240127-r1[installkernel] )
+	sys-apps/gentoo-functions
 	dracut? (
 		>=sys-kernel/dracut-110
 		sys-libs/gentoo-config-files[initramfs]

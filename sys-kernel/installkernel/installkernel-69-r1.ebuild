@@ -17,7 +17,7 @@ if [[ ${PV} == 9999 ]]; then
 else
 	SRC_URI="https://github.com/projg2/installkernel-gentoo/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 	S="${WORKDIR}/${PN}-gentoo-${PV}"
-	KEYWORDS="arm64"
+	KEYWORDS="~arm64"
 fi
 
 LICENSE="GPL-2+"
@@ -44,6 +44,7 @@ REQUIRED_USE="
 RDEPEND="
 	!<=sys-kernel/installkernel-systemd-3
 	nsw? ( >=sys-libs/gentoo-config-files-20240127-r1[installkernel] )
+	sys-apps/gentoo-functions
 	dracut? (
 		>=sys-kernel/dracut-110
 		sys-libs/gentoo-config-files[initramfs]

@@ -6,13 +6,13 @@ EAPI=8
 # Bumping notes: https://wiki.gentoo.org/wiki/Project:Toolchain/sys-libs/glibc
 # Please read & adapt the page as necessary if obsolete.
 
-PYTHON_COMPAT=( python3_{10..14} )
+PYTHON_COMPAT=( python3_{11..14} )
 TMPFILES_OPTIONAL=1
 
 EMULTILIB_PKG="true"
 
 # Gentoo patchset (ignored for live ebuilds)
-PATCH_VER=1
+PATCH_VER=3
 PATCH_DEV=dilfridge
 
 # gcc mulitilib bootstrap files version
@@ -43,10 +43,10 @@ HOMEPAGE="https://www.gnu.org/software/libc/"
 if [[ ${PV} == *9999 ]]; then
 	inherit git-r3
 else
-	KEYWORDS="~arm64"
+	KEYWORDS="arm64"
 	SRC_URI="mirror://gnu/glibc/${P}.tar.xz"
+	SRC_URI+=" https://distfiles.gentoo.org/pub/proj/toolchain/glibc/patches/${P}-patches-${PATCH_VER}.tar.xz"
 	SRC_URI+=" verify-sig? ( mirror://gnu/glibc/${P}.tar.xz.sig )"
-	SRC_URI+=" https://dev.gentoo.org/~${PATCH_DEV}/distfiles/${P}-patches-${PATCH_VER}.tar.xz"
 fi
 
 SRC_URI+=" multilib-bootstrap? ( https://dev.gentoo.org/~dilfridge/distfiles/gcc-multilib-bootstrap-${GCC_BOOTSTRAP_VER}.tar.xz )"
@@ -196,6 +196,7 @@ XFAIL_TEST_LIST=(
 	# Fails with certain PORTAGE_NICENESS/PORTAGE_SCHEDULING_POLICY
 	tst-sched1
 	tst-sched_setattr
+	tst-sched_setattr-thread
 
 	# Fails regularly, unreliable
 	tst-valgrind-smoke
@@ -222,6 +223,7 @@ XFAIL_NSPAWN_TEST_LIST=(
 	tst-aarch64-pkey
 	tst-bz21269
 	tst-mlock2
+	tst-mseal-pkey
 	tst-ntp_gettime
 	tst-ntp_gettime-time64
 	tst-ntp_gettimex
@@ -355,6 +357,21 @@ setup_target_flags() {
 	just_headers && return 0
 
 	case $(tc-arch) in
+		alpha)
+			# glibc selects its hand-written assembly mem*/str* routines by the
+			# host triplet's machine prefix (sysdeps/alpha/preconfigure does
+			# machine=alpha/$machine), NOT by the -mcpu codegen flag.  With the
+			# bare alpha-*-* CHOST only the generic C is built.  Map -mcpu to the
+			# most specific sysdeps/alpha/alphaev* dir that exists (Implies chain
+			# alphaev67 -> alphaev6 -> alphaev5) so the tuned asm is selected.
+			local cpu
+			case $(get-flag mcpu) in
+			21264a|ev67)           cpu="alphaev67" ;;
+			21264|ev6)             cpu="alphaev6" ;;
+			21164*|ev5|ev56|pca56) cpu="alphaev5" ;;
+			esac
+			[[ -n ${cpu} ]] && CTARGET_OPT="${cpu}-${CTARGET#*-}"
+		;;
 		x86)
 			# -march needed for #185404 #199334
 			# TODO: When creating the first glibc cross-compile, this test will
@@ -386,7 +403,12 @@ setup_target_flags() {
 					[[ ${t} == "x86_64" ]] && t="x86-64"
 					filter-flags '-march=*'
 					# ugly, ugly, ugly.  ugly.
-					CFLAGS_x86=$(CFLAGS=${CFLAGS_x86}; filter-flags '-march=*'; echo "${CFLAGS}")
+					CFLAGS_x86=$(
+						CFLAGS=${CFLAGS_x86}
+						filter-flags '-march=*'
+						is-flagq '-mfpmath=sse' && append-cflags -msse
+						echo "${CFLAGS}"
+					)
 					export CFLAGS_x86="${CFLAGS_x86} -march=${t}"
 					einfo "Auto adding -march=${t} to CFLAGS_x86 #185404 (ABI=${ABI})"
 				fi
@@ -845,7 +867,7 @@ sanity_prechecks() {
 			[[ ${I_ALLOW_TO_BREAK_MY_SYSTEM} = yes ]] || die "Aborting to save your system."
 		fi
 
-#		if ! do_run_test '#include <unistd.h>\n#include <sys/syscall.h>\nint main(){return syscall(1000)!=-1;}\n' ; then
+#		if is_linux && ! do_run_test '#include <unistd.h>\n#include <sys/syscall.h>\nint main(){return syscall(1000)!=-1;}\n' ; then
 #			eerror "Your old kernel is broken. You need to update it to a newer"
 #			eerror "version as syscall(<bignum>) will break. See bug 279260."
 #			[[ ${I_ALLOW_TO_BREAK_MY_SYSTEM} = yes ]] || die "Old and broken kernel."
@@ -1027,9 +1049,7 @@ src_prepare() {
 
 		# Patches we should apply only for Hurd to be conservative
 		if is_hurd ; then
-			eapply "${FILESDIR}"/glibc-2.43-hurd-link-helpers.patch
 			eapply "${FILESDIR}"/glibc-2.43-hurd-CLOCK_MONOTONIC.patch
-			eapply "${FILESDIR}"/glibc-2.43-hurd-ldconfig.patch
 		fi
 	fi
 
@@ -1374,6 +1394,9 @@ glibc_src_test() {
 		done
 	fi
 
+	# https://inbox.sourceware.org/libc-alpha/lhuikb5ibey.fsf@oldenburg.str.redhat.com/
+	local -x GAWK_GNU_MATCHERS=1
+
 	# sandbox does not understand unshare() and prevents
 	# writes to /proc/, which makes many tests fail
 
@@ -1609,7 +1632,7 @@ glibc_do_src_install() {
 
 	if is_hurd && has amd64 $(get_install_abis) ; then
 		# First, let's check for sanity
-		if [[ -f "$(alt_prefix)/lib/ld-x86-64.so.1" ]] ; then
+		if [[ -f "${D}$(alt_prefix)/lib/ld-x86-64.so.1" ]] ; then
 			die "Somehow your amd64 hurd glibc installed /lib/ld-x86-64.so.1 ... this should not happen."
 		fi
 
@@ -1619,7 +1642,7 @@ glibc_do_src_install() {
 
 	if is_hurd && has x86 $(get_install_abis) ; then
 		# First, let's check for sanity
-		if [[ -f "$(alt_prefix)/$(get_abi_LIBDIR x86)/ld.so" ]] ; then
+		if [[ -f "${D}$(alt_prefix)/$(get_abi_LIBDIR x86)/ld.so" ]] ; then
 			die "Somehow your x86 hurd glibc installed ld.so ... this should not happen."
 		fi
 

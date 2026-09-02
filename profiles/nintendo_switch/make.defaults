@@ -13,3 +13,7 @@ USE="$USE dock-handler"  # Enable l4t dock-handler by default
 INPUT_DEVICES="libinput joystick"
 
 VIDEO_CARDS="tegra"
+
+# 2026-08-30 bell07. I don't feel like checking all the outdated packages for compatibility to newer python.
+PYTHON_SINGLE_TARGET="-* python3_13"
+PYTHON_TARGETS="-* python3_13"

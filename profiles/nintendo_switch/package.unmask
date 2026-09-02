@@ -3,7 +3,6 @@
 #=media-video/ffmpeg-7.0.9999 # Still broken
 
 # Portage sync - modified
-=dev-qt/*
 =sys-apps/shadow-4.19.4
 =sys-apps/shadow-4.20.0
 =sys-apps/shadow-4.20.2

@@ -62,4 +62,22 @@ x11-misc/dock-hotplug
 >=dev-libs/libnl-3.12
 
 # 16.03.2026 - bell07 - error: ‘NS_GET_NSTYPE’ undeclared (is in kernel 4.11)
->=sys-apps/systemd-utils-259.3
+>=sys-apps/systemd-utils-257
+>=virtual/libudev-257
+
+# 01.09.2026 - bell07 - error: ‘__NR_openat2’ undeclared
+>=sys-apps/file-5.48
+
+# 02.09.2026 - bell07 - error: linux/udmabuf.h: No such file or directory
+>=gui-libs/gtk-4.20
+>=dev-cpp/gtkmm-4.20
+#>=media-sound/pavucontrol-6.1
+>=gui-libs/libadwaita-1.8.6
+
+# 02.09.2026 - bell07 - error: ‘AMDGPU_INFO_SENSOR’ undeclared
+>=app-misc/fastfetch-2.65.2
+
+# 02.09.2026 - bell07 - error: linux/time_types.h: No such file or directory
+>=dev-debug/strace-7.0
+
+     Available versions:  (1) 1.8.6

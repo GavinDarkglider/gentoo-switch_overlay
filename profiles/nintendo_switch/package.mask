@@ -71,7 +71,6 @@ x11-misc/dock-hotplug
 # 02.09.2026 - bell07 - error: linux/udmabuf.h: No such file or directory
 >=gui-libs/gtk-4.20
 >=dev-cpp/gtkmm-4.20
-#>=media-sound/pavucontrol-6.1
 >=gui-libs/libadwaita-1.8.6
 
 # 02.09.2026 - bell07 - error: ‘AMDGPU_INFO_SENSOR’ undeclared
@@ -79,5 +78,3 @@ x11-misc/dock-hotplug
 
 # 02.09.2026 - bell07 - error: linux/time_types.h: No such file or directory
 >=dev-debug/strace-7.0
-
-     Available versions:  (1) 1.8.6

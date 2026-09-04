@@ -36,7 +36,7 @@ FFMPEG_IUSE_MAP=(
 	cdio:libcdio
 	chromaprint
 	codec2:libcodec2
-	cuda:cuda-llvm
+	cuda-clang:cuda-llvm
 	dav1d:libdav1d
 	${FFMPEG_UNSLOTTED:+doc:^htmlpages}
 	+drm:libdrm
@@ -142,7 +142,7 @@ IUSE="
 	${FFMPEG_UNSLOTTED:+chromium}
 "
 REQUIRED_USE="
-	cuda? ( nvenc )
+	cuda-clang? ( nvenc )
 	fribidi? ( truetype )
 	gmp? ( !librtmp )
 	libplacebo? ( vulkan )
@@ -295,7 +295,7 @@ BDEPEND="
 			dev-lang/yasm
 		)
 	)
-	cuda? ( llvm-core/clang:*[llvm_targets_NVPTX] )
+	cuda-clang? ( llvm-core/clang:*[llvm_targets_NVPTX] )
 	${FFMPEG_UNSLOTTED:+"
 		dev-lang/perl
 		doc? ( sys-apps/texinfo )

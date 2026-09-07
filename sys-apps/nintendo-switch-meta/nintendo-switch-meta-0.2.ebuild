@@ -5,7 +5,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="alsa bootstack dock-handler egl elogind initramfs joystick kernel-sources kernel-bin +wifi X"
+IUSE="alsa bootstack dock-handler egl elogind initramfs joystick kernel-sources kernel-bin +wifi vulkan X"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -39,6 +39,9 @@ RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 
 # Compile and install the kernel
 RDEPEND+=" kernel-bin? ( sys-kernel/nintendo-switch-l4t-kernel )"
+
+# Vuklan fixes
+RDEPEND+=" vuklan? ( media-libs/vk_layer_tegra_dc_present )"
 
 # Basic wifi manager
 RDEPEND+=" wifi? ( sys-libs/switch-l4t-configs[brcm] )"

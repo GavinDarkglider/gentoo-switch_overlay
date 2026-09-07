@@ -41,7 +41,7 @@ RDEPEND+=" kernel-sources? ( sys-kernel/nintendo-switch-l4t-sources )"
 RDEPEND+=" kernel-bin? ( sys-kernel/nintendo-switch-l4t-kernel )"
 
 # Vuklan fixes
-RDEPEND+=" vuklan? ( media-libs/vk_layer_tegra_dc_present )"
+RDEPEND+=" vulkan? ( media-libs/vk_layer_tegra_dc_present )"
 
 # Basic wifi manager
 RDEPEND+=" wifi? ( sys-libs/switch-l4t-configs[brcm] )"

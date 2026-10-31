@@ -1,0 +1,17 @@
+#!/sbin/openrc-run
+# Copyright 2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+description="Touchegg gesture daemon (libinput reader)"
+
+supervisor="supervise-daemon"
+command="/usr/bin/touchegg"
+command_args="--daemon"
+command_user="root:input"
+respawn_delay=5
+respawn_max=0
+
+depend() {
+	need localmount
+	after udev
+}

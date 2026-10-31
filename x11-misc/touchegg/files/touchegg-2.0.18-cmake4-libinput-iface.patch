@@ -1,0 +1,41 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c131bf3..3106c79 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.0.0)
++cmake_minimum_required(VERSION 3.10.0)
+ 
+ project(touchegg)
+ set(MAJOR_VERSION "2")
+diff --git a/src/gesture-gatherer/libinput-gesture-gatherer.cpp b/src/gesture-gatherer/libinput-gesture-gatherer.cpp
+index 4a11db2..e997171 100644
+--- a/src/gesture-gatherer/libinput-gesture-gatherer.cpp
++++ b/src/gesture-gatherer/libinput-gesture-gatherer.cpp
+@@ -44,7 +44,9 @@ LibinputGestureGatherer::LibinputGestureGatherer(
+       deviceHandler(gestureController, startThreshold, finishThreshold),
+       swipeHandler(gestureController),
+       pinchHandler(gestureController),
+-      touchHandler(gestureController) {
++      touchHandler(gestureController),
++      libinputInterface({LibinputGestureGatherer::openRestricted,
++                         LibinputGestureGatherer::closeRestricted}) {
+   this->udevContext = udev_new();
+   if (this->udevContext == nullptr) {
+     throw std::runtime_error{"Error initialising Touchégg: udev"};
+diff --git a/src/gesture-gatherer/libinput-gesture-gatherer.h b/src/gesture-gatherer/libinput-gesture-gatherer.h
+index 765198c..fa50d38 100755
+--- a/src/gesture-gatherer/libinput-gesture-gatherer.h
++++ b/src/gesture-gatherer/libinput-gesture-gatherer.h
+@@ -73,10 +73,7 @@ class LibinputGestureGatherer : public GestureGatherer {
+   /**
+    * libinput structure with pointers to the open/close callbacks.
+    */
+-  struct libinput_interface libinputInterface {
+-    LibinputGestureGatherer::openRestricted,
+-        LibinputGestureGatherer::closeRestricted
+-  };
++  struct libinput_interface libinputInterface;
+   static int openRestricted(const char *path, int flags, void *userData);
+   static void closeRestricted(int fd, void *userData);
+ };

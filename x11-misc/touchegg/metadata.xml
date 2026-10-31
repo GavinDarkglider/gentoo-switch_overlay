@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>rbrown4014@gmail.com</email>
+		<name>gavin_darkglider</name>
+	</maintainer>
+	<use>
+		<flag name="gtk">Use <pkg>x11-libs/gtk+</pkg>:3 to pick gesture animation colors from the GTK theme (color="auto")</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">JoseExposito/touchegg</remote-id>
+	</upstream>
+</pkgmetadata>

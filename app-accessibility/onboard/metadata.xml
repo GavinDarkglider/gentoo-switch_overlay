@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>rbrown4014@gmail.com</email>
+		<name>gavin_darkglider</name>
+	</maintainer>
+	<use>
+		<flag name="wayland">Support Wayland sessions (needs <pkg>gui-libs/gtk-layer-shell</pkg>; installs the uinput udev rule)</flag>
+		<flag name="X">Support X11 sessions (<pkg>x11-libs/libwnck</pkg> for window tracking)</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">onboard-osk/onboard</remote-id>
+	</upstream>
+</pkgmetadata>

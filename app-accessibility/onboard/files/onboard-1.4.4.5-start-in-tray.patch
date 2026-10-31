@@ -1,0 +1,124 @@
+From 7e1366dec2b2d12e8cb19efcc1a73765a6156331 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Mon, 26 Oct 2026 10:28:59 -0700
+Subject: [PATCH] Add --start-in-tray option for tray-only startup
+
+Start with the keyboard hidden and only the status icon shown, without
+touching the saved "start-minimized" or "show-status-icon" settings.
+Meant for session autostart: Exec=onboard --start-in-tray keeps the
+keyboard off the screen at login while normal launches from the menu
+still show it.
+
+The status icon is forced on for the session so there is always a way
+to bring the keyboard back (launching onboard again also does, via the
+single-instance D-Bus Show). Because has_unhide_option() now sees the
+icon, hiding no longer falls back to iconifying into the taskbar.
+Ignored in XEmbed mode.
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01QZLi65vS1Fs87WyiUNVr6g
+---
+ Onboard/Config.py     | 20 +++++++++++++++++++-
+ Onboard/OnboardGtk.py |  7 +++++--
+ man/onboard.1         |  7 +++++++
+ 3 files changed, 31 insertions(+), 3 deletions(-)
+
+diff --git a/Onboard/Config.py b/Onboard/Config.py
+index 77310283..5f06a4ca 100644
+--- a/Onboard/Config.py
++++ b/Onboard/Config.py
+@@ -268,6 +268,12 @@ class Config(ConfigObject):
+                 type="float", dest="startup_delay",
+                 help=_("Delay showing the initial keyboard window "
+                        "by STARTUP_DELAY seconds (default 0.0)."))
++        group.add_option("--start-in-tray", action="store_true",
++                dest="start_in_tray", default=False,
++                help=_("Start with the keyboard hidden and only the status "
++                       "icon (tray) shown, e.g. for session autostart. "
++                       "The status icon is shown for this session even if "
++                       "it is disabled in preferences; nothing is saved."))
+         group.add_option("-a", "--keep-aspect", action="store_true",
+                 dest="keep_aspect_ratio",
+                 help=_("Keep aspect ratio when resizing the window"))
+@@ -301,6 +307,9 @@ class Config(ConfigObject):
+         self.options = options
+ 
+         self.xid_mode = options.xid_mode
++        # Tray-only start makes no sense when embedded (XEmbed).
++        self.start_in_tray = bool(options.start_in_tray) and \
++                             not options.xid_mode
+         self.log_learn = options.log_learn
+         self.quirks_name = options.quirks_name
+         self.quirks = None  # WMQuirks instance, provided by KbdWindow for now
+@@ -1090,6 +1099,7 @@ class Config(ConfigObject):
+     def is_visible_on_start(self):
+         return self.xid_mode or \
+                not self.start_minimized and \
++               not self.start_in_tray and \
+                not self.auto_show.enabled
+ 
+     def is_auto_show_enabled(self):
+@@ -1243,7 +1253,15 @@ class Config(ConfigObject):
+         No native ui visible to unhide onboard?
+         There might still be the launcher to unminimize it.
+         """
+-        return self.is_icon_palette_in_use() or self.show_status_icon
++        return self.is_icon_palette_in_use() or self.is_status_icon_visible()
++
++    def is_status_icon_visible(self):
++        """
++        The status icon is shown when enabled in preferences, or forced on
++        for this session by --start-in-tray so that the hidden keyboard
++        can be brought back.
++        """
++        return self.show_status_icon or self.start_in_tray
+ 
+     def has_window_decoration(self):
+         """ Force-to-top mode doesn't support window decoration """
+diff --git a/Onboard/OnboardGtk.py b/Onboard/OnboardGtk.py
+index 6a5ff8ad..2655ad10 100644
+--- a/Onboard/OnboardGtk.py
++++ b/Onboard/OnboardGtk.py
+@@ -419,10 +419,12 @@ class OnboardGtk(object):
+                         lambda x: self.do_quit_onboard())
+ 
+         # Callbacks to use when icp or status icon is toggled
+-        config.show_status_icon_notify_add(self.show_hide_status_icon)
++        config.show_status_icon_notify_add(
++            lambda show: self.show_hide_status_icon(
++                config.is_status_icon_visible()))
+         config.icp.in_use_notify_add(self.cb_icp_in_use_toggled)
+ 
+-        self.show_hide_status_icon(config.show_status_icon)
++        self.show_hide_status_icon(config.is_status_icon_visible())
+ 
+ 
+         # Minimize to IconPalette if running under GDM
+@@ -430,6 +432,7 @@ class OnboardGtk(object):
+             _logger.info("RUNNING_UNDER_GDM set, turning on icon palette")
+             config.icp.in_use = True
+             _logger.info("RUNNING_UNDER_GDM set, turning off indicator")
++            config.start_in_tray = False
+             config.show_status_icon = False
+ 
+             # For some reason the new values don't arrive in gsettings when
+diff --git a/man/onboard.1 b/man/onboard.1
+index 93ab09d7..32731c88 100644
+--- a/man/onboard.1
++++ b/man/onboard.1
+@@ -51,6 +51,13 @@ Window size, widthxheight
+ \*(T<\fB\-e, \-\-xid\fR\*(T>
+ Start in XEmbed mode, e.g. for gnome-screensaver
+ .TP
++\*(T<\fB\-\-start\-in\-tray\fR\*(T>
++Start with the keyboard hidden and only the status icon (tray) shown,
++e.g. for session autostart. The status icon is shown for this session
++even if it is disabled in preferences; no settings are changed.
++Click the icon, or run \fBonboard\fR again, to show the keyboard.
++Ignored together with \fB\-\-xid\fR.
++.TP
+ \*(T<\fB\-a, \-\-keep\-aspect\fR\*(T>
+ Keep aspect ratio when resizing the window
+ .TP
+-- 
+2.43.0
+

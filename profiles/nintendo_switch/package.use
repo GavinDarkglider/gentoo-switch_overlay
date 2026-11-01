@@ -13,3 +13,8 @@ sys-apps/dtc python
 # bell07 2026-03-15 as proposed in https://gitlab.com/l4t-community/gnu-linux/fedora-copr/moonlight-qt/-/blob/master/moonlight-qt.spec?ref_type=heads#L50
 # -vulkan because vulkan is masked for ffmpeg currently
 net-misc/moonlight -drm -vaapi -vulkan
+
+# Gavin 2026-10-31 The Tegra GPU is driven by NVIDIA's libraries (jetson-tx1-drivers,
+# through libglvnd); mesa is only needed for libgbm, xorg-server's glamor and as a
+# software fallback. Its llvm is only for llvmpipe/AMD and pulls in two LLVM slots.
+media-libs/mesa -llvm

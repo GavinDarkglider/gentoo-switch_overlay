@@ -18,3 +18,11 @@ net-misc/moonlight -drm -vaapi -vulkan
 # through libglvnd); mesa is only needed for libgbm, xorg-server's glamor and as a
 # software fallback. Its llvm is only for llvmpipe/AMD and pulls in two LLVM slots.
 media-libs/mesa -llvm
+
+# Gavin 2026-11-01 The Switch has no cellular modem: no ModemManager stack (libmbim,
+# libqmi, libqrtr-glib, mobile-broadband-provider-info) for NetworkManager.
+net-misc/networkmanager -modemmanager
+# If something still pulls ModemManager in (NetworkManager[bluetooth] requires it):
+# libqrtr-glib needs struct qrtr_ctrl_pkt from kernel >= 4.15 headers; ours are 4.9.
+net-misc/modemmanager -qrtr
+net-libs/libqmi -qrtr

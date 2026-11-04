@@ -1,0 +1,28 @@
+From e3ceaa03a71e7ed1ef5f4b948a8c47f980907ca3 Mon Sep 17 00:00:00 2001
+From: GavinDarkglider <rbrown4014@yahoo.com>
+Date: Sun, 1 Nov 2026 11:34:14 -0800
+Subject: [PATCH] uapi: netlink.h: NETLINK_GET_STRICT_CHK
+
+For building newer userspace (NetworkManager). Compile only: the 4.9
+kernel rejects the socket option; NetworkManager carries on without it.
+
+---
+ include/uapi/linux/netlink.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/uapi/linux/netlink.h b/include/uapi/linux/netlink.h
+index 0dba4e4ed2be..de2460799b6d 100644
+--- a/include/uapi/linux/netlink.h
++++ b/include/uapi/linux/netlink.h
+@@ -114,7 +114,7 @@ struct nlmsgerr {
+ #define NETLINK_LISTEN_ALL_NSID		8
+ #define NETLINK_LIST_MEMBERSHIPS	9
+ #define NETLINK_CAP_ACK			10
+-
++#define NETLINK_GET_STRICT_CHK	        12
+ struct nl_pktinfo {
+ 	__u32	group;
+ };
+-- 
+2.56.0
+

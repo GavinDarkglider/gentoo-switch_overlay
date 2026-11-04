@@ -1,0 +1,60 @@
+From 8b21c0d478386a82427d55db7a1654a4815fae96 Mon Sep 17 00:00:00 2001
+From: GavinDarkglider <rbrown4014@yahoo.com>
+Date: Sun, 1 Nov 2026 12:22:42 -0800
+Subject: [PATCH] uapi: ethtool: add FEC parameters (ETHTOOL_[GS]FECPARAM)
+
+Header only, for building newer userspace (NetworkManager). The command
+numbers are upstream's, 0x50 and 0x51: 0x4a and 0x4b are
+ETHTOOL_GPHYSTATS and ETHTOOL_PERQUEUE in this kernel, so using them
+would send those commands instead. The 4.9 kernel doesn't implement FEC
+and answers EOPNOTSUPP.
+
+---
+ include/uapi/linux/ethtool.h | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
+index 8c5335bde212..418db314dcaf 100644
+--- a/include/uapi/linux/ethtool.h
++++ b/include/uapi/linux/ethtool.h
+@@ -1223,6 +1223,28 @@ struct ethtool_per_queue_op {
+ 	char	data[];
+ };
+ 
++/* Forward Error Correction (FEC) configuration */
++enum ethtool_fec_config_bits {
++	ETHTOOL_FEC_NONE_BIT,
++	ETHTOOL_FEC_AUTO_BIT,
++	ETHTOOL_FEC_OFF_BIT,
++	ETHTOOL_FEC_RS_BIT,
++	ETHTOOL_FEC_BASER_BIT,
++};
++
++#define ETHTOOL_FEC_NONE		(1 << ETHTOOL_FEC_NONE_BIT)
++#define ETHTOOL_FEC_AUTO		(1 << ETHTOOL_FEC_AUTO_BIT)
++#define ETHTOOL_FEC_OFF			(1 << ETHTOOL_FEC_OFF_BIT)
++#define ETHTOOL_FEC_RS			(1 << ETHTOOL_FEC_RS_BIT)
++#define ETHTOOL_FEC_BASER		(1 << ETHTOOL_FEC_BASER_BIT)
++
++struct ethtool_fecparam {
++	__u32   cmd;
++	__u32   active_fec;
++	__u32   fec;
++	__u32   reserved;
++};
++
+ /* CMDs currently supported */
+ #define ETHTOOL_GSET		0x00000001 /* DEPRECATED, Get settings.
+ 					    * Please use ETHTOOL_GLINKSETTINGS
+@@ -1314,6 +1336,8 @@ struct ethtool_per_queue_op {
+ #define ETHTOOL_GLINKSETTINGS	0x0000004c /* Get ethtool_link_settings */
+ #define ETHTOOL_SLINKSETTINGS	0x0000004d /* Set ethtool_link_settings */
+ 
++#define ETHTOOL_GFECPARAM	0x00000050 /* Get FEC settings */
++#define ETHTOOL_SFECPARAM	0x00000051 /* Set FEC settings */
+ 
+ /* compatibility with older code */
+ #define SPARC_ETH_GSET		ETHTOOL_GSET
+-- 
+2.56.0
+

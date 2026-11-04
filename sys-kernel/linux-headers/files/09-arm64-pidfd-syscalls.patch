@@ -1,0 +1,35 @@
+From f84cafd731cb08a2bdb1fc7440ed0ecf355d5832 Mon Sep 17 00:00:00 2001
+From: GavinDarkglider <rbrown4014@yahoo.com>
+Date: Sun, 1 Nov 2026 10:43:44 -0800
+Subject: [PATCH] uapi: asm-generic/unistd.h: pidfd_send_signal and pidfd_open numbers
+
+For building newer userspace (NetworkManager). Compile only: the 4.9
+kernel doesn't implement these calls and returns ENOSYS; programs must
+(and glib and NetworkManager do) fall back.
+
+---
+ include/uapi/asm-generic/unistd.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index 9b1462e38b82..5ad858f38c7e 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -940,3 +940,14 @@ __SYSCALL(__NR_fork, sys_ni_syscall)
+ #define __NR_lstat64 __NR3264_lstat
+ #endif
+ #endif
++
++/* Backported syscall numbers for modern userspace (AArch64 compatibility) */
++#ifndef __NR_pidfd_send_signal
++#define __NR_pidfd_send_signal 424
++__SYSCALL(__NR_pidfd_send_signal, sys_pidfd_send_signal)
++#endif
++
++#ifndef __NR_pidfd_open
++#define __NR_pidfd_open 434
++__SYSCALL(__NR_pidfd_open, sys_pidfd_open)
++#endif
+-- 
+2.56.0
+

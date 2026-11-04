@@ -1,0 +1,30 @@
+From 2f88918b2e0da7b8a86c56fc166bd48e3ac92640 Mon Sep 17 00:00:00 2001
+From: GavinDarkglider <rbrown4014@yahoo.com>
+Date: Sun, 1 Nov 2026 11:01:53 -0800
+Subject: [PATCH] uapi: asm-generic/socket.h: SO_BINDTOIFINDEX
+
+For building newer userspace (NetworkManager). Compile only: the 4.9
+kernel rejects the option (ENOPROTOOPT). NetworkManager's internal DHCP
+client uses it: if DHCP misbehaves, look here first (dhcpcd as
+NetworkManager's DHCP client avoids it).
+
+---
+ include/uapi/asm-generic/socket.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/include/uapi/asm-generic/socket.h b/include/uapi/asm-generic/socket.h
+index 2d078c20abcb..e7a10300e24c 100644
+--- a/include/uapi/asm-generic/socket.h
++++ b/include/uapi/asm-generic/socket.h
+@@ -95,3 +95,8 @@
+ #define SO_COOKIE		57
+ 
+ #endif /* __ASM_GENERIC_SOCKET_H */
++
++/* Backported socket options for modern userspace compatibility */
++#ifndef SO_BINDTOIFINDEX
++#define SO_BINDTOIFINDEX 62
++#endif
+-- 
+2.56.0
+

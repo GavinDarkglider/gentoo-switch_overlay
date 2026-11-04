@@ -1,0 +1,39 @@
+From 0172030ce2da61804ddaef2b81f042f335e84077 Mon Sep 17 00:00:00 2001
+From: GavinDarkglider <rbrown4014@yahoo.com>
+Date: Sun, 1 Nov 2026 10:17:57 -0800
+Subject: [PATCH] uapi: add linux/time_types.h
+
+struct __kernel_timespec and __kernel_itimerspec, for building newer
+userspace (NetworkManager). Types only.
+
+---
+ include/uapi/linux/time_types.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+ create mode 100644 include/uapi/linux/time_types.h
+
+diff --git a/include/uapi/linux/time_types.h b/include/uapi/linux/time_types.h
+new file mode 100644
+index 000000000000..1cfa0e944217
+--- /dev/null
++++ b/include/uapi/linux/time_types.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++#ifndef _UAPI_LINUX_TIME_TYPES_H
++#define _UAPI_LINUX_TIME_TYPES_H
++
++#include <linux/types.h>
++
++struct __kernel_timespec {
++	__s64       tv_sec;
++	long long   tv_nsec;
++};
++
++struct __kernel_itimerspec {
++	struct __kernel_timespec it_interval;
++	struct __kernel_timespec it_value;
++};
++
++#endif /* _UAPI_LINUX_TIME_TYPES_H */
+-- 
+2.56.0
+

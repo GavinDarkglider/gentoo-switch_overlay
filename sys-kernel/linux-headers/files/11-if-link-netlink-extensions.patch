@@ -1,0 +1,45 @@
+uapi: if_link.h: IPVLAN flags, GENEVE TTL inherit and DF
+
+For building newer userspace (NetworkManager); values as upstream. The
+4.9 kernel ignores netlink attributes it doesn't know.
+
+diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+index b4fba662cd32..53fd3f76d0e7 100644
+--- a/include/uapi/linux/if_link.h
++++ b/include/uapi/linux/if_link.h
+@@ -456,6 +456,7 @@ enum macsec_validation_type {
+ enum {
+ 	IFLA_IPVLAN_UNSPEC,
+ 	IFLA_IPVLAN_MODE,
++	IFLA_IPVLAN_FLAGS,
+ 	__IFLA_IPVLAN_MAX
+ };
+ 
+@@ -467,5 +468,8 @@ enum ipvlan_mode {
+ 	IPVLAN_MODE_L3S,
+ 	IPVLAN_MODE_MAX
+ };
++
++#define IPVLAN_F_PRIVATE       0x01
++#define IPVLAN_F_VEPA          0x02
+ 
+ /* VXLAN section */
+@@ -521,6 +525,8 @@ enum {
+ 	IFLA_GENEVE_UDP_ZERO_CSUM6_TX,
+ 	IFLA_GENEVE_UDP_ZERO_CSUM6_RX,
+ 	IFLA_GENEVE_LABEL,
++	IFLA_GENEVE_TTL_INHERIT,
++	IFLA_GENEVE_DF,
+ 	__IFLA_GENEVE_MAX
+ };
+ #define IFLA_GENEVE_MAX	(__IFLA_GENEVE_MAX - 1)
+ 
++enum ifla_geneve_df {
++	GENEVE_DF_UNSET = 0,
++	GENEVE_DF_SET,
++	GENEVE_DF_INHERIT,
++	__GENEVE_DF_END,
++	GENEVE_DF_MAX = __GENEVE_DF_END - 1,
++};
++
+ /* PPP section */

@@ -84,6 +84,13 @@ src_prepare() {
 	eapply "${FILESDIR}"/05_irq_gic_drop__init_annotation_from_gic_init_fiq.patch
 	eapply "${FILESDIR}"/06-add_wan_hdlc_x25.patch
 	eapply "${FILESDIR}"/07-uapi-btrfs-drop-btrfs_err_str.patch
+        eapply "${FILESDIR}"/08-time-types.patch
+        eapply "${FILESDIR}"/09-arm64-pidfd-syscalls.patch
+        eapply "${FILESDIR}"/10-asm-generic-so-bindtoifindex.patch
+        eapply "${FILESDIR}"/11-if-link-netlink-extensions.patch
+        eapply "${FILESDIR}"/12-netlink-strict-check-option.patch
+        eapply "${FILESDIR}"/13-devlink-eswitch-extensions.patch
+        eapply "${FILESDIR}"/14-ethtool-fec-support.patch
 	eapply_user
 	default
 }

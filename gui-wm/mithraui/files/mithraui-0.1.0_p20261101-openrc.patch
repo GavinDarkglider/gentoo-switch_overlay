@@ -1,0 +1,80 @@
+From 7ffa13e2d229d2fa22697d4a51815b233102fe0c Mon Sep 17 00:00:00 2001
+From: GavinDarkglider <rbrown4014@gmail.com>
+Date: Sat, 31 Oct 2026 15:37:20 -0700
+Subject: [PATCH] Power actions and session switch without systemd
+
+loginctl poweroff/reboot/suspend work with systemd and with elogind
+(OpenRC). mithra-sessionctl restarts the display manager with OpenRC's
+rc-service when systemd isn't running, and creates sddm.conf.d if it
+isn't there yet.
+---
+ session/mithra-sessionctl    | 8 +++++++-
+ shell/src/sessioncontrol.cpp | 8 ++++----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/session/mithra-sessionctl b/session/mithra-sessionctl
+index 7a62f68..83bc52a 100644
+--- a/session/mithra-sessionctl
++++ b/session/mithra-sessionctl
+@@ -8,6 +8,8 @@ mithra=mithra.desktop
+ user="${SUDO_USER:-}"
+ [ -n "$user" ] || exit 2
+ 
++mkdir -p "${conf%/*}"
++
+ write_conf() {
+     printf '[Autologin]\nUser=%s\nSession=%s\nRelogin=false\n' "$user" "$1" \
+         > "$conf"
+@@ -35,7 +37,11 @@ case "$1" in
+             desktop) write_conf plasmax11.desktop ;;
+             *) exit 2 ;;
+         esac
+-        systemctl restart display-manager
++        if [ -d /run/systemd/system ]; then
++            systemctl restart display-manager
++        else
++            rc-service display-manager restart
++        fi
+         ;;
+     *)
+         exit 2
+diff --git a/shell/src/sessioncontrol.cpp b/shell/src/sessioncontrol.cpp
+index 9c09685..def9081 100644
+--- a/shell/src/sessioncontrol.cpp
++++ b/shell/src/sessioncontrol.cpp
+@@ -119,7 +119,7 @@ void SessionControl::lockShown()
+     if (!m_suspendWhenLocked)
+         return;
+     m_suspendWhenLocked = false;
+-    QProcess::startDetached(QStringLiteral("systemctl"),
++    QProcess::startDetached(QStringLiteral("loginctl"),
+                             {QStringLiteral("suspend")});
+ }
+ 
+@@ -164,13 +164,13 @@ void SessionControl::refreshUi()
+ 
+ void SessionControl::powerOff()
+ {
+-    QProcess::startDetached(QStringLiteral("systemctl"),
++    QProcess::startDetached(QStringLiteral("loginctl"),
+                             {QStringLiteral("poweroff")});
+ }
+ 
+ void SessionControl::reboot()
+ {
+-    QProcess::startDetached(QStringLiteral("systemctl"),
++    QProcess::startDetached(QStringLiteral("loginctl"),
+                             {QStringLiteral("reboot")});
+ }
+ 
+@@ -185,6 +185,6 @@ void SessionControl::suspend()
+         return;
+     }
+     lock();
+-    QProcess::startDetached(QStringLiteral("systemctl"),
++    QProcess::startDetached(QStringLiteral("loginctl"),
+                             {QStringLiteral("suspend")});
+ }
+-- 
+2.56.0
+

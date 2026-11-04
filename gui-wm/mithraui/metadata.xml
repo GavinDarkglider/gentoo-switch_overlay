@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>rbrown4014@gmail.com</email>
+		<name>gavin_darkglider</name>
+	</maintainer>
+	<use>
+		<flag name="sddm">Install the MithraUI greeter theme for <pkg>gui-apps/sddm</pkg> (the shell's autologin and session switch use sddm)</flag>
+		<flag name="wayland">Install the experimental native Wayland session (Qt EGLDevice output, NVIDIA EGLStream, tegra-udrm)</flag>
+	</use>
+	<upstream>
+		<remote-id type="gitlab">l4t-community/mithraui</remote-id>
+	</upstream>
+</pkgmetadata>

@@ -26,3 +26,7 @@ net-misc/networkmanager -modemmanager
 # libqrtr-glib needs struct qrtr_ctrl_pkt from kernel >= 4.15 headers; ours are 4.9.
 net-misc/modemmanager -qrtr
 net-libs/libqmi -qrtr
+
+# Gavin 2026-11-01 app-crypt/pinentry[gtk] (the desktop's password prompt) needs
+# app-crypt/gcr:4[gtk]; the base profile has gtk off for it.
+app-crypt/gcr gtk

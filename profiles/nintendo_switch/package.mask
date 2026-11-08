@@ -41,10 +41,6 @@ media-video/ffmpeg
 >dev-libs/weston-10.1.0
 >x11-base/xwayland-23
 
-# 13.01.2024 - bell07 - deprecation
-# Abadoned. Please use sys-libs/switch-l4t-configs[dock-handler] instead
-x11-misc/dock-hotplug
-
 # 09.08.2025 - bell07 - manette-evdev-backend.c:142:39: error: ‘struct input_event’ has no member named ‘input_event_usec’
 # Existing patch fix-4.x-kernel-evdev.patch needs to be enhanced to patch manette-evdev-backend.c
 >dev-libs/libmanette-0.2.7

@@ -21,7 +21,7 @@ RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"
 RDEPEND+=" alsa? ( sys-libs/switch-l4t-configs[alsa] )"
 
 # Script to manage dock / undock
-RDEPEND+=" dock-handler? ( || ( sys-libs/switch-l4t-configs[dock-handler] x11-misc/dock-hotplug app-eselect/eselect-nintendo-switch-dock-handler ) )"
+RDEPEND+=" dock-handler? ( sys-libs/switch-l4t-configs[dock-handler] )"
 
 #EGL DRM/KMS Dependencies
 RDEPEND+=" egl? ( gui-libs/tegra-udrm-gbm )"

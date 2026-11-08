@@ -26,6 +26,11 @@ BDEPEND="!!sys-boot/nintendo-switch-dracut-config
 RDEPEND="initramfs? ( sys-kernel/dracut app-editors/vim-core )
 		installkernel? ( sys-kernel/installkernel[nsw] dev-embedded/u-boot-tools )"
 
+PATCHES=(
+	# take the nx-plat.dtimg that make dtbs builds; pack one only when missing
+	"${FILESDIR}"/80-switch-kernel-dts-use-kernel-dtimg.patch
+)
+
 src_install() {
 	# Initramfs build with dracut
 	if use initramfs; then

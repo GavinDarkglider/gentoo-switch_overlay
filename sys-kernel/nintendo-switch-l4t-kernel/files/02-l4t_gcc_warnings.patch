@@ -1,0 +1,25 @@
+Warnings newer gcc versions (10 and later) turn into errors in this kernel:
+the flags Lakka builds its L4T kernels with, in the Makefile, so a plain
+"make" builds it. Replaces the KCFLAGS the ebuild passed.
+
+--- a/Makefile	2026-11-08 00:02:55.169964026 -0800
++++ b/Makefile	2026-11-08 00:02:55.171100781 -0800
+@@ -924,6 +924,18 @@
+ # last assignments
+ KBUILD_CPPFLAGS += $(ARCH_CPPFLAGS) $(KCPPFLAGS)
+ KBUILD_AFLAGS   += $(ARCH_AFLAGS)   $(KAFLAGS)
++# Warnings newer gcc versions (10 and later) turn into errors in this
++# kernel: the flags Lakka builds its L4T kernels with. Compilers that don't
++# know a flag skip it; KCFLAGS (next) still comes last.
++KBUILD_CFLAGS   += $(call cc-disable-warning,stringop-truncation)
++KBUILD_CFLAGS   += $(call cc-option,-Wno-error=stringop-overflow)
++KBUILD_CFLAGS   += $(call cc-disable-warning,maybe-uninitialized)
++KBUILD_CFLAGS   += $(call cc-disable-warning,address-of-packed-member)
++KBUILD_CFLAGS   += $(call cc-disable-warning,packed-not-aligned)
++KBUILD_CFLAGS   += $(call cc-disable-warning,array-bounds)
++KBUILD_CFLAGS   += $(call cc-option,-Wno-error=address)
++KBUILD_CFLAGS   += $(call cc-option,-Wno-error=stringop-overread)
++
+ KBUILD_CFLAGS   += $(ARCH_CFLAGS)   $(KCFLAGS)
+ 
+ # Use --build-id when available.

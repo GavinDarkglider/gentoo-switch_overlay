@@ -1,8 +1,8 @@
 diff --git a/installkernel/80-switch-kernel-dts.install b/installkernel/80-switch-kernel-dts.install
-index 23e2353..595a210 100755
+index 23e2353..0ae1e64 100755
 --- a/installkernel/80-switch-kernel-dts.install
 +++ b/installkernel/80-switch-kernel-dts.install
-@@ -20,12 +20,19 @@ ewarn() {
+@@ -20,18 +20,27 @@ ewarn() {
  }
  
  
@@ -12,6 +12,9 @@ index 23e2353..595a210 100755
 -	${basedir}/dts/tegra210b01-odin.dtb --id=0x4F44494E --rev=0x00000b01 \
 -	${basedir}/dts/tegra210b01-vali.dtb --id=0x56414C49 \
 -	${basedir}/dts/tegra210b01-fric.dtb --id=0x46524947 || die "Failed to generate nx-plat.dtimg"
+-
+-CTC_VERSION="$(echo ${ver} | cut -d - -f 1 | cut -d . -f 4 | \
+-	awk '{print substr($1, 1, 1) "." substr($1, 2, 1) "." substr($1, 3, 1)}')"
 +# make dtbs makes nx-plat.dtimg in kernels that carry the patch for it;
 +# pack one here only for kernels that don't
 +if [ -f "${basedir}/dts/nx-plat.dtimg" ]; then
@@ -25,6 +28,15 @@ index 23e2353..595a210 100755
 +		${basedir}/dts/tegra210b01-vali.dtb --id=0x56414C49 \
 +		${basedir}/dts/tegra210b01-fric.dtb --id=0x46524947 || die "Failed to generate nx-plat.dtimg"
 +fi
++
++# uImage names hold 32 characters; drop the dist-kernel suffix if needed
++name="${ver}"
++[ ${#name} -gt 32 ] && name="${name%-dist}"
++name="${name:0:32}"
+ einfo "build u-boot Image"
+ mkimage -A arm64 -O linux -T kernel -C gzip \
+-	-a 0x80200000 -e 0x80200000 -n CTCKRN-"${CTC_VERSION}" \
++	-a 0x80200000 -e 0x80200000 -n "${name}" \
+ 	-d ${basedir}/Image.gz ${targetdir}/uImage || die "Failed to generate uImage"
  
- CTC_VERSION="$(echo ${ver} | cut -d - -f 1 | cut -d . -f 4 | \
- 	awk '{print substr($1, 1, 1) "." substr($1, 2, 1) "." substr($1, 3, 1)}')"
+ if [ -f ${targetdir}/initrd ]; then

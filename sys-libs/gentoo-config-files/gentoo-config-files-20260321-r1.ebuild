@@ -27,7 +27,8 @@ RDEPEND="initramfs? ( sys-kernel/dracut app-editors/vim-core )
 		installkernel? ( sys-kernel/installkernel[nsw] dev-embedded/u-boot-tools )"
 
 PATCHES=(
-	# take the nx-plat.dtimg that make dtbs builds; pack one only when missing
+	# take the nx-plat.dtimg that make dtbs builds (pack one only when missing),
+	# and name the uImage after the kernel version
 	"${FILESDIR}"/80-switch-kernel-dts-use-kernel-dtimg.patch
 )
 

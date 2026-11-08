@@ -17,6 +17,19 @@ RDEPEND="
 	app-admin/sudo
 "
 
+src_prepare() {
+	default
+
+	# The kernel (nintendo-switch-l4t-kernel 4.9.140_p20261105 and later) turns
+	# the panel to landscape, so Xorg sees it as 1280x720: don't rotate it again
+	sed -i -E \
+		-e 's/--(mode|size) 720x1280 --rotate left/--\1 1280x720 --rotate normal/' \
+		dock-handler/* || die
+	if grep -q -- "--rotate left" dock-handler/*; then
+		die "a dock profile still rotates the screen"
+	fi
+}
+
 src_install() {
 	mkdir -p "${D}/usr/share/"
 	mkdir -p "${D}/usr/share/eselect/modules/"

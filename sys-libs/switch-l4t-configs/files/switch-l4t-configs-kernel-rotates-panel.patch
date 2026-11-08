@@ -1,0 +1,23 @@
+diff --git a/switch-dock-handler/dock-hotplug b/switch-dock-handler/dock-hotplug
+index 6f5385d..e12ecc6 100755
+--- a/switch-dock-handler/dock-hotplug
++++ b/switch-dock-handler/dock-hotplug
+@@ -23,7 +23,8 @@ dock_hotplug_handle() {
+ 
+ 	# Set xorg vars.
+ 	export DP_SETTINGS=
+-	export DSI_SETTINGS="--primary --mode 720x1280 --rotate left --panning 1280x720+0+0 --pos 0x0 --dpi 120 --fb 1280x720"
++	# The kernel turns the panel to landscape, so Xorg sees it as 1280x720.
++	export DSI_SETTINGS="--primary --mode 1280x720 --rotate normal --panning 1280x720+0+0 --pos 0x0 --dpi 120 --fb 1280x720"
+ 	export XAUTHORITY=$(ps -C Xorg -f --no-header | sed -n 's/.*-auth //; s/ -[^ ].*//; p')
+ 
+ 	# Set DP output vars.
+diff --git a/switch-xorg-conf/10-monitor.conf b/switch-xorg-conf/10-monitor.conf
+index e548f89..0643a22 100644
+--- a/switch-xorg-conf/10-monitor.conf
++++ b/switch-xorg-conf/10-monitor.conf
+@@ -1,4 +1,3 @@
+ Section "Monitor"
+    Identifier "DFP-0"
+-   Option "Rotate" "left"
+ EndSection

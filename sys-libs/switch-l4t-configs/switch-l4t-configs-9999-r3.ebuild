@@ -32,6 +32,12 @@ RDEPEND="dock-handler? (
   x11-apps/xrandr
 )"
 
+PATCHES=(
+	# the kernel (nintendo-switch-l4t-kernel 4.9.140_p20261105 and later) turns
+	# the panel to landscape, so X must not rotate it again
+	"${FILESDIR}"/switch-l4t-configs-kernel-rotates-panel.patch
+)
+
 src_install() {
 	# Alsa
 	if use alsa; then
@@ -72,4 +78,10 @@ pkg_postrm() {
 
 pkg_postinst() {
 	udev_reload
+
+	if use X || use dock-handler; then
+		elog "X no longer rotates the built-in screen: the kernel does that from"
+		elog "sys-kernel/nintendo-switch-l4t-kernel 4.9.140_p20261105 on. With an"
+		elog "older kernel the screen shows sideways."
+	fi
 }

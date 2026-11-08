@@ -4,12 +4,13 @@ SLOT="0"
 
 PYTHON_COMPAT=( python3_{12..15} )
 
-HOMEPAGE="https://gitlab.com/switchroot/switch-uboot"
+HOMEPAGE="https://gitlab.com/l4t-community/bootstack/u-boot"
 DESCRIPTION='"Das U-Boot" Source Tree for the Switch'
 
 inherit git-r3 python-any-r1 sdcard-mount toolchain-funcs
 
-EGIT_REPO_URI="https://gitlab.com/switchroot/switch-uboot"
+# the L4T community fork (Azkali), as L4S builds it
+EGIT_REPO_URI="https://gitlab.com/l4t-community/bootstack/u-boot.git"
 EGIT_BRANCH="linux-hekatf"
 EGIT_CHECKOUT_DIR="${S}"
 

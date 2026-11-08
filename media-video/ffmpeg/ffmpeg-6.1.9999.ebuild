@@ -338,6 +338,8 @@ pkg_setup() {
 src_prepare() {
 	in_iuse chromium && PATCHES+=( "${FILESDIR}"/chromium-r3.patch )
 	in_iuse soc && use soc && PATCHES+=( "${DISTDIR}"/${FFMPEG_SOC_PATCH} )
+	# Lakka's nvv4l2 encoder fixes (0042-0046), ported to this branch
+	PATCHES+=( "${FILESDIR}"/ffmpeg-6.1-nvv4l2-encoder-fixes.patch )
 
 	default
 

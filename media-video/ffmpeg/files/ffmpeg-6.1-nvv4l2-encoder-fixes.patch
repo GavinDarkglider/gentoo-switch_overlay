@@ -1,0 +1,245 @@
+nvv4l2 encoder fixes from Lakka (libretro/Lakka-LibreELEC PR #2221, commit
+16575fb, patches 0042-0046), ported to the l4t-community 6.1.1-nvv4l2 branch,
+which calls the NvBuffer functions through ctx->ops:
+
+- 0042 don't munmap uninitialised plane pointers; allocate NvBuffers zeroed
+- 0043 honour AVFrame.linesize in the encoder (repack padded rows)
+- 0044 don't drop in-flight frames when draining
+- 0045 report Raw2NvBuffer import failures; don't export when the pool is full
+- 0046 honour forced keyframes
+
+diff --git a/libavcodec/nvv4l2.c b/libavcodec/nvv4l2.c
+index cb4ca3a..6695dbc 100644
+--- a/libavcodec/nvv4l2.c
++++ b/libavcodec/nvv4l2.c
+@@ -109,7 +109,7 @@ nvv4l2_create_bufferfmt(NvBuffer *buffer, enum v4l2_buf_type buf_type,
+     buffer->index = index;
+     buffer->n_planes = n_planes;
+ 
+-    memset(buffer->planes, 0, sizeof(NvBufferPlane));
++    memset(buffer->planes, 0, sizeof(buffer->planes));
+     for (uint32_t i = 0; i < buffer->n_planes; i++) {
+         buffer->planes[i].fd = -1;
+         buffer->planes[i].fmt = fmt[i];
+@@ -182,7 +182,13 @@ nvv4l2_unmap_out(nvv4l2_ctx_t *ctx, int index, enum v4l2_buf_type buf_type,
+     switch (mem_type) {
+     case V4L2_MEMORY_DMABUF:
+         for (uint32_t i = 0; i < buffer->n_planes; i++) {
++            /* Output buffers are only mapped once first used, so on close
++             ** some were never mapped. NvBufferMemUnMap() munmap()s
++             ** whatever pointer it's given; skip unmapped planes. */
++            if (!buffer->planes[i].data)
++                continue;
+             ret = ctx->ops.NvBufferMemUnMap(dma_fd, i, (void **)&buffer->planes[i].data);
++            buffer->planes[i].data = NULL;
+             if (ret) {
+                 ctx->in_error = true;
+                 av_log(ctx->avctx, AV_LOG_ERROR,
+@@ -581,7 +587,7 @@ nvv4l2_req_buffers_on_capture_plane(nvv4l2_ctx_t *ctx,
+         ctx->cp_buffers =
+             (NvBuffer **)NVMALLOC(reqbufs.count * sizeof(NvBuffer *));
+         for (uint32_t i = 0; i < reqbufs.count; ++i) {
+-            ctx->cp_buffers[i] = (NvBuffer *)NVMALLOC(sizeof(NvBuffer));
++            ctx->cp_buffers[i] = (NvBuffer *)NVCALLOC(1, sizeof(NvBuffer));
+             nvv4l2_create_bufferfmt(ctx->cp_buffers[i], buf_type, mem_type,
+                              ctx->cp_num_planes, ctx->cp_planefmts, i);
+         }
+@@ -623,7 +629,7 @@ nvv4l2_req_buffers_on_output_plane(nvv4l2_ctx_t *ctx,
+         ctx->op_buffers =
+             (NvBuffer **)NVMALLOC(reqbufs.count * sizeof(NvBuffer *));
+         for (uint32_t i = 0; i < reqbufs.count; ++i) {
+-            ctx->op_buffers[i] = (NvBuffer *)NVMALLOC(sizeof(NvBuffer));
++            ctx->op_buffers[i] = (NvBuffer *)NVCALLOC(1, sizeof(NvBuffer));
+             nvv4l2_create_bufferfmt(ctx->op_buffers[i], buf_type, mem_type,
+                              ctx->op_num_planes, ctx->op_planefmts, i);
+         }
+diff --git a/libavcodec/nvv4l2.h b/libavcodec/nvv4l2.h
+index 5f09e38..224dc79 100644
+--- a/libavcodec/nvv4l2.h
++++ b/libavcodec/nvv4l2.h
+@@ -81,6 +81,7 @@ typedef struct _NVFRAME {
+     uint32_t flags;
+     uint32_t payload_size[3];
+     uint8_t *payload[3];
++    int linesize[3];
+     uint32_t width;
+     uint32_t height;
+     int64_t  pts;
+@@ -227,6 +228,17 @@ typedef struct {
+     int64_t  frame_pts[NV_MAX_BUFFERS];
+     int64_t  frame_user_pts[NV_MAX_BUFFERS];
+ 
++    /* Encoder drain accounting: frames queued on the output plane by
++     ** the caller, and packets dequeued from the capture plane by the
++     ** capture thread (updated atomically). */
++    uint32_t frames_queued;
++    uint32_t packets_dequeued;
++
++    /* Scratch for repacking input planes whose linesize differs from
++     * the stride Raw2NvBuffer() is given. */
++    uint8_t *repack_buf;
++    size_t repack_buf_size;
++
+     uint8_t *packet[NV_MAX_BUFFERS];
+     uint32_t packet_buf_size[NV_MAX_BUFFERS];
+     uint32_t packet_size[NV_MAX_BUFFERS];
+diff --git a/libavcodec/nvv4l2_enc.c b/libavcodec/nvv4l2_enc.c
+index 90532cd..c603896 100644
+--- a/libavcodec/nvv4l2_enc.c
++++ b/libavcodec/nvv4l2_enc.c
+@@ -28,6 +28,7 @@
+ #include <string.h>
+ #include <fcntl.h>
+ #include <errno.h>
++#include <stdatomic.h>
+ #include "codec_internal.h"
+ #include "encode.h"
+ #include "libavutil/imgutils.h"
+@@ -36,6 +37,9 @@
+ 
+ #include "nvv4l2.h"
+ 
++/* Upper bound on waiting for in-flight packets when draining. */
++#define NVV4L2_DRAIN_TIMEOUT_MS 2000
++
+ #define ENCODER_DEV "/dev/nvhost-msenc"
+ #define PACKET_DEFAULT_SIZE (2*1024*1024)
+ 
+@@ -224,9 +228,12 @@ static void *enc_capture_thread(void *arg)
+             }
+             ctx->packet_keyflag[buf_index] =
+                                     enc_metadata.KeyFrame ? true : false;
++            nvv4l2_pool_push(ctx, ctx->export_pool);
++        } else {
++            av_log(ctx->avctx, AV_LOG_ERROR,
++                   "Export pool full, dropping encoded packet!\n");
+         }
+-
+-        nvv4l2_pool_push(ctx, ctx->export_pool);
++        atomic_fetch_add(&ctx->packets_dequeued, 1);
+ 
+         /* Queue the buffer. */
+         ret = nvv4l2_q_buffer(ctx, &v4l2_cp_buf, cp_buffer, ctx->cp_buf_type,
+@@ -719,6 +726,10 @@ int nvv4l2_encoder_put_frame(AVCodecContext *avctx, nvv4l2_ctx_t *ctx,
+     /* Import frame into output plane */
+     for (uint32_t i = 0; i < buffer->n_planes; i++) {
+         int aligned_plane_width = NVALIGN(ctx->op_planefmts[i].width, alignment);
++        uint32_t bpp    = ctx->op_planefmts[i].bytesperpixel;
++        uint32_t height = ctx->op_planefmts[i].height;
++        size_t stride;
++        uint8_t *src = frame->payload[i];
+ 
+         /* If plane is reduced, use alignment of main plane */
+         if (ctx->op_planefmts[i].width == ctx->op_planefmts[0].width / 2)
+@@ -727,8 +738,39 @@ int nvv4l2_encoder_put_frame(AVCodecContext *avctx, nvv4l2_ctx_t *ctx,
+         av_log(avctx, AV_LOG_VERBOSE, "Plane %d: width %d -> %d\n",
+                i, ctx->op_planefmts[i].width, aligned_plane_width);
+ 
+-        ctx->ops.Raw2NvBuffer(frame->payload[i], i, aligned_plane_width,
+-                     ctx->op_planefmts[i].height, buffer->planes[i].fd);
++        /*
++         ** Raw2NvBuffer() reads the source as tightly packed rows of
++         ** aligned_plane_width pixels. If the caller's linesize differs
++         ** (any packed frame whose width isn't a multiple of the
++         ** alignment, or a padded one), repack the rows first; otherwise
++         ** the image is sheared and the copy reads past the plane.
++         */
++        stride = (size_t)aligned_plane_width * bpp;
++        if (frame->linesize[i] > 0 && (size_t)frame->linesize[i] != stride) {
++            size_t row  = FFMIN((size_t)ctx->op_planefmts[i].width * bpp,
++                                (size_t)frame->linesize[i]);
++            size_t need = stride * height;
++
++            if (ctx->repack_buf_size < need) {
++                NVFREE(ctx->repack_buf);
++                ctx->repack_buf = (uint8_t *)NVMALLOC(need);
++                ctx->repack_buf_size = ctx->repack_buf ? need : 0;
++                if (!ctx->repack_buf) {
++                    ctx->in_error = true;
++                    return -1;
++                }
++            }
++            for (uint32_t y = 0; y < height; y++)
++                memcpy(ctx->repack_buf + y * stride,
++                       src + (size_t)y * frame->linesize[i], row);
++            src = ctx->repack_buf;
++        }
++
++        ret = ctx->ops.Raw2NvBuffer(src, i, aligned_plane_width, height,
++                                    buffer->planes[i].fd);
++        if (ret)
++            av_log(avctx, AV_LOG_ERROR,
++                   "Raw2NvBuffer failed on plane %u (%d)!\n", i, ret);
+         buffer->planes[i].bytesused = ctx->op_planefmts[i].width *
+                                       ctx->op_planefmts[i].height *
+                                       ctx->op_planefmts[i].bytesperpixel;
+@@ -752,6 +794,7 @@ int nvv4l2_encoder_put_frame(AVCodecContext *avctx, nvv4l2_ctx_t *ctx,
+     if (ctx->num_active_op_buffers < ctx->op_num_buffers) {
+         ctx->num_active_op_buffers++;
+     }
++    ctx->frames_queued++;
+ 
+     return 0;
+ }
+@@ -850,6 +893,7 @@ int nvv4l2_encoder_close(AVCodecContext *avctx, nvv4l2_ctx_t *ctx)
+ 
+     /* Free encoder parameters */
+     NVFREE(ctx->enc);
++    NVFREE(ctx->repack_buf);
+ 
+     /* Report application run status on exit. */
+     if (ctx->in_error) {
+@@ -1188,6 +1232,9 @@ static int nvv4l2enc_init(AVCodecContext *avctx)
+             _nvframe.payload[0] = dst[0];
+             _nvframe.payload[1] = dst[1];
+             _nvframe.payload[2] = dst[2];
++            _nvframe.linesize[0] = linesize[0];
++            _nvframe.linesize[1] = linesize[1];
++            _nvframe.linesize[2] = linesize[2];
+ 
+             ret = nvv4l2_encoder_put_frame(avctx, nvv4l2_ctx->ctx, &_nvframe);
+             if (ret)
+@@ -1270,11 +1317,43 @@ nvv4l2enc_encode(AVCodecContext *avctx, AVPacket *pkt,
+         _nvframe.payload[0] = frame->data[0];
+         _nvframe.payload[1] = frame->data[1];
+         _nvframe.payload[2] = frame->data[2];
++        _nvframe.linesize[0] = frame->linesize[0];
++        _nvframe.linesize[1] = frame->linesize[1];
++        _nvframe.linesize[2] = frame->linesize[2];
+ 
+         _nvframe.pts = frame->pts;
+ 
++#ifdef V4L2_CID_MPEG_MFC51_VIDEO_FORCE_FRAME_TYPE
++        /*
++         ** Honour forced keyframes (AV_PICTURE_TYPE_I), e.g. a caller
++         ** keeping a keyframe cadence in time rather than frames. This
++         ** is the runtime control NVIDIA's own encoder samples use to
++         ** force an IDR on the next queued output buffer.
++         */
++        if (frame->pict_type == AV_PICTURE_TYPE_I &&
++            nvv4l2_set_ext_controls(ctx->fd,
++                                    V4L2_CID_MPEG_MFC51_VIDEO_FORCE_FRAME_TYPE,
++                                    0, 1))
++            av_log(avctx, AV_LOG_WARNING, "Failed to force IDR frame\n");
++#endif
++
+         if (nvv4l2_encoder_put_frame(avctx, ctx, &_nvframe))
+             return AVERROR_UNKNOWN;
++    } else {
++        /*
++         ** Draining. Packets come back asynchronously on the capture
++         ** thread, so an empty export pool doesn't mean the encoder is
++         ** done: returning no packet here makes lavc treat the stream
++         ** as finished and the frames still in flight are lost. Wait
++         ** until every queued frame has come back (bounded, in case the
++         ** hardware never returns one).
++         */
++        for (int waited_ms = 0;
++             !ctx->in_error && ctx->export_pool->capacity == 0 &&
++             atomic_load(&ctx->packets_dequeued) < ctx->frames_queued &&
++             waited_ms < NVV4L2_DRAIN_TIMEOUT_MS;
++             waited_ms++)
++            usleep(1000);
+     }
+ 
+     if (nvv4l2_encoder_get_packet(avctx, ctx, &packet))

@@ -1,0 +1,4 @@
+# Gavin 2026-11-07 the SD card boot files (hekate ini, boot.scr, bl31.bin from
+# sys-boot/switch-atf, bl33.bin from sys-boot/nintendo-switch-u-boot) on every
+# Switch system, all built from source
+*sys-boot/switchroot-bootstack

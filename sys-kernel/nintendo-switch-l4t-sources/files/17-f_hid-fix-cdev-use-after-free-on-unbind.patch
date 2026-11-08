@@ -1,0 +1,127 @@
+From f943163092564bfb05ea6c0eab89210743c0c6ba Mon Sep 17 00:00:00 2001
+From: Ronald Brown <rbrown4014@yahoo.com>
+Date: Mon, 31 Aug 2026 16:21:58 +0200
+Subject: [PATCH 1/2] f_hid: fix cdev use after free on unbind
+
+---
+ drivers/usb/gadget/function/f_hid.c | 56 +++++++++++++++++++++--------
+ 1 file changed, 41 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/usb/gadget/function/f_hid.c b/drivers/usb/gadget/function/f_hid.c
+index 5815120c0402..adf170134747 100644
+--- a/drivers/usb/gadget/function/f_hid.c
++++ b/drivers/usb/gadget/function/f_hid.c
+@@ -62,6 +62,7 @@ struct f_hidg {
+ 
+ 	int				minor;
+ 	struct cdev			cdev;
++	struct device			dev;
+ 	struct usb_function		func;
+ 
+ 	struct usb_ep			*in_ep;
+@@ -682,9 +683,7 @@ static int hidg_bind(struct usb_configuration *c, struct usb_function *f)
+ 	struct usb_ep		*ep;
+ 	struct f_hidg		*hidg = func_to_hidg(f);
+ 	struct usb_string	*us;
+-	struct device		*device;
+ 	int			status;
+-	dev_t			dev;
+ 
+ 	/* maybe allocate device-global string IDs, and patch descriptors */
+ 	us = usb_gstrings_attach(c->cdev, ct_func_strings,
+@@ -744,23 +743,28 @@ static int hidg_bind(struct usb_configuration *c, struct usb_function *f)
+ 	init_waitqueue_head(&hidg->read_queue);
+ 	INIT_LIST_HEAD(&hidg->completed_out_req);
+ 
+-	/* create char device */
++	/*
++	 * Create the char device. Parent the cdev's kobject to the embedded
++	 * struct device so that neither the device nor the enclosing f_hidg
++	 * (freed in hidg_release()) can be released while /dev/hidgN is still
++	 * open. Fixes a use-after-free in cdev_default_release() on close and a
++	 * soft-lockup in chrdev_open() when the function is unbound with the
++	 * node still open (e.g. toggling controller passthrough).
++	 */
+ 	cdev_init(&hidg->cdev, &f_hidg_fops);
+-	dev = MKDEV(major, hidg->minor);
+-	status = cdev_add(&hidg->cdev, dev, 1);
++	hidg->cdev.owner = THIS_MODULE;
++	hidg->cdev.kobj.parent = &hidg->dev.kobj;
++	status = cdev_add(&hidg->cdev, hidg->dev.devt, 1);
+ 	if (status)
+ 		goto fail_free_descs;
+ 
+-	device = device_create(hidg_class, NULL, dev, NULL,
+-			       "%s%d", "hidg", hidg->minor);
+-	if (IS_ERR(device)) {
+-		status = PTR_ERR(device);
+-		goto del;
++	status = device_add(&hidg->dev);
++	if (status) {
++		cdev_del(&hidg->cdev);
++		goto fail_free_descs;
+ 	}
+ 
+ 	return 0;
+-del:
+-	cdev_del(&hidg->cdev);
+ fail_free_descs:
+ 	usb_free_all_descriptors(f);
+ fail:
+@@ -982,6 +986,14 @@ static struct usb_function_instance *hidg_alloc_inst(void)
+ 	return ret;
+ }
+ 
++static void hidg_release(struct device *dev)
++{
++	struct f_hidg *hidg = container_of(dev, struct f_hidg, dev);
++
++	kfree(hidg->report_desc);
++	kfree(hidg);
++}
++
+ static void hidg_free(struct usb_function *f)
+ {
+ 	struct f_hidg *hidg;
+@@ -989,8 +1001,12 @@ static void hidg_free(struct usb_function *f)
+ 
+ 	hidg = func_to_hidg(f);
+ 	opts = container_of(f->fi, struct f_hid_opts, func_inst);
+-	kfree(hidg->report_desc);
+-	kfree(hidg);
++	/*
++	 * The actual free happens in hidg_release() once the last reference on
++	 * the embedded device is dropped, so it cannot race a still-open
++	 * /dev/hidgN (the cdev holds a reference to hidg->dev).
++	 */
++	put_device(&hidg->dev);
+ 	mutex_lock(&opts->lock);
+ 	--opts->refcnt;
+ 	mutex_unlock(&opts->lock);
+@@ -1000,7 +1016,7 @@ static void hidg_unbind(struct usb_configuration *c, struct usb_function *f)
+ {
+ 	struct f_hidg *hidg = func_to_hidg(f);
+ 
+-	device_destroy(hidg_class, MKDEV(major, hidg->minor));
++	device_del(&hidg->dev);
+ 	cdev_del(&hidg->cdev);
+ 
+ 	usb_free_all_descriptors(f);
+@@ -1039,6 +1055,16 @@ static struct usb_function *hidg_alloc(struct usb_function_instance *fi)
+ 
+ 	mutex_unlock(&opts->lock);
+ 
++	/*
++	 * Set up the embedded device now; it is registered in hidg_bind() via
++	 * device_add() and freed via put_device()/hidg_release().
++	 */
++	device_initialize(&hidg->dev);
++	hidg->dev.release = hidg_release;
++	hidg->dev.class = hidg_class;
++	hidg->dev.devt = MKDEV(major, hidg->minor);
++	dev_set_name(&hidg->dev, "hidg%d", hidg->minor);
++
+ 	hidg->func.name    = "hid";
+ 	hidg->func.bind    = hidg_bind;
+ 	hidg->func.unbind  = hidg_unbind;
+

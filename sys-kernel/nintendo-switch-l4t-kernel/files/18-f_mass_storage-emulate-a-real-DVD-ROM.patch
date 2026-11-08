@@ -1,0 +1,804 @@
+From 71f242c40cb06c45eac21a17dd80c38018749881 Mon Sep 17 00:00:00 2001
+From: Ronald Brown <rbrown4014@yahoo.com>
+Date: Mon, 31 Aug 2026 16:25:11 +0200
+Subject: [PATCH 2/2] usb: gadget: f_mass_storage: emulate a real DVD-ROM so
+ Windows mounts UDF
+
+The mass-storage gadget can back a LUN with a CD/DVD/BD image, but large
+UDF-bridge ISOs (e.g. retail Windows 10/11 install media) were unusable:
+the image was silently truncated, and even once that was fixed Microsoft
+Windows would only ever mount the ISO 9660 (CDFS) side and never recognise
+the UDF filesystem, while Linux and UEFI firmware read the same image fine.
+
+Root causes, in the order they bite:
+
+  1. Capacity clamp. fsg_lun_open() clamped every cdrom LUN to 256*60*75
+     (~2.2 GB) of CD MSF-addressable space. Any larger image was truncated,
+     so reads past ~2.2 GB (install.wim, and crucially the UDF closing
+     anchor in the last sector) failed with LBA-out-of-range. This alone
+     broke UDF recognition and large-file access for DVD/BD images.
+
+  2. Missing MMC command set. Windows interrogates an optical drive with
+     GET CONFIGURATION, MODE SENSE page 2Ah, GET EVENT STATUS NOTIFICATION,
+     READ DISC INFORMATION, READ DISC STRUCTURE, GET PERFORMANCE and
+     REPORT KEY. The gadget rejected these, so Windows treated the device
+     as not a real DVD-ROM and, under the ATAPI binding below, spun in a
+     media-detection retry loop that never completed the mount.
+
+  3. Transport subclass. Real USB optical drives enumerate as SFF-8020i /
+     ATAPI-MMC (bInterfaceSubClass 0x02); the gadget used SCSI transparent
+     (0x06). Windows only runs its optical/UDF recognition path for the
+     former. Under ATAPI, READ TOC also moves the format field into CDB
+     byte 2, which the command mask rejected, breaking session-info reads
+     that Windows needs to finish mounting.
+
+  4. Media-change signalling. On (re)enumeration all LUNs were given a
+     bus-reset unit attention, letting the host reuse a cached filesystem
+     verdict instead of re-running recognition.
+
+This change makes an optical LUN present as a genuine finalized DVD-ROM:
+
+  - Add a per-LUN disc profile (CD/DVD/BD), auto-detected from image size,
+    with a configfs 'profile' override; lift the ~2.2 GB clamp for DVD/BD
+    and report capacity trimmed to the UDF closing anchor.
+  - Implement GET CONFIGURATION (0x46), MODE SENSE page 2Ah, GET EVENT
+    STATUS NOTIFICATION (0x4a), READ DISC INFORMATION (0x51), READ DISC
+    STRUCTURE (0xad), GET PERFORMANCE (0xac) and REPORT KEY (0xa4, reported
+    region-free / unprotected). GET CONFIGURATION's feature table mirrors a
+    real DVD-ROM.
+  - Raise a NOT-READY-to-READY (medium may have changed) unit attention on
+    connect for optical LUNs with media, so the host re-runs recognition.
+  - Set bInterfaceSubClass to ATAPI (0x02) in fsg_bind() only when the
+    function exposes a cdrom LUN; plain disk-image LUNs keep SCSI transparent
+    (0x06) and are unaffected.
+  - Allow the READ TOC format field in CDB byte 2 so ATAPI-style
+    session-info requests succeed.
+
+With these, Windows mounts UDF from a gadget-served DVD/BD image, and the
+image also boots via the UEFI removable-media path. Non-cdrom disk-image
+LUNs are behaviourally unchanged.
+---
+ drivers/usb/gadget/function/f_mass_storage.c | 445 ++++++++++++++++++-
+ drivers/usb/gadget/function/f_mass_storage.h |   1 +
+ drivers/usb/gadget/function/storage_common.c | 147 +++++-
+ drivers/usb/gadget/function/storage_common.h |   7 +
+ 4 files changed, 592 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/usb/gadget/function/f_mass_storage.c b/drivers/usb/gadget/function/f_mass_storage.c
+index 91d3fbfe3427..a55a739546ec 100644
+--- a/drivers/usb/gadget/function/f_mass_storage.c
++++ b/drivers/usb/gadget/function/f_mass_storage.c
+@@ -236,6 +236,40 @@ static const char fsg_string_interface[] = "Mass Storage";
+ #include "storage_common.h"
+ #include "f_mass_storage.h"
+ 
++/*
++ * MMC GET CONFIGURATION opcode and constants for optical (CD/DVD/BD) emulation,
++ * faithfully mirroring the OpenBMC f_mass_storage DVD/UDF support (Igor
++ * Kononenko, patchwork.ozlabs.org series 250861).  Windows uses GET
++ * CONFIGURATION to choose the filesystem driver (UDF vs CDFS); the feature
++ * table below must match what a real DVD-ROM reports for that to work.
++ */
++#ifndef GET_CONFIGURATION
++#define GET_CONFIGURATION		0x46
++#endif
++#ifndef GET_EVENT_STATUS_NOTIFICATION
++#define GET_EVENT_STATUS_NOTIFICATION	0x4a
++#endif
++#ifndef READ_DISC_INFORMATION
++#define READ_DISC_INFORMATION		0x51
++#endif
++#ifndef READ_DISC_STRUCTURE
++#define READ_DISC_STRUCTURE		0xad
++#endif
++#ifndef GET_PERFORMANCE
++#define GET_PERFORMANCE			0xac
++#endif
++#ifndef GPCMD_REPORT_KEY
++#define GPCMD_REPORT_KEY		0xa4
++#endif
++
++/* GET CONFIGURATION RT (request type) field values */
++#define CDR_RT_ALL		0x00	/* all features, code >= SFN */
++#define CDR_RT_CURRENT		0x01	/* current features, code >= SFN */
++#define CDR_RT_ONE		0x02	/* exactly the feature == SFN */
++
++/* Core feature Physical Interface Standard: USB (MMC-6 enum value 7) */
++#define CDR_PIS_USB		0x00000007
++
+ /* Static strings, in UTF-8 (for simplicity we use only ASCII characters) */
+ static struct usb_string		fsg_strings[] = {
+ 	{FSG_STRING_INTERFACE,		fsg_string_interface},
+@@ -1311,6 +1345,31 @@ static int do_mode_sense(struct fsg_common *common, struct fsg_buffhd *bh)
+ 		buf += 12;
+ 	}
+ 
++	/*
++	 * Page 0x2A: CD/DVD Capabilities and Mechanical Status.  Real optical
++	 * drives always report this; Windows reads it to decide the drive is a
++	 * genuine DVD-ROM before it will run its DVD/UDF recognition path.
++	 */
++	if (curlun->cdrom && (page_code == 0x2a || all_pages)) {
++		valid_page = 1;
++		buf[0] = 0x2a;		/* Page code */
++		buf[1] = 0x1a;		/* Page length (26) */
++		memset(buf + 2, 0, 26);
++		if (!changeable_values) {
++			buf[2] = 0x08;	/* DVD-ROM read supported */
++			buf[3] = 0x00;	/* No write support (read-only) */
++			buf[4] = 0x71;	/* Multisession, Mode2 Form1/2, DigitalPort */
++			buf[5] = 0x00;
++			buf[6] = 0x29;	/* Tray loader, Eject, Lock */
++			buf[7] = 0x00;
++			put_unaligned_be16(0x1b90, &buf[8]);  /* Max read kB/s */
++			put_unaligned_be16(1,      &buf[10]); /* Volume levels */
++			put_unaligned_be16(0x0200, &buf[12]); /* Buffer 512 kB */
++			put_unaligned_be16(0x1b90, &buf[14]); /* Current read kB/s */
++		}
++		buf += 28;
++	}
++
+ 	/*
+ 	 * Check that a valid page was requested and the mode data length
+ 	 * isn't too long.
+@@ -1835,6 +1894,240 @@ static int check_command_size_in_blocks(struct fsg_common *common,
+ 			mask, needs_medium, name);
+ }
+ 
++/*
++ * Append one GET CONFIGURATION feature descriptor if it passes the RT / SFN
++ * filter.  'vpc' is the version/persistent/current byte = (ver<<2)|(per<<1)|cur.
++ * Returns the number of bytes written (0 if the feature was filtered out).
++ */
++static int fsg_gc_emit(u8 *p, u8 rt, u16 sfn, u16 code, u8 vpc,
++		       const u8 *body, u8 blen)
++{
++	bool cur = vpc & 0x01;
++
++	if (rt == CDR_RT_ONE) {
++		if (code != sfn)
++			return 0;
++	} else {
++		if (code < sfn)
++			return 0;
++		if (rt == CDR_RT_CURRENT && !cur)
++			return 0;
++	}
++	put_unaligned_be16(code, &p[0]);
++	p[2] = vpc;
++	p[3] = blen;
++	if (blen)
++		memcpy(&p[4], body, blen);
++	return 4 + blen;
++}
++
++/*
++ * GET CONFIGURATION (0x46).  The feature set and byte values reproduce the
++ * proven OpenBMC implementation exactly: a full Profile List (BD/DVD/CD with
++ * the current one marked), Core (physical interface = USB, DBE), Morphing,
++ * Removable Medium, Random Readable (2048-byte blocks, PP set), the profile's
++ * Read feature (DVD Read with MULTI110/Dual-R), and Real-Time Streaming.  This
++ * is what lets MS Windows select the UDF driver instead of falling back to
++ * CDFS on a UDF-bridge disc.
++ */
++static int do_get_configuration(struct fsg_common *common, struct fsg_buffhd *bh)
++{
++	struct fsg_lun	*curlun = common->curlun;
++	u8		*buf = (u8 *)bh->buf;
++	u8		*p = buf + 8;		/* leave room for the 8-byte header */
++	u8		rt = common->cmnd[1] & 0x03;
++	u16		sfn = get_unaligned_be16(&common->cmnd[2]);
++	u16		profile = curlun->disc_profile ? curlun->disc_profile
++						       : FSG_PROFILE_CD_ROM;
++	static const u16 all_profiles[3] = { FSG_PROFILE_BD_ROM,
++					     FSG_PROFILE_DVD_ROM,
++					     FSG_PROFILE_CD_ROM };
++	u8		body[16];
++	int		i, n, len;
++
++	if (!curlun || !curlun->cdrom)
++		return -EINVAL;
++
++	memset(buf, 0, 128);
++
++	/* 0x0000 Profile List: enumerate all profiles, mark the current one */
++	for (i = 0, n = 0; i < 3; i++, n += 4) {
++		put_unaligned_be16(all_profiles[i], &body[n]);
++		body[n + 2] = (all_profiles[i] == profile) ? 0x01 : 0x00;
++		body[n + 3] = 0x00;
++	}
++	p += fsg_gc_emit(p, rt, sfn, 0x0000, 0x03, body, n);
++
++	/* 0x0001 Core: physical interface = USB, DBE set (ver 2, persistent) */
++	put_unaligned_be32(CDR_PIS_USB, &body[0]);
++	body[4] = 0x01; body[5] = body[6] = body[7] = 0x00;
++	p += fsg_gc_emit(p, rt, sfn, 0x0001, 0x0b, body, 8);
++
++	/* 0x0002 Morphing: OCEvent (ver 1, persistent) */
++	body[0] = 0x02; body[1] = body[2] = body[3] = 0x00;
++	p += fsg_gc_emit(p, rt, sfn, 0x0002, 0x07, body, 4);
++
++	/* 0x0003 Removable Medium: tray load, eject, lock (ver 2, persistent) */
++	body[0] = (0x1 << 5) | (1 << 3) | (1 << 0);
++	body[1] = body[2] = body[3] = 0x00;
++	p += fsg_gc_emit(p, rt, sfn, 0x0003, 0x0b, body, 4);
++
++	/* 0x0010 Random Readable: 2048-byte blocks, blocking 0x10, PP set */
++	put_unaligned_be32(2048, &body[0]);
++	put_unaligned_be16(0x0010, &body[4]);
++	body[6] = 0x01; body[7] = 0x00;
++	p += fsg_gc_emit(p, rt, sfn, 0x0010, 0x01, body, 8);
++
++	/* 0x001F DVD Read: MULTI110 + Dual-R (ver 2, persistent) */
++	body[0] = 0x01; body[1] = 0x00; body[2] = 0x01; body[3] = 0x00;
++	p += fsg_gc_emit(p, rt, sfn, 0x001f, 0x0b, body, 4);
++
++	/* 0x0107 Real-Time Streaming: RBCB/SCS/MP2A/WSPD/SW (ver 5) */
++	body[0] = 0x1f; body[1] = body[2] = body[3] = 0x00;
++	p += fsg_gc_emit(p, rt, sfn, 0x0107, 0x15, body, 4);
++
++	len = p - buf;
++	/* Feature header: Data Length (total - 4), then Current Profile */
++	put_unaligned_be32(len - 4, &buf[0]);
++	put_unaligned_be16(profile, &buf[6]);
++	return len;
++}
++
++/*
++ * GET EVENT STATUS NOTIFICATION (0x4a).  Report, via the modern polled
++ * mechanism, that media is present and no change is pending.  Rejecting this
++ * (the previous behaviour) makes Windows fall back to a degraded probe that
++ * skips UDF recognition.
++ */
++static int do_get_event_status(struct fsg_common *common, struct fsg_buffhd *bh)
++{
++	struct fsg_lun	*curlun = common->curlun;
++	u8		*buf = (u8 *)bh->buf;
++	u8		req = common->cmnd[4];	/* Notification Class Request bitmap */
++	const u8	supported = 0x10;	/* We support the Media class (4) */
++
++	if (req & 0x10) {			/* Media class requested */
++		put_unaligned_be16(6, &buf[0]);	/* Event Descriptor Length */
++		buf[2] = 0x04;			/* NEA=0, Notification Class = Media */
++		buf[3] = supported;
++		buf[4] = 0x00;			/* Event Code: No Change */
++		buf[5] = curlun->filp ? 0x02 : 0x00;  /* bit1: Media Present */
++		buf[6] = 0x00;
++		buf[7] = 0x00;
++		return 8;
++	}
++	/* No supported class requested: NEA=1, header only */
++	put_unaligned_be16(2, &buf[0]);
++	buf[2] = 0x80;				/* NEA = 1 (No Event Available) */
++	buf[3] = supported;
++	return 4;
++}
++
++/*
++ * READ DISC INFORMATION (0x51).  Present a finalized, complete, single-session
++ * read-only disc so the host treats it as a proper pressed DVD-ROM.
++ */
++static int do_read_disc_information(struct fsg_common *common,
++				   struct fsg_buffhd *bh)
++{
++	u8 *buf = (u8 *)bh->buf;
++
++	memset(buf, 0, 34);
++	put_unaligned_be16(32, &buf[0]);  /* Disc Information Length */
++	buf[2] = 0x0e;	/* Disc Status=finalized(2), Last Session=complete(3) */
++	buf[3] = 1;	/* Number of first track */
++	buf[4] = 1;	/* Number of sessions (LSB) */
++	buf[5] = 1;	/* First track in last session (LSB) */
++	buf[6] = 1;	/* Last track in last session (LSB) */
++	buf[7] = 0x20;	/* URU = unrestricted use */
++	buf[8] = 0x00;	/* Disc type: CD-ROM/DVD data */
++	put_unaligned_be32(0xffffffff, &buf[16]); /* Last lead-in start (N/A) */
++	put_unaligned_be32(0xffffffff, &buf[20]); /* Last lead-out start (N/A) */
++	return 34;
++}
++
++/*
++ * READ DISC STRUCTURE (0xad), format 0x00: DVD physical format information.
++ * Confirms to the host that this is a single-layer DVD-ROM and where the data
++ * area lies (standard DVD data zone starts at physical sector 0x30000).
++ */
++static int do_read_disc_structure(struct fsg_common *common,
++				  struct fsg_buffhd *bh)
++{
++	struct fsg_lun	*curlun = common->curlun;
++	u8		*buf = (u8 *)bh->buf;
++	u8		format = common->cmnd[7];
++	u32		start = 0x030000;
++	u32		end;
++
++	if (format != 0x00) {		/* Only physical format is emulated */
++		curlun->sense_data = SS_INVALID_FIELD_IN_CDB;
++		return -EINVAL;
++	}
++	end = start + (u32)curlun->num_sectors - 1;
++
++	memset(buf, 0, 24);
++	put_unaligned_be16(0x0022, &buf[0]);  /* Structure data length (34) */
++	buf[4] = 0x01;	/* Book type=DVD-ROM(0), Part version=1 */
++	buf[5] = 0x0f;	/* Disc size=120mm(0), Max rate=not specified(0xf) */
++	buf[6] = 0x01;	/* 1 layer, track path PTP, layer type=embossed */
++	buf[7] = 0x00;	/* Linear/track density (defaults) */
++	put_unaligned_be32(start, &buf[8]);   /* Data area start PSN */
++	put_unaligned_be32(end,   &buf[12]);  /* Data area end PSN */
++	put_unaligned_be32(end,   &buf[16]);  /* End PSN in layer 0 */
++	buf[20] = 0x00;	/* No BCA */
++	return 24;
++}
++
++/*
++ * GET PERFORMANCE (0xac).  Return an empty (zero-descriptor) Performance List.
++ * Real DVD-ROM drives answer this; with the ATAPI/optical binding Windows will
++ * not complete UDF media detection while it fails, and instead loops re-reading
++ * the volume recognition sequence.  An empty-but-valid list satisfies it.
++ */
++static int do_get_performance(struct fsg_common *common, struct fsg_buffhd *bh)
++{
++	u8 *buf = (u8 *)bh->buf;
++
++	memset(buf, 0, 8);
++	/* Performance Data Length = bytes following this field (header remainder) */
++	put_unaligned_be32(4, &buf[0]);
++	return 8;
++}
++
++/*
++ * REPORT KEY (0xa4).  This disc carries no CSS; report an unprotected,
++ * region-free RPC state so Windows' optical copy-protection handshake
++ * succeeds instead of aborting media detection.
++ */
++static int do_report_key(struct fsg_common *common, struct fsg_buffhd *bh)
++{
++	struct fsg_lun	*curlun = common->curlun;
++	u8		*buf = (u8 *)bh->buf;
++	u8		key_format = common->cmnd[10] & 0x3f;
++
++	if (key_format == 0x08) {		/* RPC State */
++		put_unaligned_be16(6, &buf[0]);	/* data length */
++		buf[2] = 0x00;
++		buf[3] = 0x00;
++		buf[4] = 0x00;			/* type=none, no user/vendor resets used */
++		buf[5] = 0x00;			/* region mask: all regions playable */
++		buf[6] = 0x00;			/* RPC scheme: unknown/none */
++		buf[7] = 0x00;
++		return 8;
++	}
++	if (key_format == 0x00) {		/* AGID for CSS: disc is not protected */
++		put_unaligned_be16(6, &buf[0]);
++		buf[2] = buf[3] = 0x00;
++		buf[4] = buf[5] = buf[6] = 0x00;
++		buf[7] = 0x00;			/* AGID 0 */
++		return 8;
++	}
++	/* Other key formats: report "not copy protected" via a zero response. */
++	curlun->sense_data = SS_INVALID_FIELD_IN_CDB;
++	return -EINVAL;
++}
++
+ static int do_scsi_command(struct fsg_common *common)
+ {
+ 	struct fsg_buffhd	*bh;
+@@ -1975,12 +2268,82 @@ static int do_scsi_command(struct fsg_common *common)
+ 		common->data_size_from_cmnd =
+ 			get_unaligned_be16(&common->cmnd[7]);
+ 		reply = check_command(common, 10, DATA_DIR_TO_HOST,
+-				      (7<<6) | (1<<1), 1,
++				      (7<<6) | (1<<2) | (1<<1), 1,
+ 				      "READ TOC");
+ 		if (reply == 0)
+ 			reply = do_read_toc(common, bh);
+ 		break;
+ 
++	case GET_CONFIGURATION:
++		if (!common->curlun || !common->curlun->cdrom)
++			goto unknown_cmnd;
++		common->data_size_from_cmnd =
++			get_unaligned_be16(&common->cmnd[7]);
++		reply = check_command(common, 10, DATA_DIR_TO_HOST,
++				      (1<<1) | (3<<2) | (3<<7) | (1<<9), 0,
++				      "GET CONFIGURATION");
++		if (reply == 0)
++			reply = do_get_configuration(common, bh);
++		break;
++
++	case GET_EVENT_STATUS_NOTIFICATION:
++		common->data_size_from_cmnd =
++			get_unaligned_be16(&common->cmnd[7]);
++		reply = check_command(common, 10, DATA_DIR_TO_HOST,
++				      (1<<1) | (1<<4) | (3<<7) | (1<<9), 0,
++				      "GET EVENT STATUS NOTIFICATION");
++		if (reply == 0)
++			reply = do_get_event_status(common, bh);
++		break;
++
++	case READ_DISC_INFORMATION:
++		if (!common->curlun || !common->curlun->cdrom)
++			goto unknown_cmnd;
++		common->data_size_from_cmnd =
++			get_unaligned_be16(&common->cmnd[7]);
++		reply = check_command(common, 10, DATA_DIR_TO_HOST,
++				      (1<<1) | (3<<7) | (1<<9), 1,
++				      "READ DISC INFORMATION");
++		if (reply == 0)
++			reply = do_read_disc_information(common, bh);
++		break;
++
++	case READ_DISC_STRUCTURE:
++		if (!common->curlun || !common->curlun->cdrom)
++			goto unknown_cmnd;
++		common->data_size_from_cmnd =
++			get_unaligned_be16(&common->cmnd[8]);
++		reply = check_command(common, 12, DATA_DIR_TO_HOST,
++				      (0xf<<1) | (1<<6) | (1<<7) | (3<<8) | (1<<10),
++				      1, "READ DISC STRUCTURE");
++		if (reply == 0)
++			reply = do_read_disc_structure(common, bh);
++		break;
++
++	case GET_PERFORMANCE:
++		if (!common->curlun || !common->curlun->cdrom)
++			goto unknown_cmnd;
++		common->data_size_from_cmnd =
++			get_unaligned_be16(&common->cmnd[8]);
++		reply = check_command(common, 12, DATA_DIR_TO_HOST,
++				      (0xf<<1) | (3<<8) | (1<<10), 1,
++				      "GET PERFORMANCE");
++		if (reply == 0)
++			reply = do_get_performance(common, bh);
++		break;
++
++	case GPCMD_REPORT_KEY:
++		if (!common->curlun || !common->curlun->cdrom)
++			goto unknown_cmnd;
++		common->data_size_from_cmnd =
++			get_unaligned_be16(&common->cmnd[8]);
++		reply = check_command(common, 12, DATA_DIR_TO_HOST,
++				      (0xf<<1) | (3<<8) | (1<<10), 1,
++				      "REPORT KEY");
++		if (reply == 0)
++			reply = do_report_key(common, bh);
++		break;
++
+ 	case READ_FORMAT_CAPACITIES:
+ 		common->data_size_from_cmnd =
+ 			get_unaligned_be16(&common->cmnd[7]);
+@@ -2326,10 +2689,27 @@ static int do_set_interface(struct fsg_common *common, struct fsg_dev *new_fsg)
+ 	}
+ 
+ 	common->running = 1;
+-	for (i = 0; i < ARRAY_SIZE(common->luns); ++i)
+-		if (common->luns[i])
+-			common->luns[i]->unit_attention_data =
+-				SS_RESET_OCCURRED;
++	for (i = 0; i < ARRAY_SIZE(common->luns); ++i) {
++		struct fsg_lun *lun = common->luns[i];
++
++		if (!lun)
++			continue;
++		/*
++		 * For a removable/optical LUN that currently has media loaded,
++		 * raise a media-change unit attention (NOT READY -> READY,
++		 * medium may have changed) rather than a plain bus-reset one.
++		 * A bus-reset UA lets the host reuse a cached filesystem verdict
++		 * (e.g. Windows remounting as CDFS from a prior boot), whereas a
++		 * media-change UA forces it to re-run volume recognition on every
++		 * connect -- which is what makes Windows actually re-probe for UDF
++		 * instead of only on the first ever enumeration.
++		 */
++		if ((lun->cdrom || lun->removable) && fsg_lun_is_open(lun))
++			lun->unit_attention_data =
++				SS_NOT_READY_TO_READY_TRANSITION;
++		else
++			lun->unit_attention_data = SS_RESET_OCCURRED;
++	}
+ 	return rc;
+ }
+ 
+@@ -2869,6 +3249,7 @@ int fsg_common_create_lun(struct fsg_common *common, struct fsg_lun_config *cfg,
+ 	lun->name_pfx = name_pfx;
+ 
+ 	lun->cdrom = !!cfg->cdrom;
++	lun->disc_profile = cfg->cdrom_profile;	/* 0 = auto-detect on open */
+ 	lun->ro = cfg->cdrom || cfg->ro;
+ 	lun->initially_ro = lun->ro;
+ 	lun->removable = !!cfg->removable;
+@@ -3052,6 +3433,26 @@ static int fsg_bind(struct usb_configuration *c, struct usb_function *f)
+ 	fsg_intf_desc.bInterfaceNumber = i;
+ 	fsg->interface_number = i;
+ 
++	/*
++	 * Present optical (cdrom) LUNs as an SFF-8020i / ATAPI-MMC device
++	 * (SubClass 0x02) like a real USB DVD-ROM -- this is what makes Windows
++	 * run its optical/UDF recognition path.  Plain disk-image LUNs keep the
++	 * SCSI transparent command set (0x02 would break them), so the choice is
++	 * gated on whether this function actually exposes a cdrom LUN.
++	 */
++	{
++		int li;
++		bool has_cdrom = false;
++
++		for (li = 0; li < ARRAY_SIZE(common->luns); ++li)
++			if (common->luns[li] && common->luns[li]->cdrom) {
++				has_cdrom = true;
++				break;
++			}
++		fsg_intf_desc.bInterfaceSubClass =
++			has_cdrom ? USB_SC_8020 : USB_SC_SCSI;
++	}
++
+ 	/* Find all the endpoints we will use */
+ 	ep = usb_ep_autoconfig(gadget, &fsg_fs_bulk_in_desc);
+ 	if (!ep)
+@@ -3206,6 +3607,39 @@ static ssize_t fsg_lun_opts_cdrom_store(struct config_item *item,
+ 
+ CONFIGFS_ATTR(fsg_lun_opts_, cdrom);
+ 
++static ssize_t fsg_lun_opts_profile_show(struct config_item *item, char *page)
++{
++	struct fsg_lun *lun = to_fsg_lun_opts(item)->lun;
++	const char *s = "auto";
++
++	switch (lun->disc_profile) {
++	case FSG_PROFILE_CD_ROM:	s = "cd";	break;
++	case FSG_PROFILE_DVD_ROM:	s = "dvd";	break;
++	case FSG_PROFILE_BD_ROM:	s = "bd";	break;
++	}
++	return sprintf(page, "%s\n", s);
++}
++
++static ssize_t fsg_lun_opts_profile_store(struct config_item *item,
++					  const char *page, size_t len)
++{
++	struct fsg_lun *lun = to_fsg_lun_opts(item)->lun;
++
++	if (sysfs_streq(page, "cd"))
++		lun->disc_profile = FSG_PROFILE_CD_ROM;
++	else if (sysfs_streq(page, "dvd"))
++		lun->disc_profile = FSG_PROFILE_DVD_ROM;
++	else if (sysfs_streq(page, "bd"))
++		lun->disc_profile = FSG_PROFILE_BD_ROM;
++	else if (sysfs_streq(page, "auto"))
++		lun->disc_profile = 0;
++	else
++		return -EINVAL;
++	return len;
++}
++
++CONFIGFS_ATTR(fsg_lun_opts_, profile);
++
+ static ssize_t fsg_lun_opts_nofua_show(struct config_item *item, char *page)
+ {
+ 	return fsg_show_nofua(to_fsg_lun_opts(item)->lun, page);
+@@ -3238,6 +3672,7 @@ static struct configfs_attribute *fsg_lun_attrs[] = {
+ 	&fsg_lun_opts_attr_ro,
+ 	&fsg_lun_opts_attr_removable,
+ 	&fsg_lun_opts_attr_cdrom,
++	&fsg_lun_opts_attr_profile,
+ 	&fsg_lun_opts_attr_nofua,
+ 	&fsg_lun_opts_attr_inquiry_string,
+ 	NULL,
+diff --git a/drivers/usb/gadget/function/f_mass_storage.h b/drivers/usb/gadget/function/f_mass_storage.h
+index dc05ca0c4359..4290062ec6fe 100644
+--- a/drivers/usb/gadget/function/f_mass_storage.h
++++ b/drivers/usb/gadget/function/f_mass_storage.h
+@@ -88,6 +88,7 @@ struct fsg_lun_config {
+ 	char ro;
+ 	char removable;
+ 	char cdrom;
++	char cdrom_profile;	/* 0 = auto-detect; else FSG_PROFILE_* */
+ 	char nofua;
+ 	char inquiry_string[INQUIRY_STRING_LEN];
+ };
+diff --git a/drivers/usb/gadget/function/storage_common.c b/drivers/usb/gadget/function/storage_common.c
+index 8fbf6861690d..e160e59421dd 100644
+--- a/drivers/usb/gadget/function/storage_common.c
++++ b/drivers/usb/gadget/function/storage_common.c
+@@ -27,6 +27,9 @@
+ #include <linux/blkdev.h>
+ #include <linux/file.h>
+ #include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/uaccess.h>
++#include <asm/unaligned.h>
+ #include <linux/usb/composite.h>
+ 
+ #include "storage_common.h"
+@@ -39,7 +42,7 @@ struct usb_interface_descriptor fsg_intf_desc = {
+ 
+ 	.bNumEndpoints =	2,		/* Adjusted during fsg_bind() */
+ 	.bInterfaceClass =	USB_CLASS_MASS_STORAGE,
+-	.bInterfaceSubClass =	USB_SC_SCSI,	/* Adjusted during fsg_bind() */
++	.bInterfaceSubClass =	USB_SC_SCSI,	/* -> USB_SC_8020 for cdrom, set in fsg_bind() */
+ 	.bInterfaceProtocol =	USB_PR_BULK,	/* Adjusted during fsg_bind() */
+ 	.iInterface =		FSG_STRING_INTERFACE,
+ };
+@@ -179,6 +182,99 @@ void fsg_lun_close(struct fsg_lun *curlun)
+ }
+ EXPORT_SYMBOL_GPL(fsg_lun_close);
+ 
++/*
++ * Read from the backing file at open time.  fsg_lun_open() does NOT run in the
++ * gadget worker thread (it is reached from configfs / module init), so unlike
++ * do_read() the KERNEL_DS override is not already in effect -- set it here.
++ */
++static int fsg_lun_kread(struct file *filp, loff_t pos, void *buf, int count)
++{
++	mm_segment_t	old_fs = get_fs();
++	int		ret;
++
++	set_fs(get_ds());
++	ret = vfs_read(filp, (char __user *)buf, count, &pos);
++	set_fs(old_fs);
++	return ret;
++}
++
++/*
++ * ECMA-167 descriptor tag (16 bytes): TagIdentifier@0, TagChecksum@4,
++ * TagLocation@12.  A UDF Anchor Volume Descriptor Pointer (AVDP) has
++ * TagIdentifier == 2.  We treat an anchor as valid only when its recorded
++ * TagLocation matches the sector it was found in and the tag checksum is
++ * correct -- that self-reference makes false positives (e.g. random data in
++ * padding) effectively impossible.
++ */
++#define UDF_TAG_IDENT_AVDP	0x0002
++
++static bool fsg_udf_is_avdp(const u8 *tag, u32 sector)
++{
++	unsigned int	i, sum = 0;
++
++	if (get_unaligned_le16(&tag[0]) != UDF_TAG_IDENT_AVDP)
++		return false;
++	if (get_unaligned_le32(&tag[12]) != sector)
++		return false;
++	for (i = 0; i < 16; i++)
++		if (i != 4)
++			sum += tag[i];
++	return (u8)sum == tag[4];
++}
++
++/*
++ * Optical (UDF) images are frequently padded past the real end of the volume
++ * (mastering alignment, whole-disc dumps, tools rounding up to a block).  UDF
++ * records a closing AVDP at the volume's last sector N (and/or N-256).  If we
++ * report the padded file size as the medium capacity, the host looks for that
++ * tail anchor at the wrong LBA, fails UDF validation and silently falls back to
++ * ISO9660/CDFS -- exactly the "mounts as CDFS, never as UDF" symptom.
++ *
++ * Scan the tail for the highest self-consistent AVDP and report capacity up to
++ * it, so READ CAPACITY(10) agrees with the on-disc anchor.  Reporting last
++ * sector == an anchor sector satisfies the host whether that anchor is N or
++ * N-256 (it checks the reported last sector, last-256, and 256).
++ *
++ * Genuine UDF only: we require a valid AVDP at the mandatory primary location
++ * (sector 256) before touching anything, so plain ISO9660 / data / audio
++ * images are left exactly as-is.
++ */
++static loff_t fsg_udf_trim_to_anchor(struct file *filp, unsigned int blkbits,
++				     loff_t num_sectors)
++{
++	loff_t	s, first, floor, adjusted = num_sectors;
++	u8	*tag;
++	int	r;
++
++	if (num_sectors <= 256)
++		return num_sectors;
++
++	tag = kmalloc(64, GFP_KERNEL);
++	if (!tag)
++		return num_sectors;
++
++	/* Gate on the mandatory primary anchor at LBA 256 (the UDF marker). */
++	r = fsg_lun_kread(filp, (loff_t)256 << blkbits, tag, 16);
++	if (r < 16 || !fsg_udf_is_avdp(tag, 256))
++		goto out;
++
++	first = num_sectors - 1;
++	floor = 256;			/* never drop to/under the primary anchor */
++	if (first - floor > 65536)	/* bound the tail scan to 128 MB */
++		floor = first - 65536;
++
++	for (s = first; s > floor; s--) {
++		r = fsg_lun_kread(filp, s << blkbits, tag, 16);
++		if (r >= 16 && fsg_udf_is_avdp(tag, (u32)s)) {
++			adjusted = s + 1;
++			break;
++		}
++	}
++out:
++	kfree(tag);
++	return adjusted;
++}
++
+ int fsg_lun_open(struct fsg_lun *curlun, const char *filename)
+ {
+ 	int				ro;
+@@ -247,13 +343,58 @@ int fsg_lun_open(struct fsg_lun *curlun, const char *filename)
+ 	min_sectors = 1;
+ 	if (curlun->cdrom) {
+ 		min_sectors = 300;	/* Smallest track is 300 frames */
+-		if (num_sectors >= 256*60*75) {
++
++		/*
++		 * Auto-select an optical profile from the image size when the
++		 * user hasn't forced one.  This lets existing userspace that
++		 * only sets "cdrom=1" mount DVD / Blu-ray (and large UDF, e.g.
++		 * Windows install) images with no extra configuration.
++		 */
++		if (!curlun->disc_profile) {
++			if (size > (9LL << 30))		/* > 9 GiB   -> BD  */
++				curlun->disc_profile = FSG_PROFILE_BD_ROM;
++			else if (size > (900LL << 20))	/* > 900 MiB -> DVD */
++				curlun->disc_profile = FSG_PROFILE_DVD_ROM;
++			else
++				curlun->disc_profile = FSG_PROFILE_CD_ROM;
++		}
++
++		/*
++		 * The 256*60*75 (~2.2 GB) cap is the Red Book CD MSF
++		 * addressing limit and must ONLY be applied to genuine CD-ROM
++		 * emulation.  DVD/BD use plain 32-bit LBA (READ CAPACITY(10)
++		 * reaches 8 TB at 2048-byte blocks), so the whole image stays
++		 * addressable and large UDF volumes are no longer truncated --
++		 * truncation is what made Windows treat them as "not UDF".
++		 */
++		if (curlun->disc_profile == FSG_PROFILE_CD_ROM &&
++		    num_sectors >= 256*60*75) {
+ 			num_sectors = 256*60*75 - 1;
+-			LINFO(curlun, "file too big: %s\n", filename);
++			LINFO(curlun, "file too big for CD profile: %s\n",
++					filename);
+ 			LINFO(curlun, "using only first %d blocks\n",
+ 					(int) num_sectors);
+ 		}
+ 	}
++
++	/*
++	 * Trim reported capacity to the UDF closing anchor (if this is a UDF
++	 * image) so the host validates UDF instead of falling back to CDFS.
++	 * No-op for non-UDF images and for images with no trailing padding.
++	 */
++	if (curlun->cdrom) {
++		loff_t trimmed = fsg_udf_trim_to_anchor(filp, blkbits,
++							num_sectors);
++
++		if (trimmed != num_sectors) {
++			LINFO(curlun,
++			      "UDF anchor at LBA %lld: trimming %lld padding sector(s)\n",
++			      (long long)(trimmed - 1),
++			      (long long)(num_sectors - trimmed));
++			num_sectors = trimmed;
++		}
++	}
++
+ 	if (num_sectors < min_sectors) {
+ 		LINFO(curlun, "file too small: %s\n", filename);
+ 		rc = -ETOOSMALL;
+diff --git a/drivers/usb/gadget/function/storage_common.h b/drivers/usb/gadget/function/storage_common.h
+index e69848994cb4..5289a3c4bc75 100644
+--- a/drivers/usb/gadget/function/storage_common.h
++++ b/drivers/usb/gadget/function/storage_common.h
+@@ -94,6 +94,11 @@ do {									\
+  */
+ #define INQUIRY_STRING_LEN ((size_t) (8 + 16 + 4 + 1))
+ 
++/* MMC current-profile numbers reported via GET CONFIGURATION (0x46). */
++#define FSG_PROFILE_CD_ROM	0x08
++#define FSG_PROFILE_DVD_ROM	0x10
++#define FSG_PROFILE_BD_ROM	0x40
++
+ struct fsg_lun {
+ 	struct file	*filp;
+ 	loff_t		file_length;
+@@ -108,6 +113,8 @@ struct fsg_lun {
+ 	unsigned int	info_valid:1;
+ 	unsigned int	nofua:1;
+ 
++	u8		disc_profile;	/* 0 = auto; else FSG_PROFILE_* (optical) */
++
+ 	u32		sense_data;
+ 	u32		sense_data_info;
+ 	u32		unit_attention_data;

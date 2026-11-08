@@ -41,6 +41,24 @@ PATCHES=(
 	"${FILESDIR}"/06-add_wan_hdlc_x25.patch
 	# make dtbs also makes nx-plat.dtimg, which U-Boot loads
 	"${FILESDIR}"/07-nx_plat_dtimg.patch
+	# Joy-Con MCU (tera): NFC and IR camera, from Lakka (PR #2221)
+	"${FILESDIR}"/09-nintendo-tera-add-MCU-core.patch
+	"${FILESDIR}"/10-nintendo-tera-add-NFC.patch
+	"${FILESDIR}"/11-nintendo-tera-add-IR-camera.patch
+	"${FILESDIR}"/12-HID-nintendo-wire-up-tera.patch
+	"${FILESDIR}"/13-Input-joycon-serdev-wire-up-tera.patch
+	"${FILESDIR}"/14-arm64-tegra_linux_defconfig-enable-tera.patch
+	# backports the tera drivers need: NFC poll fix, V4L metadata capture
+	"${FILESDIR}"/15-nfc-core-fix-stop_poll-refcount-leak.patch
+	"${FILESDIR}"/16-media-v4l-backport-metadata-capture.patch
+	# USB gadget: f_hid unbind fix, DVD-ROM emulation for mass storage
+	# (CTCaer PR #9), settable ECM/RNDIS link speed (Usb_gadget_stuff)
+	"${FILESDIR}"/17-f_hid-fix-cdev-use-after-free-on-unbind.patch
+	"${FILESDIR}"/18-f_mass_storage-emulate-a-real-DVD-ROM.patch
+	"${FILESDIR}"/19-usb-gadget-ecm-rndis-settable-bitrate.patch
+	# iSCSI initiator: build fix (CTCaer PR #10) and build it as modules
+	"${FILESDIR}"/20-iscsi-fix-libiscsi_tcp-build.patch
+	"${FILESDIR}"/21-arm64-tegra_linux_defconfig-enable-iscsi-tcp.patch
 )
 
 

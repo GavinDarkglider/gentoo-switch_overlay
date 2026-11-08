@@ -5,7 +5,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="alsa bootstack dock-handler egl elogind initramfs joystick kernel-sources kernel-bin +wifi vulkan X"
+IUSE="alsa +bootstack dock-handler egl elogind initramfs joystick kernel-sources kernel-bin +wifi vulkan X"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -13,7 +13,8 @@ DESCRIPTION="Meta package for all required packages for Nintendo Switch"
 # Mandatory
 RDEPEND+=" || ( sys-libs/jetson-tx1-drivers[firmware] sys-firmware/jetson-tx1-firmware )"
 
-# Prebuilt switchroot bootstack files (coreboot and other SD files)
+# Switchroot bootstack: SD card boot files, built from source (bl31, bl33,
+# boot.scr, hekate ini)
 RDEPEND+=" bootstack? ( sys-boot/switchroot-bootstack )"
 
 # Additional settings to audio server

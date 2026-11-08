@@ -41,11 +41,6 @@ media-video/ffmpeg
 >dev-libs/weston-10.1.0
 >x11-base/xwayland-23
 
-# 13.01.2024 - bell07 - does not build.
-# https://gitlab.com/switchroot/bootstack/switch-uboot/-/issues/2
-# Masked till the issue is solved. Use the sys-boot/switchroot-bootstack[ubuntu-bl33] instead
-sys-boot/nintendo-switch-u-boot
-
 # 13.01.2024 - bell07 - deprecation
 # Abadoned. Please use sys-libs/switch-l4t-configs[dock-handler] instead
 x11-misc/dock-hotplug

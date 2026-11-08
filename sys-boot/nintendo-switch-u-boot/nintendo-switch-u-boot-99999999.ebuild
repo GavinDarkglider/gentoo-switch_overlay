@@ -22,6 +22,9 @@ BDEPEND="
 	$(python_gen_any_dep 'dev-python/setuptools[${PYTHON_USEDEP}]')
 "
 
+# older bootstacks shipped prebuilt bl31.bin and bl33.bin
+RDEPEND="!<sys-boot/switchroot-bootstack-20260327-r1"
+
 PATCHES=(
 	"${FILESDIR}"/dtb-build.patch
 	"${FILESDIR}"/pylibfdt-python-swig.patch

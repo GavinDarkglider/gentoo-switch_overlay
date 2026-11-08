@@ -6,7 +6,7 @@ ETYPE="sources"
 
 KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/l4t-community/kernel/l4t-kernel-4.9"
-IUSE="debug"
+IUSE="debug fbcondecor"
 
 KV_LOCALVERSION="-l4t-gentoo-dist"
 
@@ -62,7 +62,14 @@ src_unpack() {
 }
 
 src_prepare() {
+	# framebuffer console decorations (splashutils), on in the defconfig
+	use fbcondecor && PATCHES+=( "${FILESDIR}"/08-fbcondecor.patch )
+
 	default
+
+	if use fbcondecor; then
+		echo "CONFIG_FB_CON_DECOR=y" >> arch/arm64/configs/tegra_linux_defconfig || die
+	fi
 
 	emake ARCH=arm64 tegra_linux_defconfig
 	local extraversion="-$(dist-kernel_PV_to_KV "${PV}" | cut -d- -f2-)${KV_LOCALVERSION}"

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>rbrown4014@yahoo.com</email>
+		<name>GavinDarkglider</name>
+	</maintainer>
+	<longdescription>
+		The L4T community (Azkali) L4T 4.9 kernel for the Nintendo Switch: the
+		kernel, nvidia, nvgpu and device tree repositories fetched one by one
+		at pinned commits and combined into one kernel tree as Lakka does.
+		make dtbs also makes nx-plat.dtimg, the device trees U-Boot loads.
+	</longdescription>
+	<use>
+		<flag name="fbcondecor">Framebuffer console decorations (a background picture on the
+			consoles, set by media-gfx/splashutils), with fbcon rotation support;
+			on in tegra_linux_defconfig</flag>
+	</use>
+	<upstream>
+		<remote-id type="gitlab">l4t-community/kernel/l4t-kernel-4.9</remote-id>
+	</upstream>
+</pkgmetadata>

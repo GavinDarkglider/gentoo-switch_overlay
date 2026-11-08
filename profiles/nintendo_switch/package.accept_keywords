@@ -12,3 +12,7 @@ x11-drivers/xf86-input-joystick ~arm64
 
 #Gnome
 gnome-base/gnome-light ~arm64
+
+# Gavin 2026-11-07 -r2 builds mkimage & co. with HOSTCC, so a cross-built
+# system gets this computer's programs; -r3 builds them with CROSS_BUILD_TOOLS
+=dev-embedded/u-boot-tools-2025.01-r3 ~arm64

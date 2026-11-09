@@ -7,6 +7,10 @@ media-video/ffmpeg nvv4l2 -dav1d
 # bell07 2022-05-15 required for kernel less than 4.11.
 dev-qt/qtcore old-kernel
 
+# Gavin 2026-11-08 from 2.44-r5, glibc is built for Linux 6.1 and later unless
+# USE=old-kernel (then 3.2.0); the Switch runs the L4T 4.9 kernel
+sys-libs/glibc old-kernel
+
 # bell07 2026-01-14 required by dev-embedded/u-boot-tools
 sys-apps/dtc python
 

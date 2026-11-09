@@ -45,7 +45,7 @@ HOMEPAGE="https://www.gnu.org/software/libc/"
 if [[ ${PV} == *9999 ]]; then
 	inherit git-r3
 else
-	#KEYWORDS="~arm64"
+	KEYWORDS="arm64"
 	SRC_URI="mirror://gnu/glibc/${P}.tar.xz"
 	SRC_URI+=" https://distfiles.gentoo.org/pub/proj/toolchain/glibc/patches/${P}-patches-${PATCH_VER}.tar.xz"
 	SRC_URI+=" verify-sig? ( mirror://gnu/glibc/${P}.tar.xz.sig )"

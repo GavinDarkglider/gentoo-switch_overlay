@@ -15,6 +15,8 @@
 		<flag name="fbcondecor">Framebuffer console decorations (a background picture on the
 			consoles, set by media-gfx/splashutils), with fbcon rotation support;
 			on in tegra_linux_defconfig</flag>
+		<flag name="splash">With USE=fbcondecor, pull in media-gfx/splashutils (the boot splash and
+			console backgrounds; Vol- or F2 shows the boot messages)</flag>
 	</use>
 	<upstream>
 		<remote-id type="gitlab">l4t-community/kernel/l4t-kernel-4.9</remote-id>

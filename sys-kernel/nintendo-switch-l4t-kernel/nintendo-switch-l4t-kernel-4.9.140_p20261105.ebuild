@@ -6,7 +6,10 @@ ETYPE="sources"
 
 KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/l4t-community/kernel/l4t-kernel-4.9"
-IUSE="debug fbcondecor"
+IUSE="debug fbcondecor +splash"
+
+# fbcondecor needs splashutils to draw anything; -splash leaves it out
+RDEPEND="fbcondecor? ( splash? ( media-gfx/splashutils[fbcondecor(+)] ) )"
 
 KV_LOCALVERSION="-l4t-gentoo-dist"
 

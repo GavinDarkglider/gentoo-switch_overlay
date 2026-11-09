@@ -12,7 +12,7 @@ EGIT_BRANCH="revive"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="+fbcondecor gpm mng +png +truetype"
+IUSE="+fbcondecor gpm mng +png +theme-livecd +theme-livedvd +truetype"
 
 # The kernel helper runs from the initramfs before anything else is
 # available, so it is linked statically.  freetype's own optional
@@ -33,6 +33,11 @@ DEPEND="${RDEPEND}
 	truetype? ( media-libs/freetype:2[static-libs] )
 "
 BDEPEND="virtual/pkgconfig"
+# the themes need splashutils themselves
+PDEPEND="
+	theme-livecd? ( media-gfx/splash-themes-livecd )
+	theme-livedvd? ( media-gfx/splash-themes-livedvd )
+"
 
 S="${WORKDIR}/${P}/core"
 

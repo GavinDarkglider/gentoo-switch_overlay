@@ -10,7 +10,10 @@ HOMEPAGE="https://gitlab.com/l4t-community/kernel/l4t-kernel-4.9"
 DESCRIPTION="Nintendo Switch kernel sources (L4T 4.9, the L4T community tree)"
 LICENSE="GPL-2"
 SLOT="${PVR}"
-IUSE="fbcondecor symlink"
+IUSE="fbcondecor symlink +splash"
+
+# fbcondecor needs splashutils to draw anything; -splash leaves it out
+RDEPEND="fbcondecor? ( splash? ( media-gfx/splashutils[fbcondecor(+)] ) )"
 RESTRICT="binchecks strip"
 
 # The same trees, commits and patches as sys-kernel/nintendo-switch-l4t-kernel,

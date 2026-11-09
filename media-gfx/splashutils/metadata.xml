@@ -8,5 +8,7 @@
 	<use>
 		<flag name="fbcondecor">Support the fbcondecor kernel patch (verbose console backgrounds)</flag>
 		<flag name="mng">Support MNG animations in themes</flag>
+		<flag name="theme-livecd">Install the Gentoo LiveCD themes 2004.3 to 2007.0 (media-gfx/splash-themes-livecd)</flag>
+		<flag name="theme-livedvd">Install the Gentoo 12.0 live DVD theme (media-gfx/splash-themes-livedvd)</flag>
 	</use>
 </pkgmetadata>

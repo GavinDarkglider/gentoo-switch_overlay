@@ -16,3 +16,11 @@ gnome-base/gnome-light ~arm64
 # Gavin 2026-11-07 -r2 builds mkimage & co. with HOSTCC, so a cross-built
 # system gets this computer's programs; -r3 builds them with CROSS_BUILD_TOOLS
 =dev-embedded/u-boot-tools-2025.01-r3 ~arm64
+
+# Gavin 2026-11-08 boot splash for the fbcondecor kernel (USE="fbcondecor splash");
+# only the released splashutils, not the live 9999
+=media-gfx/splashutils-1.6.0_p20261023 ~arm64
+media-gfx/splash-themes-livecd ~arm64
+media-gfx/splash-themes-livedvd ~arm64
+media-gfx/splash-themes-gentoo ~arm64
+media-gfx/fbsplash-theme-natural-gentoo ~arm64

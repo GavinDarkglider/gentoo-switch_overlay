@@ -3,17 +3,16 @@
 
 EAPI=8
 
-# Gentoo's mirrors dropped these long ago; the Internet Archive kept the
-# 2012 copies (checked against the 2012 Manifest).  emerge-world-1.0 and
-# natural_gentoo-9.0-r2 weren't archived; Natural Gentoo is now
-# media-gfx/fbsplash-theme-natural-gentoo.
-WAYBACK="https://web.archive.org/web/2012id_/http://distfiles.gentoo.org/distfiles"
+# Gentoo's mirrors dropped these long ago; ChromeOS's mirror of Gentoo's
+# distfiles still has the originals (checked against the 2012 Manifest).
+CROS_MIRROR="https://commondatastorage.googleapis.com/chromeos-mirror/gentoo/distfiles"
 
-DESCRIPTION="The classic Gentoo fbsplash themes: emergence and gentoo"
+DESCRIPTION="The classic Gentoo fbsplash themes: emergence, gentoo, emerge-world"
 HOMEPAGE="https://wiki.gentoo.org/wiki/Fbsplash"
 SRC_URI="
-	${WAYBACK}/fbsplash-theme-emergence-r2.tar.bz2
-	${WAYBACK}/fbsplash-theme-gentoo-r2.tar.bz2
+	${CROS_MIRROR}/fbsplash-theme-emergence-r2.tar.bz2
+	${CROS_MIRROR}/fbsplash-theme-gentoo-r2.tar.bz2
+	${CROS_MIRROR}/fbsplash-theme-emerge-world-1.0.tar.bz2
 "
 S="${WORKDIR}"
 
@@ -26,7 +25,12 @@ RDEPEND="media-gfx/splashutils[png(+)]"
 
 src_install() {
 	insinto /etc/splash
-	doins -r emergence gentoo
+	doins -r emergence gentoo emerge-world
+
+	# Theme hook scripts (bug #470100)
+	if [[ -d emerge-world/scripts ]]; then
+		fperms 755 /etc/splash/emerge-world/scripts/{svc_started,svc_start,svc_stopped,svc_stop}-pre
+	fi
 }
 
 pkg_postinst() {

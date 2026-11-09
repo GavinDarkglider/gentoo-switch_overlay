@@ -3,20 +3,19 @@
 
 EAPI=8
 
-# Gentoo's mirrors dropped these long ago; the Internet Archive kept the
-# 2012 copies (checked against the 2012 Manifest).  The 2007.0 theme is
-# its 0.9.5 release: 0.9.6 wasn't archived.
-WAYBACK="https://web.archive.org/web/2012id_/http://distfiles.gentoo.org/distfiles"
+# Gentoo's mirrors dropped these long ago; ChromeOS's mirror of Gentoo's
+# distfiles still has the originals (checked against the 2012 Manifest).
+CROS_MIRROR="https://commondatastorage.googleapis.com/chromeos-mirror/gentoo/distfiles"
 
 DESCRIPTION="fbsplash themes of the Gentoo LiveCD releases 2004.3 to 2007.0"
 HOMEPAGE="https://wiki.gentoo.org/wiki/Fbsplash"
 SRC_URI="
-	${WAYBACK}/splash-themes-livecd-2004.3.tar.bz2
-	${WAYBACK}/gentoo-livecd-2005.0-0.9.1.tar.bz2
-	${WAYBACK}/gentoo-livecd-2005.1-0.9.2.tar.bz2
-	${WAYBACK}/gentoo-livecd-2006.0-0.9.3.tar.bz2
-	${WAYBACK}/gentoo-livecd-2006.1-0.9.4.tar.bz2
-	${WAYBACK}/gentoo-livecd-2007.0-0.9.5.tar.bz2
+	${CROS_MIRROR}/splash-themes-livecd-2004.3.tar.bz2
+	${CROS_MIRROR}/gentoo-livecd-2005.0-0.9.1.tar.bz2
+	${CROS_MIRROR}/gentoo-livecd-2005.1-0.9.2.tar.bz2
+	${CROS_MIRROR}/gentoo-livecd-2006.0-0.9.3.tar.bz2
+	${CROS_MIRROR}/gentoo-livecd-2006.1-0.9.4.tar.bz2
+	${CROS_MIRROR}/gentoo-livecd-2007.0-0.9.6.tar.bz2
 "
 S="${WORKDIR}"
 

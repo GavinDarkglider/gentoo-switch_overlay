@@ -1,0 +1,137 @@
+From feda137e64db784fedbec386eb6b290c6b441369 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:27:57 -0700
+Subject: [PATCH 08/13] gentoo: add a live ebuild and build the plugin from the
+ source tree
+
+- splashutils-9999.ebuild: builds core with the static helper, the
+  OpenRC plugin, and installs the fbcondecor init script and configs.
+- The plugin Makefile no longer needs an installed libfbsplash.pc; it
+  falls back to -lfbsplash with -I/-L passed by the caller.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ gentoo/Makefile                       |  8 ++-
+ gentoo/ebuild/splashutils-9999.ebuild | 90 +++++++++++++++++++++++++++
+ 2 files changed, 96 insertions(+), 2 deletions(-)
+ create mode 100644 gentoo/ebuild/splashutils-9999.ebuild
+
+diff --git a/gentoo/Makefile b/gentoo/Makefile
+index 4a041fb..6df5f9e 100644
+--- a/gentoo/Makefile
++++ b/gentoo/Makefile
+@@ -9,8 +9,12 @@ PLUGINDIR  ?= $(shell $(PKG_CONFIG) --variable=pluginsdir openrc 2>/dev/null ||
+ 
+ CFLAGS  ?= -O2 -g
+ # Kept separate so CFLAGS from the command line (e.g. an ebuild) don't drop them.
+-PLUGIN_CFLAGS = -Wall -fPIC $(shell $(PKG_CONFIG) --cflags openrc einfo libfbsplash)
+-LDLIBS   = $(shell $(PKG_CONFIG) --libs openrc einfo libfbsplash)
++# libfbsplash may not be installed yet when building from the source tree;
++# fall back to plain -lfbsplash then (pass -I/-L via CPPFLAGS/LDFLAGS).
++PLUGIN_CFLAGS = -Wall -fPIC $(shell $(PKG_CONFIG) --cflags openrc einfo) \
++		$(shell $(PKG_CONFIG) --cflags libfbsplash 2>/dev/null)
++LDLIBS   = $(shell $(PKG_CONFIG) --libs openrc einfo) \
++	   $(shell $(PKG_CONFIG) --libs libfbsplash 2>/dev/null || echo -lfbsplash)
+ 
+ %.o: %.c
+ 	$(CC) $(CPPFLAGS) $(PLUGIN_CFLAGS) $(CFLAGS) -c $< -o $@
+diff --git a/gentoo/ebuild/splashutils-9999.ebuild b/gentoo/ebuild/splashutils-9999.ebuild
+new file mode 100644
+index 0000000..2341e8f
+--- /dev/null
++++ b/gentoo/ebuild/splashutils-9999.ebuild
+@@ -0,0 +1,90 @@
++# Copyright 1999-2026 Gentoo Authors
++# Distributed under the terms of the GNU General Public License v2
++
++EAPI=8
++
++inherit autotools git-r3 toolchain-funcs
++
++DESCRIPTION="Framebuffer splash utilities: fbsplash silent splash and fbcondecor helper"
++HOMEPAGE="https://github.com/GavinDarkglider/fbsplash"
++EGIT_REPO_URI="https://github.com/GavinDarkglider/fbsplash.git"
++EGIT_BRANCH="revive"
++
++LICENSE="GPL-2"
++SLOT="0"
++IUSE="+fbcondecor gpm mng +png +truetype"
++
++# The kernel helper runs from the initramfs before anything else is
++# available, so it is linked statically.  freetype's own optional
++# dependencies (bzip2, brotli, harfbuzz, png) need static libraries too
++# when enabled; configure checks that the static link works.
++RDEPEND="
++	sys-apps/openrc:=
++	gpm? ( sys-libs/gpm )
++	mng? ( media-libs/libmng:= )
++"
++DEPEND="${RDEPEND}
++	media-libs/libjpeg-turbo:=[static-libs]
++	png? (
++		media-libs/libpng:=[static-libs]
++		sys-libs/zlib[static-libs]
++	)
++	truetype? ( media-libs/freetype:2[static-libs] )
++"
++BDEPEND="virtual/pkgconfig"
++
++S="${WORKDIR}/${P}/core"
++
++src_prepare() {
++	default
++	eautoreconf
++}
++
++src_configure() {
++	local myeconfargs=(
++		--with-essential-prefix=/
++		--with-themedir=/etc/splash
++		$(use_enable fbcondecor)
++		$(use_with gpm)
++		$(use_with mng)
++		$(use_with png)
++		$(use_with truetype ttf)
++		$(use_with truetype ttf-kernel)
++	)
++	econf "${myeconfargs[@]}"
++}
++
++src_compile() {
++	default
++
++	# OpenRC plugin, built against the libfbsplash from this tree.
++	emake -C "${WORKDIR}/${P}/gentoo" \
++		CC="$(tc-getCC)" \
++		CPPFLAGS="${CPPFLAGS} -I${S}/src" \
++		LDFLAGS="${LDFLAGS} -L${S}/src/.libs" \
++		splash.so
++}
++
++src_install() {
++	default
++	find "${ED}" -name '*.la' -delete || die
++
++	emake -C "${WORKDIR}/${P}/gentoo" DESTDIR="${D}" install
++
++	newinitd "${WORKDIR}/${P}/gentoo/init-fbcondecor" fbcondecor
++	newconfd "${WORKDIR}/${P}/gentoo/fbcondecor.conf" fbcondecor
++	insinto /etc/conf.d
++	newins "${WORKDIR}/${P}/gentoo/splash.conf" splash
++
++	keepdir /lib/splash/{cache,proc,sys}
++	keepdir /etc/splash
++}
++
++pkg_postinst() {
++	elog "The silent splash and the fbcondecor helper follow the framebuffer"
++	elog "console rotation (fbcon=rotate:N).  Verbose (fbcondecor) backgrounds"
++	elog "need a kernel with the rotation-aware fbcondecor patch."
++	elog
++	elog "To add the helper and a theme to an existing initramfs (e.g. from"
++	elog "dracut):  splash_geninitramfs -a /boot/initramfs-<version>.img <theme>"
++}
+-- 
+2.56.0
+

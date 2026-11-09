@@ -1,0 +1,1373 @@
+From b97200d2bb4076ceed344050a030bcb66f8a3d90 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:14:10 -0700
+Subject: [PATCH 01/13] core: modernize the build system and drop bundled
+ libraries
+
+Build against current autotools and toolchains.
+
+- Replace the bundled zlib 1.2.3, libpng 1.2.18, libjpeg-6b and freetype
+  2.3.5 copies (all with known CVEs; the kernel helper parses theme images
+  as root at boot) and the klibc build with pkg-config detection of the
+  system libraries.
+- Link the kernel helper statically with 'pkg-config --static' by default
+  (--disable-static-helper links it dynamically), and check at configure
+  time that the static link actually works so a missing .a is reported
+  with a hint instead of failing mid-build.  Same for fbsplashctl.
+- AS_HELP_STRING, LT_INIT, AM_CPPFLAGS, subdir-objects, silent rules.
+- Fix the default essential prefix ("//bin" paths).
+- Fix the unit test and misc programs' include paths so 'make check'
+  works.
+- Build with -Werror for implicit declarations and pointer/int
+  conversions, which GCC 14+ makes errors anyway.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/.gitignore           |  51 ++-
+ core/Makefile.am          |  11 +-
+ core/configure.ac         | 709 +++++++++-----------------------------
+ core/m4/.keep             |   0
+ core/misc/Makefile.am     |  18 +-
+ core/scripts/Makefile.am  |   7 +-
+ core/src/Makefile.am      | 289 +++++-----------
+ core/src/test/Makefile.am |   8 +-
+ 8 files changed, 302 insertions(+), 791 deletions(-)
+ create mode 100644 core/m4/.keep
+
+diff --git a/core/.gitignore b/core/.gitignore
+index e695dbd..6a28fa8 100644
+--- a/core/.gitignore
++++ b/core/.gitignore
+@@ -1,25 +1,46 @@
+-# This is where object files go
+-objs/*
++Makefile
++Makefile.in
++.deps/
++.libs/
++*.o
++*.lo
++*.la
++*.log
++*.trs
++aclocal.m4
++autom4te.cache/
++compile
++config.guess
+ config.h
+ config.h.in
+-config.guess
++config.h.in~
++config.status
+ config.sub
+ configure
+-Makefile.in
+-missing
+ depcomp
+ install-sh
++libtool
+ ltmain.sh
+-aclocal.m4
+-autom4te.cache
++missing
++stamp-h1
++test-driver
++m4/*.m4
++src/fbsplash.h
++src/*.pc
++src/fbcondecor_ctl
++src/fbcondecor_helper
++src/fbsplashctl
++src/fbsplashd
++src/splash_util
++src/test/test_parser
++scripts/bootsplash2fbsplash
++scripts/splash-functions.sh
++scripts/splash_geninitramfs
++scripts/splash_manager
++scripts/splash_resize
++scripts/splashy2fbsplash.py
++configure~
+ misc/benchmark
+-misc/splashtest
+ misc/blittest
+ misc/inputtest
+-
+-libs/*/*.o
+-libs/*/*.a
+-libs/freetype-*/objs
+-libs/libpng-*/Makefile
+-libs/zlib-*/Makefile
+-libs/zlib-*/zconf.h
++misc/splashtest
+diff --git a/core/Makefile.am b/core/Makefile.am
+index 5a86fb0..b727341 100644
+--- a/core/Makefile.am
++++ b/core/Makefile.am
+@@ -1,14 +1,7 @@
+-SUBDIRS = libs src docs misc scripts
++SUBDIRS = src docs misc scripts
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-include common.mk
+-
+-EXTRA_DIST = $(LIBFREETYPE2_SOURCE_INTERNAL) \
+-			 $(LIBJPEG_SOURCE_INTERNAL) \
+-			 $(LIBPNG_SOURCE_INTERNAL) \
+-			 $(LIBZ_SOURCE_INTERNAL) \
+-			 Doxyfile
++EXTRA_DIST = Doxyfile
+ 
+ doc:
+ 	doxygen
+-
+diff --git a/core/configure.ac b/core/configure.ac
+index c5fbb84..eab17c3 100644
+--- a/core/configure.ac
++++ b/core/configure.ac
+@@ -15,624 +15,239 @@
+ # General Public License for more details.
+ ################################################################################
+ 
+-AC_INIT([splashutils], [1.5.4.4])
++AC_INIT([splashutils], [1.6.0])
+ 
+ AC_SUBST([libfbsplash_version], [1:0:0])
+-AC_SUBST([libfbsplashrender_version], [1:0:0])
++AC_SUBST([libfbsplashrender_version], [2:0:1])
+ 
+-AM_INIT_AUTOMAKE([1.10 -Wno-portability])
++AM_INIT_AUTOMAKE([1.13 foreign subdir-objects -Wno-portability])
++AM_SILENT_RULES([yes])
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+-AC_PREREQ(2.59)
++AC_PREREQ([2.69])
+ AC_PROG_CC
++AC_USE_SYSTEM_EXTENSIONS
+ AC_PROG_INSTALL
+-AC_PROG_LIBTOOL
++LT_INIT
+ AC_PROG_MKDIR_P
+ AC_PROG_LN_S
+ AC_PROG_SED
+-
+-AS_IF(
+-  [test "x${BUILD_CC}" = "x" && test "x${build_alias}" != "x"],
+-  [AC_CHECK_PROG([BUILD_CC], [${build_alias}-gcc], [${build_alias}-gcc])]
+-)
+-AS_IF(
+-  [test "x${BUILD_CC}" = "x"],
+-  [AC_CHECK_PROG([BUILD_CC], [gcc], [gcc])]
+-)
+-AS_IF(
+-  [test "x${BUILD_CC}" = "x"],
+-  [AC_CHECK_PROG([BUILD_CC], [cc], [cc])]
+-)
+-AS_IF(
+-  [test "x${BUILD_CC}" = "x"],
+-  [BUILD_CC="\$(CC)"]
+-)
++PKG_PROG_PKG_CONFIG
+ 
+ AC_PREFIX_DEFAULT([/usr])
+ 
++dnl SPLASH_YESNO(option, value): reject anything but yes/no.
++AC_DEFUN([SPLASH_YESNO], [
++  AS_CASE(["$2"],
++    [yes|no], [],
++    [AC_MSG_ERROR([bad value '$2' for --$1])])
++])
++
+ AC_ARG_ENABLE([debug],
+   AS_HELP_STRING([--enable-debug], [do not strip files]),
+-  [
+-    AS_CASE(["${enableval}"],
+-      [yes], [config_debug="yes"],
+-      [no],  [config_debug="no"],
+-             [AC_MSG_ERROR([bad value '${enableval}' for --enable-debug])]
+-    )
+-  ],
+-  [config_debug="no"]
+-)
++  [SPLASH_YESNO([enable-debug], [$enableval]) config_debug="$enableval"],
++  [config_debug="no"])
+ AM_CONDITIONAL([CONFIG_DEBUG], [test "x${config_debug}" = "xyes"])
+ 
+-AC_ARG_ENABLE([klibc-shared],
+-  AS_HELP_STRING([--enable-klibc-shared], [link to shared klibc]),
+-  [
+-    AS_CASE(["${enableval}"],
+-        [yes], [config_klibc_shared="yes"],
+-        [no],  [config_klibc_shared="no"],
+-               [AC_MSG_ERROR([bad value '${enableval}' for --enable-klibc-shared])]
+-    )
+-  ],
+-  [config_klibc_shared="no"]
+-)
+-AM_CONDITIONAL([CONFIG_KLIBC_SHARED], [test "x${config_klibc_shared}" = "xyes"])
+-
+ AC_ARG_ENABLE([static-binaries],
+-  AC_HELP_STRING([--disable-static-binaries], [do not build any statically linked binaries]),
+-  [
+-    AS_CASE(["${enableval}"],
+-      [yes], [config_static_binaries="yes"],
+-      [no],  [config_static_binaries="no"],
+-             [AC_MSG_ERROR([bad value '${enableval}' for --disable-static-binaries])]
+-    )
+-  ],
+-  [config_static_binaries="yes"]
+-)
+-AM_CONDITIONAL([CONFIG_STATIC_BINARIES], [test "x${config_static_binaries}" = "xyes"])
+-AS_IF(
+-  [test "x${config_static_binaries}" = "xyes"],
+-  [AC_DEFINE([CONFIG_STATIC_BINARIES], [1], [Define to 1 to disable building of statically linked binaries.])]
+-)
++  AS_HELP_STRING([--disable-static-binaries], [do not build the statically linked fbsplashctl]),
++  [SPLASH_YESNO([enable-static-binaries], [$enableval]) config_static_binaries="$enableval"],
++  [config_static_binaries="yes"])
+ 
+ AC_ARG_ENABLE([deprecated],
+-  AC_HELP_STRING([--enable-deprecated], [include support for deprecated features]),
+-  [
+-    AS_CASE(["${enableval}"],
+-      [yes], [config_deprecated="yes"],
+-      [no],  [config_deprecated="no"],
+-             [AC_MSG_ERROR([bad value '${enableval}' for --enable-deprecated])]
+-    )
+-  ],
+-  [config_deprecated="no"]
+-)
++  AS_HELP_STRING([--enable-deprecated], [include support for deprecated features]),
++  [SPLASH_YESNO([enable-deprecated], [$enableval]) config_deprecated="$enableval"],
++  [config_deprecated="no"])
+ AM_CONDITIONAL([CONFIG_DEPRECATED], [test "x${config_deprecated}" = "xyes"])
+-AS_IF(
+-  [test "x${config_deprecated}" = "xyes"],
+-  [AC_DEFINE([CONFIG_DEPRECATED], [1], [Define to 1 to include support for deprecated features.])]
+-)
++AS_IF([test "x${config_deprecated}" = "xyes"],
++  [AC_DEFINE([CONFIG_DEPRECATED], [1], [Define to 1 to include support for deprecated features.])])
+ 
+ AC_ARG_ENABLE([fbcondecor],
+-  AC_HELP_STRING([--disable-fbcondecor], [exclude support for fbcondecor]),
+-  [
+-    AS_CASE(["${enableval}"],
+-       [yes], [config_fbcondecor="yes"],
+-       [no],  [config_fbcondecor="no"],
+-              [AC_MSG_ERROR([bad value '${enableval}' for --enable-fbcondecor])]
+-    )
+-  ],
+-  [config_fbcondecor="yes"]
+-)
++  AS_HELP_STRING([--disable-fbcondecor], [exclude support for fbcondecor]),
++  [SPLASH_YESNO([enable-fbcondecor], [$enableval]) config_fbcondecor="$enableval"],
++  [config_fbcondecor="yes"])
+ AM_CONDITIONAL([CONFIG_FBCON_DECOR], [test "x${config_fbcondecor}" = "xyes"])
+-AS_IF(
+-  [test "x${config_fbcondecor}" = "xyes"],
+-  [AC_DEFINE([CONFIG_FBCON_DECOR], [1], [Define to 1 to include support for fbcondecor (previously called fbsplash).])]
+-)
++AS_IF([test "x${config_fbcondecor}" = "xyes"],
++  [AC_DEFINE([CONFIG_FBCON_DECOR], [1], [Define to 1 to include support for fbcondecor.])])
+ 
+ AC_ARG_ENABLE([helper],
+-  AC_HELP_STRING([--disable-helper], [do not build kernel helper]),
+-  [
+-    AS_CASE(["${enableval}"],
+-      [yes], [config_helper="yes"],
+-      [no],  [config_helper="no"],
+-             [AC_MSG_ERROR([bad value '${enableval}' for --enable-helper])]
+-    )
+-  ],
+-  [config_helper="yes"]
+-)
+-AM_CONDITIONAL([CONFIG_HELPER], [test "x${config_helper}" = "xyes"])
+-AS_IF(
+-  [test "x${config_helper}" = "xyes"],
+-  [AC_DEFINE([CONFIG_HELPER], [1], [Define to 1 to build kernel helper.])]
+-)
++  AS_HELP_STRING([--disable-helper], [do not build the kernel helper]),
++  [SPLASH_YESNO([enable-helper], [$enableval]) config_helper="$enableval"],
++  [config_helper="yes"])
++
++AC_ARG_ENABLE([static-helper],
++  AS_HELP_STRING([--disable-static-helper],
++    [link the kernel helper dynamically (its libraries then have to be in the initramfs)]),
++  [SPLASH_YESNO([enable-static-helper], [$enableval]) config_static_helper="$enableval"],
++  [config_static_helper="yes"])
+ 
+ AC_ARG_ENABLE([misc],
+-  AC_HELP_STRING([--enable-misc], [build misc programs]),
+-  [
+-    AS_CASE(["${enableval}"],
+-      [yes], [config_misc="yes"],
+-      [no],  [config_misc="no"],
+-             [AC_MSG_ERROR([bad value '${enableval}' for --enable-misc])]
+-    )
+-  ],
+-  [config_misc="no"]
+-)
++  AS_HELP_STRING([--enable-misc], [build misc test programs]),
++  [SPLASH_YESNO([enable-misc], [$enableval]) config_misc="$enableval"],
++  [config_misc="no"])
+ AM_CONDITIONAL([CONFIG_MISC], [test "x${config_misc}" = "xyes"])
+-AS_IF(
+-  [test "x${config_misc}" = "xyes"],
+-  [AC_DEFINE([CONFIG_MISC], [1], [Define to 1 to build misc programs.])]
+-)
+ 
+ AC_ARG_WITH([gpm],
+-  AC_HELP_STRING([--without-gpm], [exclude support for GPM]),
+-  [
+-    AS_CASE(["${withval}"],
+-      [yes], [config_gpm="yes"],
+-      [no],  [config_gpm="no"],
+-             [AC_MSG_ERROR([bad value '${withval}' for --with-gpm])]
+-    )
+-  ],
+-  [config_gpm="yes"]
+-)
+-AM_CONDITIONAL([CONFIG_GPM], [test "x${config_gpm}" = "xyes"])
+-AS_IF(
+-  [test "x${config_gpm}" = "xyes"],
+-  [AC_DEFINE([CONFIG_GPM], [1], [Define to 1 to include support for GPM.])]
+-)
++  AS_HELP_STRING([--without-gpm], [exclude support for GPM]),
++  [SPLASH_YESNO([with-gpm], [$withval]) config_gpm="$withval"],
++  [config_gpm="yes"])
+ 
+ AC_ARG_WITH([mng],
+-  AC_HELP_STRING([--with-mng], [include  support for MNG animations]),
+-  [
+-    AS_CASE(["${withval}"],
+-      [yes], [config_mng="yes"],
+-      [no],  [config_mng="no"],
+-             [AC_MSG_ERROR([bad value '${withval}' for --with-mng])]
+-    )
+-  ],
+-  [config_mng="no"]
+-)
+-AM_CONDITIONAL([CONFIG_MNG], [test "x${config_mng}" = "xyes"])
+-AS_IF(
+-  [test "x${config_mng}" = "xyes"],
+-  [AC_DEFINE([CONFIG_MNG], [1], [Define to 1 to include support for MNG animations.])]
+-)
++  AS_HELP_STRING([--with-mng], [include support for MNG animations]),
++  [SPLASH_YESNO([with-mng], [$withval]) config_mng="$withval"],
++  [config_mng="no"])
+ 
+ AC_ARG_WITH([png],
+-  AC_HELP_STRING([--without-png], [exclude support for PNG images]),
+-  [
+-    AS_CASE(["${withval}"],
+-      [yes], [config_png="yes"],
+-      [no],  [config_png="no"],
+-             [AC_MSG_ERROR([bad value '${withval}' for --with-png])]
+-    )
+-  ],
+-  [config_png="yes"]
+-)
+-AM_CONDITIONAL([CONFIG_PNG], [test "x${config_png}" = "xyes"])
+-AS_IF(
+-  [test "x${config_png}" = "xyes"],
+-  [AC_DEFINE([CONFIG_PNG], [1], [Define to 1 to include support for PNG images.])]
+-)
++  AS_HELP_STRING([--without-png], [exclude support for PNG images]),
++  [SPLASH_YESNO([with-png], [$withval]) config_png="$withval"],
++  [config_png="yes"])
+ 
+ AC_ARG_WITH([ttf],
+-  AC_HELP_STRING([--without-ttf], [exclude support for truetype fonts]),
+-  [
+-    AS_CASE(["${withval}"],
+-      [yes], [config_ttf="yes"],
+-      [no],  [config_ttf="no"],
+-             [AC_MSG_ERROR([bad value ${withval} for --with-ttf])]
+-    )
+-  ],
+-  [config_ttf="yes"]
+-)
+-AM_CONDITIONAL([CONFIG_TTF], [test "x${config_ttf}" = "xyes"])
+-AS_IF(
+-  [test "x${config_ttf}" = "xyes"],
+-  [AC_DEFINE([CONFIG_TTF], [1], [Define to 1 to include support for truetype fonts.])]
+-)
++  AS_HELP_STRING([--without-ttf], [exclude support for truetype fonts]),
++  [SPLASH_YESNO([with-ttf], [$withval]) config_ttf="$withval"],
++  [config_ttf="yes"])
+ 
+ AC_ARG_WITH([ttf-kernel],
+-  AC_HELP_STRING([--without-ttf-kernel], [exclude support for truetype fonts in kernel helper]),
+-  [
+-    AS_CASE(["${withval}"],
+-      [yes], [config_ttf_kernel="yes"],
+-      [no],  [config_ttf_kernel="no"],
+-             [AC_MSG_ERROR([bad value ${withval} for --with-ttf-kernel])]
+-    )
+-  ],
+-  [config_ttf_kernel="yes"]
+-)
+-AM_CONDITIONAL([CONFIG_TTF_KERNEL], [test "x${config_ttf_kernel}" = "xyes"])
+-AS_IF(
+-  [test "x${config_ttf_kernel}" = "xyes"],
+-  [AC_DEFINE([CONFIG_TTF_KERNEL], [1], [Define to 1 to include support for truetype fonts in kernel helper.])]
+-)
+-
+-AC_ARG_WITH([klibc-compiler],
+-  AS_HELP_STRING([--with-klibc-compiler], [compiler to use when building against klibc @<:@auto@:>@]),
+-  [KLCC="${withval}"],
+-  [
+-    AS_IF(
+-      [test "x${host_alias}" != "x${build_alias}"],
+-      [AC_CHECK_PROG([KLCC], [${host_alias}-klcc], [${host_alias}-klcc])],
+-      [AC_CHECK_PROG([KLCC], [klcc], [klcc])]
+-    )
+-    AS_IF(
+-      [test "x${KLCC}" = "x"],
+-      [AC_MSG_WARN([could not determine compiler to use when building against klibc.])]
+-    )
+-  ]
+-)
+-AC_SUBST([KLCC])
+-
+-AC_ARG_WITH([freetype2-src],
+-  AS_HELP_STRING([--with-freetype2-src=DIR], [freetype2 source to use when linking with klibc]),
+-  [
+-	AS_IF(
+-	  [test "`echo ${withval} | sed -e 's,^/.*,,'`" = "${withval}"],
+-	  [LIBFREETYPE2_SOURCE="\$(abs_top_srcdir)/${withval}"],
+-	  [LIBFREETYPE2_SOURCE="${withval}"]
+-	)
+-  ],
+-  [LIBFREETYPE2_SOURCE="\$(abs_top_srcdir)/\$(LIBFREETYPE2_SOURCE_INTERNAL)"]
+-)
+-AC_SUBST([LIBFREETYPE2_SOURCE])
+-
+-AC_ARG_WITH([jpeg-src],
+-  AS_HELP_STRING([--with-jpeg-src=DIR], [jpeglib source to use when linking with klibc]),
+-  [
+-	AS_IF(
+-	  [test "`echo ${withval} | sed -e 's,^/.*,,'`" = "${withval}"],
+-	  [LIBJPEG_SOURCE="\$(abs_top_srcdir)/${withval}"],
+-	  [LIBJPEG_SOURCE="${withval}"]
+-	)
+-  ],
+-  [LIBJPEG_SOURCE="\$(abs_top_srcdir)/\$(LIBJPEG_SOURCE_INTERNAL)"]
+-)
+-AC_SUBST([LIBJPEG_SOURCE])
+-
+-AC_ARG_WITH([lpng-src],
+-  AS_HELP_STRING([--with-lpng-src=DIR], [libpng source to use when linking with klibc]),
+-  [
+-	AS_IF(
+-	  [test "`echo ${withval} | sed -e 's,^/.*,,'`" = "${withval}"],
+-	  [LIBPNG_SOURCE="\$(abs_top_srcdir)/${withval}"],
+-	  [LIBPNG_SOURCE="${withval}"]
+-	)
+-  ],
+-  [LIBPNG_SOURCE="\$(abs_top_srcdir)/\$(LIBPNG_SOURCE_INTERNAL)"]
+-)
+-AC_SUBST([LIBPNG_SOURCE])
+-
+-AC_ARG_WITH([zlib-src],
+-  AS_HELP_STRING([--with-zlib-src=DIR], [zlib source to use when linking with klibc]),
+-  [
+-	AS_IF(
+-	  [test "`echo ${withval} | sed -e 's,^/.*,,'`" = "${withval}"],
+-	  [LIBZ_SOURCE="\$(abs_top_srcdir)/${withval}"],
+-	  [LIBZ_SOURCE="${withval}"]
+-	)
+-  ],
+-  [LIBZ_SOURCE="\$(abs_top_srcdir)/\$(LIBZ_SOURCE_INTERNAL)"]
+-)
+-AC_SUBST([LIBZ_SOURCE])
++  AS_HELP_STRING([--without-ttf-kernel], [exclude support for truetype fonts in the kernel helper]),
++  [SPLASH_YESNO([with-ttf-kernel], [$withval]) config_ttf_kernel="$withval"],
++  [config_ttf_kernel="yes"])
++AS_IF([test "x${config_ttf}" = "xno"], [config_ttf_kernel="no"])
+ 
+ AC_ARG_WITH([essential-prefix],
+   AS_HELP_STRING([--with-essential-prefix=ESPREFIX], [install essential files in ESPREFIX @<:@/@:>@]),
+   [essential_prefix="$(echo ${withval} | sed -e 's#/$##')"],
+-  [essential_prefix="/"]
+-)
++  [essential_prefix=""])
+ AC_SUBST([essential_prefix])
+ 
+ AC_ARG_WITH([essential-bindir],
+   AS_HELP_STRING([--with-essential-bindir=DIR], [essential user apps directory @<:@ESPREFIX/bin@:>@]),
+   [eexecbindir="${withval}"],
+-  [eexecbindir="\$(essential_prefix)/bin"]
+-)
++  [eexecbindir="\$(essential_prefix)/bin"])
+ AC_SUBST([eexecbindir])
+ 
+ AC_ARG_WITH([essential-sbindir],
+-  AS_HELP_STRING([--with-eseential-sbindir=DIR], [essential admin apps directory @<:@ESPREFIX/sbin@:>@]),
++  AS_HELP_STRING([--with-essential-sbindir=DIR], [essential admin apps directory @<:@ESPREFIX/sbin@:>@]),
+   [eexecsbindir="${withval}"],
+-  [eexecsbindir="\$(essential_prefix)/sbin"]
+-)
++  [eexecsbindir="\$(essential_prefix)/sbin"])
+ AC_SUBST([eexecsbindir])
+ 
+ AC_ARG_WITH([essential-libdir],
+   AS_HELP_STRING([--with-essential-libdir=DIR], [essential libraries directory @<:@ESPREFIX/lib@:>@]),
+   [eexeclibdir="${withval}"],
+-  [eexeclibdir="\$(essential_prefix)/lib"]
+-)
++  [eexeclibdir="\$(essential_prefix)/lib"])
+ AC_SUBST([eexeclibdir])
+ 
+ AC_ARG_WITH([themedir],
+   AS_HELP_STRING([--with-themedir=DIR], [splash theme directory @<:@ESPREFIX/etc/splash@:>@]),
+   [themedir="${withval}"],
+-  [themedir="\$(essential_prefix)/etc/splash"]
+-)
++  [themedir="\$(essential_prefix)/etc/splash"])
+ AC_SUBST([themedir])
+ 
+-AC_ARG_WITH([klibc],
+-  AC_HELP_STRING([--without-klibc], [link the kernel helper against glibc instead of klibc]),
+-  [
+-    AS_CASE(["${withval}"],
+-      [yes], [config_klibc="yes"],
+-      [no],  [config_klibc="no"],
+-             [AC_MSG_ERROR([bad value ${withval} for --with-klibc])]
+-    )
+-  ],
+-  [config_klibc="yes"]
+-)
+-AM_CONDITIONAL([CONFIG_KLIBC], [test "x${config_klibc}" = "xyes"])
+-AS_IF(
+-  [test "x${config_klibc}" = "xyes"],
+-  [AC_DEFINE([CONFIG_KLIBC], [1], [use klibc])]
+-)
+-
+-M_CFLFAGS=
+-M_LIBS=
+-AC_CHECK_HEADER(
+-  [math.h],
+-  [M_CFLAGS="${M_CFLAGS}"],
+-  [AC_MSG_ERROR(['math.h' header file not found.])]
+-)
+-AC_CHECK_LIB(
+-  [m], [ceilf],
+-  [M_LIBS="${M_LIBS} -lm"],
+-  [AC_MSG_ERROR(['libm' library not found.])]
+-)
+-AC_SUBST([M_CFLAGS])
+-AC_SUBST([M_LIBS])
+-
+-RT_CFLFAGS=
+-RT_LIBS=
+-AC_CHECK_HEADER(
+-  [time.h],
+-  [RT_CFLAGS="${RT_CFLAGS}"],
+-  [AC_MSG_ERROR(['time.h' header file was not found.])]
+-)
+-AC_CHECK_LIB([rt], [clock_gettime],
+-  [RT_LIBS="${RT_LIBS} -lrt"],
+-  [AC_MSG_ERROR(['librt' library was not found.])]
+-)
+-AC_SUBST([RT_CFLAGS])
+-AC_SUBST([RT_LIBS])
+-
+-PTHREAD_CFLFAGS=
+-PTHREAD_LIBS=
+-AC_CHECK_HEADER([pthread.h],
+-  [PTHREAD_CFLAGS="${PTHREAD_CFLAGS}"],
+-  [AC_MSG_ERROR(['pthread.h' header file was not found.])]
+-)
+-AC_CHECK_LIB([pthread], [pthread_create],
+-  [PTHREAD_LIBS="${PTHREAD_LIBS} -lpthread"],
+-  [AC_MSG_ERROR(['libpthread' library file was not found.])]
+-)
+-AC_SUBST([PTHREAD_CFLAGS])
+-AC_SUBST([PTHREAD_LIBS])
+-
+-PTHREAD_STATIC_CFLFAGS=
+-PTHREAD_STATIC_LIBS=
+-AC_CHECK_HEADER(
+-  [pthread.h],
+-  [PTHREAD_STATIC_CFLFAGS="${PTHREAD_STATIC_CFLFAGS}"],
+-  [AC_MSG_ERROR(['pthread.h' header file was not found.])]
+-)
+-AC_CHECK_LIB([pthread], [xxpthread_create],
+-  [PTHREAD_STATIC_LIBS="${PTHREAD_STATIC_LIBS} -lpthread"],
+-  [
+-    AC_CHECK_LIB([pthread], [pthread_create],
+-      [PTHREAD_STATIC_LIBS="${PTHREAD_STATIC_LIBS} -L\$(DESTDIR)\$(libdir)/nptl -lpthread"],
+-      [
+-        AC_CHECK_LIB([pthread], [pthread_create],
+-          [PTHREAD_STATIC_LIBS="${PTHREAD_STATIC_LIBS} -L\$(DESTDIR)\$(elibdir)/nptl -lpthread"],
+-          [AC_MSG_ERROR([the required 'libpthread' static library file not found.])],
+-          [-static -L${DESTDIR}${elibdir}/nptl]
+-        )
+-      ],
+-      [-static -L${DESTDIR}${libdir}/nptl]
+-    )
+-  ],
+-  [-static]
+-)
+-AC_SUBST([PTHREAD_STATIC_CFLAGS])
+-AC_SUBST([PTHREAD_STATIC_LIBS])
+-
+-AC_ARG_VAR([JPEG_CFLAGS], [C compiler flags for JPEG library, overriding autodetection])
+-AC_ARG_VAR([JPEG_LIBS], [linker flags for JPEG library, overriding autodetection])
+-AS_IF(
+-  [test "x${JPEG_CFLAGS}" = "x"],
+-  [
+-    AC_CHECK_HEADER([jpeglib.h],
+-      [JPEG_CFLAGS="${JPEG_CFLAGS}"],
+-      [AC_MSG_ERROR(['jpeglib.h' header file not found.])]
+-    )
+-  ]
+-)
+-AS_IF(
+-  [test "x${JPEG_CFLAGS}" = "no"],
+-  [JPEG_CFLAGS=""]
+-)
+-AS_IF(
+-  [test "x${JPEG_LIBS}" = "x"],
+-  [
+-    AC_CHECK_LIB([jpeg], [jpeg_set_defaults],
+-      [JPEG_LIBS="${JPEG_LIBS} -ljpeg"],
+-      [AC_MSG_ERROR([the required 'libjpeg' library file was not found.])]
+-    )
+-  ]
+-)
+-AS_IF(
+-  [test "x${JPEG_LIBS}" = "no"],
+-  [JPEG_LIBS=""]
+-)
+-AC_SUBST([JPEG_CFLAGS])
+-AC_SUBST([JPEG_LIBS])
+-
+-# As needed, check GPM files and set GPM compiler flags.
+-AC_ARG_VAR([GPM_CFLAGS], [C compiler flags for GPM library, overriding autodetection])
+-AC_ARG_VAR([GPM_LIBS],   [linker flags for GPM library, overriding autodetection])
+-AS_IF(
+-  [test "x${config_gpm}" = "xyes"],
+-  [
+-    AS_IF(
+-      [test "x${GPM_CFLAGS}" = "x"],
+-      [
+-        AC_CHECK_HEADER(
+-          [gpm.h],
+-          [GPM_CFLAGS="${GPM_CFLAGS}"],
+-          [AC_MSG_ERROR(['gpm.h' header file was not found.])]
+-        )
+-      ]
+-    )
+-    AS_IF(
+-      [test "x${GPM_CFLAGS}" = "no"],
+-      [GPM_CFLAGS=""]
+-    )
+-    AS_IF(
+-      [test "x${GPM_LIBS}" = "x"],
+-      [
+-        AC_CHECK_LIB(
+-          [gpm], [Gpm_Open],
+-          [GPM_LIBS="${GPM_LIBS} -lgpm"],
+-          [AC_MSG_ERROR(['libgpm' library file was not found.])]
+-        )
+-      ]
+-    )
+-    AS_IF(
+-      [test "x${GPM_LIBS}" = "no"],
+-      [GPM_LIBS=""]
+-    )
+-  ]
+-)
+-AC_SUBST([GPM_CFLAGS])
++################################################################################
++# Libraries
++################################################################################
++
++AC_SEARCH_LIBS([ceilf], [m], [], [AC_MSG_ERROR([libm not found])])
++AC_SEARCH_LIBS([clock_gettime], [rt], [], [AC_MSG_ERROR([clock_gettime() not found])])
++AC_SEARCH_LIBS([pthread_create], [pthread], [], [AC_MSG_ERROR([libpthread not found])])
++
++dnl Every image/font library comes from pkg-config.  The kernel helper (and
++dnl fbsplashctl) additionally need the --static variants.
++PKG_CHECK_MODULES([JPEG], [libjpeg])
++splash_static_pkgs="libjpeg"
++
++AS_IF([test "x${config_png}" = "xyes"], [
++  PKG_CHECK_MODULES([PNG], [libpng >= 1.2])
++  AC_DEFINE([CONFIG_PNG], [1], [Define to 1 to include support for PNG images.])
++  splash_static_pkgs="${splash_static_pkgs} libpng"
++])
++AM_CONDITIONAL([CONFIG_PNG], [test "x${config_png}" = "xyes"])
++
++AS_IF([test "x${config_ttf}" = "xyes"], [
++  PKG_CHECK_MODULES([FREETYPE2], [freetype2])
++  AC_DEFINE([CONFIG_TTF], [1], [Define to 1 to include support for truetype fonts.])
++])
++AM_CONDITIONAL([CONFIG_TTF], [test "x${config_ttf}" = "xyes"])
++
++splash_static_ttf=""
++AS_IF([test "x${config_ttf_kernel}" = "xyes"], [
++  AC_DEFINE([CONFIG_TTF_KERNEL], [1], [Define to 1 to include support for truetype fonts in the kernel helper.])
++  splash_static_ttf="freetype2"
++])
++AM_CONDITIONAL([CONFIG_TTF_KERNEL], [test "x${config_ttf_kernel}" = "xyes"])
++
++AS_IF([test "x${config_mng}" = "xyes"], [
++  PKG_CHECK_MODULES([MNG], [libmng], [], [
++    AC_CHECK_HEADER([libmng.h], [], [AC_MSG_ERROR([libmng.h not found])])
++    AC_CHECK_LIB([mng], [mng_initialize], [MNG_LIBS="-lmng"],
++      [AC_MSG_ERROR([libmng not found])])
++  ])
++  AC_DEFINE([CONFIG_MNG], [1], [Define to 1 to include support for MNG animations.])
++])
++AM_CONDITIONAL([CONFIG_MNG], [test "x${config_mng}" = "xyes"])
++
++GPM_LIBS=""
++AS_IF([test "x${config_gpm}" = "xyes"], [
++  AC_CHECK_HEADER([gpm.h], [], [AC_MSG_ERROR([gpm.h not found (use --without-gpm)])])
++  AC_CHECK_LIB([gpm], [Gpm_Open], [GPM_LIBS="-lgpm"],
++    [AC_MSG_ERROR([libgpm not found (use --without-gpm)])])
++  AC_DEFINE([CONFIG_GPM], [1], [Define to 1 to include support for GPM.])
++])
+ AC_SUBST([GPM_LIBS])
++AM_CONDITIONAL([CONFIG_GPM], [test "x${config_gpm}" = "xyes"])
+ 
+-AC_ARG_VAR([MNG_CFLAGS], [C compiler flags for MNG library, overriding autodetection])
+-AC_ARG_VAR([MNG_LIBS],   [linker flags for MNG library, overriding autodetection])
+-AS_IF(
+-  [test "x${config_mng}" = "xyes"],
+-  [
+-    AS_IF(
+-      [test "x${MNG_CFLAGS}" = "x"],
+-      [
+-        AC_CHECK_HEADER(
+-          [libmng.h],
+-          [
+-            MNG_CFLAGS="${MNG_CFLAGS}"
+-            MNG_CFLAGS="${MNG_CFLAGS} ${JPEG_CFLAGS}"
+-            MNG_CFLAGS="${MNG_CFLAGS} ${RT_CFLAGS}"
+-          ],
+-          [AC_MSG_ERROR(['libmng.h' header file was not found.])]
+-        )
+-      ]
+-    )
+-    AS_IF(
+-      [test "x${MNG_CFLAGS}" = "xno"],
+-      [MNG_CFLAGS=""]
+-    )
+-    AS_IF(
+-      [test "x${MNG_LIBS}" = "x"],
+-      [
+-        AC_CHECK_LIB(
+-          [mng], [mng_initialize],
+-          [
+-            MNG_LIBS="${MNG_LIBS} -lmng"
+-            MNG_LIBS="${MNG_LIBS} ${JPEG_LIBS}"
+-            AC_CHECK_LIB([z],    [zlibVersion],    [MNG_LIBS="${MNG_LIBS} -lz"   ])
+-            AC_CHECK_LIB([lcms], [cmsCloseProfile],[MNG_LIBS="${MNG_LIBS} -llcms"])
+-          ],
+-          [AC_MSG_ERROR(['libmng' library file was not found.])]
+-        )
+-      ]
+-    )
+-    AS_IF(
+-      [test "x${MNG_LIBS}" = "xno"],
+-      [MNG_LIBS=""]
+-    )
+-  ]
+-)
+-AC_SUBST([MNG_CFLAGS])
+-AC_SUBST([MNG_LIBS])
+-
+-AC_ARG_VAR([PNG_CFLAGS], [C compiler flags for PNG library, overriding autodetection])
+-AC_ARG_VAR([PNG_LIBS],   [linker flags for PNG library, overriding autodetection])
+-
+-AS_IF(
+-  [test "x${config_png}" = "xyes"],
+-  [
+-    AS_IF(
+-      [test "x${LIBPNG_CONFIG}" = "x"],
+-      [AC_PATH_PROG(LIBPNG_CONFIG, libpng-config)]
+-    )
+-    AS_IF(
+-      [test "x${LIBPNG_CONFIG}" = "xno"],
+-      [LIBPNG_CONFIG=""]
+-    )
+-    AS_IF(
+-      [test "x${PNG_CFLAGS}" = "x"],
+-      [
+-        AS_IF(
+-          [test "x$LIBPNG_CONFIG" != "x"],
+-          [PNG_CFLAGS=$(${LIBPNG_CONFIG} --static --cflags)],
+-          [
+-            AC_CHECK_HEADER([png.h],
+-              [PNG_CFLAGS="${PNG_CFLAGS}"],
+-              [AC_MSG_ERROR(['png.h' header file not found.])]
+-            )
+-          ]
+-        )
+-      ]
+-    )
+-    AS_IF(
+-      [test "x${PNG_CFLAGS}" = "xno"],
+-      [PNG_CFLAGS=""]
+-    )
+-    AS_IF(
+-      [test "x${PNG_LIBS}" = "x"],
+-      [
+-        AS_IF(
+-          [test "x$LIBPNG_CONFIG" != "x"],
+-          [PNG_LIBS=$(${LIBPNG_CONFIG} --static --libs)],
+-          [
+-            AC_CHECK_LIB([png], [png_access_version_number],
+-              [
+-                PNG_LIBS="${PNG_LIBS} -lpng"
+-                AC_CHECK_LIB([z], [zlibVersion],
+-                  [PNG_LIBS="${PNG_LIBS} -lz"]
+-                )
+-                PNG_LIBS="${PNG_LIBS} ${M_LIBS}"
+-              ],
+-              [AC_MSG_ERROR(['libpng' library file not found.])]
+-            )
+-          ]
+-        )
+-      ]
+-    )
+-    AS_IF(
+-      [test "x${PNG_LIBS}" = "xno"],
+-      [PNG_LIBS=""]
+-    )
+-  ]
+-)
+-AC_SUBST([PNG_CFLAGS])
+-AC_SUBST([PNG_LIBS])
+-
+-AS_IF(
+-  [test "x${config_ttf}" = "xyes"],
+-  [
+-    PKG_CHECK_MODULES(
+-      [FREETYPE2],
+-      [freetype2],
+-      ,
+-      [AC_MSG_ERROR([freetype was not found.])]
+-    )
+-  ]
+-)
++dnl SPLASH_CHECK_STATIC(what, VAR, pkgs, extra-libs, alternative)
++dnl Make sure a static link really works before committing to it, so a
++dnl missing .a shows up here instead of halfway through the build.
++AC_DEFUN([SPLASH_CHECK_STATIC], [
++  AC_MSG_CHECKING([whether $1 can be linked statically])
++  $2_STATIC_CFLAGS=$($PKG_CONFIG --static --cflags $3 2>/dev/null)
++  $2_STATIC_LIBS="$($PKG_CONFIG --static --libs $3 2>/dev/null) $4"
++  splash_save_LIBS="$LIBS"; splash_save_CFLAGS="$CFLAGS"; splash_save_LDFLAGS="$LDFLAGS"
++  LIBS="$$2_STATIC_LIBS $LIBS"; CFLAGS="$CFLAGS $$2_STATIC_CFLAGS"; LDFLAGS="$LDFLAGS -static"
++  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>
++#include <jpeglib.h>]], [[struct jpeg_decompress_struct c; jpeg_create_decompress(&c);]])],
++    [AC_MSG_RESULT([yes])],
++    [AC_MSG_RESULT([no])
++     AC_MSG_ERROR([cannot link $1 statically; install static libraries for: $3 (Gentoo: USE=static-libs), or configure with $5])])
++  LIBS="$splash_save_LIBS"; CFLAGS="$splash_save_CFLAGS"; LDFLAGS="$splash_save_LDFLAGS"
++  AC_SUBST([$2_STATIC_CFLAGS])
++  AC_SUBST([$2_STATIC_LIBS])
++])
++
++AS_IF([test "x${config_helper}" = "xyes" && test "x${config_static_helper}" = "xyes"], [
++  SPLASH_CHECK_STATIC([the kernel helper], [HELPER], [${splash_static_pkgs} ${splash_static_ttf}], [-lm],
++    [--disable-static-helper])
++])
++AS_IF([test "x${config_static_binaries}" = "xyes"], [
++  splash_ctl_pkgs="${splash_static_pkgs}"
++  AS_IF([test "x${config_ttf}" = "xyes"], [splash_ctl_pkgs="${splash_ctl_pkgs} freetype2"])
++  AS_IF([test "x${config_mng}" = "xyes"], [splash_ctl_pkgs="${splash_ctl_pkgs} libmng"])
++  SPLASH_CHECK_STATIC([fbsplashctl], [CTL], [${splash_ctl_pkgs}], [${GPM_LIBS} -lpthread -lm],
++    [--disable-static-binaries])
++])
++
++AM_CONDITIONAL([CONFIG_HELPER], [test "x${config_helper}" = "xyes"])
++AM_CONDITIONAL([CONFIG_STATIC_HELPER], [test "x${config_static_helper}" = "xyes"])
++AM_CONDITIONAL([CONFIG_STATIC_BINARIES], [test "x${config_static_binaries}" = "xyes"])
++AS_IF([test "x${config_static_binaries}" = "xyes"],
++  [AC_DEFINE([CONFIG_STATIC_BINARIES], [1], [Define to 1 to build statically linked binaries.])])
+ 
+ AH_TOP([#ifndef __SPLASH_CONFIG_H
+ #define __SPLASH_CONFIG_H])
+ AH_BOTTOM([#endif /* SPLASH_CONFIG_H */])
+ 
+ AC_CONFIG_HEADERS([config.h])
+-AC_CONFIG_FILES([Makefile src/Makefile libs/Makefile misc/Makefile src/test/Makefile docs/Makefile scripts/Makefile])
++AC_CONFIG_FILES([Makefile src/Makefile misc/Makefile src/test/Makefile docs/Makefile scripts/Makefile])
+ 
+ AC_OUTPUT
++
++AC_MSG_RESULT([
++splashutils ${PACKAGE_VERSION}
++
++  fbcondecor:      ${config_fbcondecor}
++  kernel helper:   ${config_helper} (static: ${config_static_helper}, ttf: ${config_ttf_kernel})
++  fbsplashctl:     ${config_static_binaries}
++  png/ttf/mng/gpm: ${config_png}/${config_ttf}/${config_mng}/${config_gpm}
++  theme dir:       ${themedir}
++])
+diff --git a/core/m4/.keep b/core/m4/.keep
+new file mode 100644
+index 0000000..e69de29
+diff --git a/core/misc/Makefile.am b/core/misc/Makefile.am
+index 08fa3cc..f4f42c5 100644
+--- a/core/misc/Makefile.am
++++ b/core/misc/Makefile.am
+@@ -3,22 +3,14 @@ noinst_SCRIPTS  = avg.sh
+ noinst_PROGRAMS = benchmark blittest inputtest splashtest
+ endif
+ 
+-EXTRA_DIST 		= avg.sh
++EXTRA_DIST = avg.sh
+ 
+-BUILT_SOURCES = $(top_builddir)/src/fbsplash.h
++AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/src -I$(top_builddir)/src
+ 
+-benchmark_SOURCES  = benchmark.c $(top_builddir)/src/fbsplash.h
++benchmark_SOURCES  = benchmark.c
+ benchmark_LDADD    = $(top_builddir)/src/libfbsplashrender.la $(top_builddir)/src/libfbsplash.la
+ blittest_SOURCES   = blittest.c
+-blittest_LDADD     =
+-inputtest_SOURCES  = inputtest.c $(top_builddir)/src/fbsplash.h
++inputtest_SOURCES  = inputtest.c
+ inputtest_LDADD    = $(top_builddir)/src/libfbsplashrender.la $(top_builddir)/src/libfbsplash.la
+-splashtest_SOURCES = splashtest.c $(top_builddir)/src/fbsplash.h
++splashtest_SOURCES = splashtest.c
+ splashtest_LDADD   = $(top_builddir)/src/libfbsplashrender.la $(top_builddir)/src/libfbsplash.la
+-
+-clean-local:
+-	@# For some reason automake is not removing this directory
+-	@# even though it created it by calling libtool for linking.
+-	@# Therefore, perform normal clean-libtool steps.
+-	@rm -rf .libs _libs
+-
+diff --git a/core/scripts/Makefile.am b/core/scripts/Makefile.am
+index 1a16ffb..dfa3bee 100644
+--- a/core/scripts/Makefile.am
++++ b/core/scripts/Makefile.am
+@@ -8,15 +8,12 @@ EXTRA_DIST  = bootsplash2fbsplash.in splash-functions.sh.in splash_geninitramfs.
+ MOSTLYCLEANFILES = bootsplash2fbsplash splash-functions.sh splash_geninitramfs splash_manager splash_resize splashy2fbsplash.py
+ 
+ %: %.in
+-	@$(call infmsg,CREATE,$@)
+-	$(Q)$(MKDIR_P) $(@D)
+-	$(Q)rm -f $@
+-	$(Q)cat $< | $(SED) \
++	$(AM_V_GEN)$(MKDIR_P) $(@D) && rm -f $@ && cat $< | $(SED) \
+ 		-e 's|@PACKAGE_VERSION[@]|$(PACKAGE_VERSION)|g' \
+ 		-e 's|@bindir[@]|$(eexecbindir)|g' \
+ 		-e 's|@sbindir[@]|$(eexecsbindir)|g' \
+ 		-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
+ 		-e 's|@themedir[@]|$(themedir)|g' \
+ 		-e 's|@libdir[@]|$(eexeclibdir)|g' \
+-		> $@
++		> $@ && chmod +x $@
+ 
+diff --git a/core/src/Makefile.am b/core/src/Makefile.am
+index d6ce315..bb877c5 100644
+--- a/core/src/Makefile.am
++++ b/core/src/Makefile.am
+@@ -17,92 +17,47 @@
+ 
+ SUBDIRS = . test
+ 
+-include ../common.mk
+-
+ ################################################################################
+ # General
+ ################################################################################
+ 
+-BUILT_SOURCES          =
+-
+-noinst_HEADERS         =
+-nodist_include_HEADERS =
+-
+-noinst_LTLIBRARIES     =
++BUILT_SOURCES          = fbsplash.h
++nodist_include_HEADERS = fbsplash.h
+ lib_LTLIBRARIES        =
+-
+-noinst_PROGRAMS        =
+ eexecsbin_PROGRAMS     =
+-eexecbin_PROGRAMS      =
+ sbin_PROGRAMS          =
+-bin_PROGRAMS           =
++EXTRA_DIST             = fbsplash.h.in libfbsplash.pc.in libfbsplashrender.pc.in
++MOSTLYCLEANFILES       = fbsplash.h libfbsplash.pc libfbsplashrender.pc
+ 
+-EXTRA_DIST             =
+-MOSTLYCLEANFILES       =
++AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(srcdir) -I$(builddir)
++AM_CFLAGS   = -Wall -Wextra -Wno-unused-parameter -Wno-sign-compare \
++              -Wno-missing-field-initializers -Werror=implicit-function-declaration \
++              -Werror=incompatible-pointer-types -Werror=int-conversion
+ 
+-if CONFIG_DEBUG
+-CFLAGS ?= -Wall -g
+-else
+-CFLAGS ?= -O2
++if !CONFIG_DEBUG
++AM_LDFLAGS  = -s
+ endif
+ 
+-################################################################################
+-# All
+-################################################################################
+-
+-INCLUDES = -I$(top_srcdir) -I$(top_builddir)
+-
+-AM_MAKEFLAGS     =
+-AM_LIBTOOLFLAGS  =
+-
+-BUILT_SOURCES   += fbsplash.h
+-
+-dist-hook: 		dist-hook-header
+-
+-################################################################################
+-# Header
+-################################################################################
+-
+-nodist_include_HEADERS  += fbsplash.h
+-
+-EXTRA_DIST              += fbsplash.h.in
+-
+-MOSTLYCLEANFILES        += fbsplash.h
+-
+-dist-hook-header:
+-	@# Removing this file from the distribution is easier than putting it
+-	@# in a nodist_*_SOURCES rather than the normal _SOURCES list for all
+-	@# the programs and libraries that depend on it.
+-	@rm -f $(top_distdir)/src/fbsplash.h
+-
+ fbsplash.h: fbsplash.h.in $(top_builddir)/config.h
+-	@$(call infmsg,CREATE,$@)
+-	$(Q)$(MKDIR_P) $(@D)
+-	$(Q)rm -f $@
+-	$(Q)cat $< | $(SED) \
++	$(AM_V_GEN)$(MKDIR_P) $(@D) && $(SED) \
+ 		-e 's|@bindir[@]|$(eexecbindir)|g' \
+ 		-e 's|@sbindir[@]|$(eexecsbindir)|g' \
+ 		-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
+ 		-e 's|@themedir[@]|$(themedir)|g' \
+ 		-e 's|@libdir[@]|$(eexeclibdir)|g' \
+-		> $@
+-
+-$(top_builddir)/config.h:
+-	@echo "The file 'config.h' is missing. Please run 'configure'."
+-	@exit 1
++		$< > $@.tmp && mv -f $@.tmp $@
+ 
+ ################################################################################
+-# Library
++# Libraries
+ ################################################################################
+ 
+-lib_LTLIBRARIES += libfbsplash.la
+-lib_LTLIBRARIES += libfbsplashrender.la
++lib_LTLIBRARIES += libfbsplash.la libfbsplashrender.la
+ 
+-libfbsplash_la_SOURCES = libfbsplash.c common.h fbsplash.h
+-libfbsplash_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(libfbsplash_version)
+-libfbsplash_la_LIBADD  =
++libfbsplash_la_SOURCES = libfbsplash.c common.h
++libfbsplash_la_LDFLAGS = -version-info $(libfbsplash_version)
+ 
+-libfbsplashrender_la_SOURCES  = \
++# Sources shared by libfbsplashrender and the kernel helper.
++render_sources = \
+ 	libfbsplashrender.c \
+ 	fbcon_decor.c \
+ 	common.c \
+@@ -115,51 +70,56 @@ libfbsplashrender_la_SOURCES  = \
+ 	../include/console_decor.h \
+ 	../include/fbcondecor.h \
+ 	common.h \
+-	render.h \
+-	fbsplash.h
+-libfbsplashrender_la_CFLAGS   = $(AM_CFLAGS)
+-libfbsplashrender_la_LDFLAGS  = $(AM_LDFLAGS) -version-info $(libfbsplashrender_version)
+-libfbsplashrender_la_LIBADD   = libfbsplash.la
++	render.h
++
++render_cflags = $(JPEG_CFLAGS)
++render_libs   = $(JPEG_LIBS) -lm
+ 
+-libfbsplashrender_la_CFLAGS  += $(JPEG_CFLAGS)
+-libfbsplashrender_la_LIBADD  += $(JPEG_LIBS)
++if CONFIG_PNG
++render_cflags += $(PNG_CFLAGS)
++render_libs   += $(PNG_LIBS)
++endif
++
++libfbsplashrender_la_SOURCES  = $(render_sources)
++libfbsplashrender_la_CPPFLAGS = $(AM_CPPFLAGS)
++libfbsplashrender_la_CFLAGS   = $(AM_CFLAGS) $(render_cflags)
++libfbsplashrender_la_LDFLAGS  = -version-info $(libfbsplashrender_version)
++libfbsplashrender_la_LIBADD   = libfbsplash.la $(render_libs)
+ 
+ if CONFIG_MNG
+-libfbsplashrender_la_SOURCES += mng_callbacks.c mng_render.c mng_splash.h common.h render.h fbsplash.h
++libfbsplashrender_la_SOURCES += mng_callbacks.c mng_render.c mng_splash.h
+ libfbsplashrender_la_CFLAGS  += $(MNG_CFLAGS)
+ libfbsplashrender_la_LIBADD  += $(MNG_LIBS)
+ endif
+-if CONFIG_PNG
+-libfbsplashrender_la_CFLAGS  += $(PNG_CFLAGS)
+-libfbsplashrender_la_LIBADD  += $(PNG_LIBS)
+-endif
+ if CONFIG_TTF
+-libfbsplashrender_la_SOURCES += ttf.c ttf.h fbsplash.h
+-libfbsplashrender_la_CFLAGS  += $(FREETYPE2_CFLAGS) $(M_CFLAGS)
+-libfbsplashrender_la_LIBADD  += $(FREETYPE2_LIBS)   $(M_LIBS)
++libfbsplashrender_la_SOURCES += ttf.c ttf.h
++libfbsplashrender_la_CFLAGS  += $(FREETYPE2_CFLAGS)
++libfbsplashrender_la_LIBADD  += $(FREETYPE2_LIBS)
+ endif
+ 
+-AM_MAKEFLAGS += "libfbsplashrender_la_CFLAGS=$(libfbsplashrender_la_CFLAGS)"
++# Flags for programs using libfbsplashrender's internals.
++user_cflags = $(libfbsplashrender_la_CFLAGS)
++if CONFIG_TTF
++user_cflags += $(FREETYPE2_CFLAGS)
++endif
++if CONFIG_MNG
++user_cflags += $(MNG_CFLAGS)
++endif
+ 
+-pkgconfigdir 		= $(libdir)/pkgconfig
+-pkgconfig_DATA  	= libfbsplash.pc libfbsplashrender.pc
+-EXTRA_DIST       	+= libfbsplash.pc.in libfbsplashrender.pc.in
+-MOSTLYCLEANFILES 	+= libfbsplash.pc libfbsplashrender.pc
++pkgconfigdir     = $(libdir)/pkgconfig
++pkgconfig_DATA   = libfbsplash.pc libfbsplashrender.pc
+ 
+ %.pc: %.pc.in
+-	@$(call infmsg,CREATE,$@)
+-	$(Q)$(MKDIR_P) $(@D)
+-	$(Q)rm -f $@
+-	$(Q)cat $< | $(SED) \
++	$(AM_V_GEN)$(SED) \
+ 		-e 's|@prefix[@]|$(prefix)|g' \
+ 		-e 's|@exec_prefix[@]|$(exec_prefix)|g' \
+ 		-e 's|@libdir[@]|$(libdir)|g' \
+ 		-e 's|@includedir[@]|$(includedir)|g' \
+-		-e 's|@libs_private[@]|$(strip $($(basename $(@F))_la_LIBADD))|g' \
+-		> $@
++		-e 's|@libs_private[@]|$(strip $(render_libs) $(MNG_LIBS) $(FREETYPE2_LIBS))|g' \
++		$< > $@
+ 
+ ################################################################################
+-# User
++# User programs
+ ################################################################################
+ 
+ if CONFIG_FBCON_DECOR
+@@ -167,34 +127,41 @@ sbin_PROGRAMS += fbcondecor_ctl
+ endif
+ sbin_PROGRAMS += fbsplashd splash_util
+ 
+-fbcondecor_ctl_SOURCES      = fbcon_decor_ctl.c fbcon_decor.h ../include/console_decor.h ../include/fbcondecor.h common.h fbsplash.h
+-fbcondecor_ctl_CPPFLAGS     = $(AM_CPPFLAGS) -DTARGET_UTIL $(libfbsplashrender_la_CFLAGS)
+-fbcondecor_ctl_LDFLAGS      = $(AM_LDFLAGS)
+-fbcondecor_ctl_LDADD        = libfbsplashrender.la libfbsplash.la
++fbcondecor_ctl_SOURCES  = fbcon_decor_ctl.c fbcon_decor.h ../include/console_decor.h ../include/fbcondecor.h common.h
++fbcondecor_ctl_CPPFLAGS = $(AM_CPPFLAGS) -DTARGET_UTIL
++fbcondecor_ctl_CFLAGS   = $(user_cflags)
++fbcondecor_ctl_LDADD    = libfbsplashrender.la libfbsplash.la
+ 
+-fbsplashd_SOURCES           = daemon_cmd.c daemon.c daemon.h common.h render.h fbsplash.h
+-fbsplashd_CPPFLAGS          = $(AM_CPPFLAGS) -DTARGET_UTIL
+-fbsplashd_CFLAGS            = $(AM_CFLAGS) $(PTHREAD_CFLAGS) $(RT_CFLAGS) $(libfbsplashrender_la_CFLAGS)
+-fbsplashd_LDFLAGS           = $(AM_LDFLAGS)
+-fbsplashd_LDADD             = libfbsplashrender.la libfbsplash.la $(PTHREAD_LIBS) $(RT_LIBS) $(GPM_LIBS)
++fbsplashd_SOURCES       = daemon_cmd.c daemon.c daemon.h common.h render.h
++fbsplashd_CPPFLAGS      = $(AM_CPPFLAGS) -DTARGET_UTIL
++fbsplashd_CFLAGS        = $(user_cflags) -pthread
++fbsplashd_LDADD         = libfbsplashrender.la libfbsplash.la -lpthread $(GPM_LIBS)
++if CONFIG_MNG
++fbsplashd_LDADD        += $(MNG_LIBS)
++endif
+ 
+-splash_util_SOURCES         = util.c common.h fbsplash.h
+-splash_util_CPPFLAGS        = $(AM_CPPFLAGS) -DTARGET_UTIL $(libfbsplashrender_la_CFLAGS)
+-splash_util_LDFLAGS         = $(AM_LDFLAGS)
+-splash_util_LDADD           = libfbsplashrender.la libfbsplash.la
++splash_util_SOURCES     = util.c common.h
++splash_util_CPPFLAGS    = $(AM_CPPFLAGS) -DTARGET_UTIL
++splash_util_CFLAGS      = $(user_cflags)
++splash_util_LDADD       = libfbsplashrender.la libfbsplash.la
+ 
+ if CONFIG_STATIC_BINARIES
+ eexecsbin_PROGRAMS += fbsplashctl
+ 
+-fbsplashctl_SOURCES         = $(fbsplashd_SOURCES) $(splash_util_SOURCES) fbsplashctl.c
+-fbsplashctl_CFLAGS          = $(AM_CFLAGS) $(PTHREAD_STATIC_CFLAGS) $(RT_CFLAGS) $(libfbsplashrender_la_CFLAGS) -DUNIFIED_BUILD
+-fbsplashctl_CPPFLAGS        = $(fbsplashd_CPPFLAGS) $(splash_util_CPPFLAGS)
+-fbsplashctl_LDFLAGS         = $(AM_LDFLAGS) -all-static
+-fbsplashctl_LDADD           = libfbsplashrender.la libfbsplash.la $(PTHREAD_STATIC_LIBS) $(RT_LIBS) $(GPM_LIBS)
+-
++fbsplashctl_SOURCES   = $(fbsplashd_SOURCES) $(splash_util_SOURCES) fbsplashctl.c \
++                        libfbsplash.c $(render_sources)
++fbsplashctl_CPPFLAGS  = $(AM_CPPFLAGS) -DTARGET_UTIL -DUNIFIED_BUILD
++fbsplashctl_CFLAGS    = $(AM_CFLAGS) $(CTL_STATIC_CFLAGS) -pthread
++fbsplashctl_LDFLAGS   = -all-static
++fbsplashctl_LDADD     = $(CTL_STATIC_LIBS)
+ if CONFIG_FBCON_DECOR
+-fbsplashctl_SOURCES += $(fbcondecor_ctl_SOURCES)
+-fbsplashctl_CPPFLAGS += $(fbcondecor_ctl_CPPFLAGS)
++fbsplashctl_SOURCES  += fbcon_decor_ctl.c
++endif
++if CONFIG_MNG
++fbsplashctl_SOURCES  += mng_callbacks.c mng_render.c
++endif
++if CONFIG_TTF
++fbsplashctl_SOURCES  += ttf.c
+ endif
+ 
+ install-exec-hook:
+@@ -208,106 +175,32 @@ endif
+ uninstall-hook:
+ 	rm -f $(DESTDIR)$(eexecsbindir)/fbsplashd.static$(EXEEXT)
+ 	rm -f $(DESTDIR)$(eexecsbindir)/splash_util.static$(EXEEXT)
+-if CONFIG_FBCON_DECOR
+ 	rm -f $(DESTDIR)$(eexecsbindir)/fbcondecor_ctl.static$(EXEEXT)
+ endif
+-endif
+ 
+ ################################################################################
+-# Kernel
++# Kernel helper
+ ################################################################################
+ 
+ if CONFIG_HELPER
+-eexecsbin_PROGRAMS  += fbcondecor_helper
++eexecsbin_PROGRAMS += fbcondecor_helper
+ endif
+ 
+-if CONFIG_KLIBC
+-fbcondecor_helper_SOURCES = \
+-	kernel.c \
+-	libfbsplash.c \
+-	libfbsplashrender.c \
+-	fbcon_decor.c \
+-	common.c \
+-	parse.c \
+-	list.c \
+-	render.c \
+-	image.c \
+-	effects.c \
+-	fbcon_decor.h \
+-	../include/console_decor.h \
+-	../include/fbcondecor.h \
+-	common.h \
+-	render.h \
+-	fbsplash.h
+-
+-fbcondecor_helper_CPPFLAGS  = -DWITH_ERRLIST -DTARGET_KERNEL -DTT_CONFIG_OPTION_BYTECODE_INTERPRETER
+-fbcondecor_helper_CFLAGS    = -Os -w -ffunction-sections -fdata-sections -I.@am__isrc@
+-fbcondecor_helper_LDFLAGS   = 
+-fbcondecor_helper_LDADD     = 
+-
+-fbcondecor_helper_CFLAGS   += -I$(abs_top_builddir)/libs/libjpeg -I$(LIBJPEG_SOURCE)
+-fbcondecor_helper_LDADD    += $(top_builddir)/libs/libjpeg.a
+-if CONFIG_PNG
+-fbcondecor_helper_CFLAGS   += -I$(LIBPNG_SOURCE)
+-fbcondecor_helper_LDADD    += $(top_builddir)/libs/libpng.a $(top_builddir)/libs/libz.a
+-endif
++fbcondecor_helper_SOURCES  = kernel.c libfbsplash.c $(render_sources)
++fbcondecor_helper_CPPFLAGS = $(AM_CPPFLAGS) -DTARGET_KERNEL
+ if CONFIG_TTF_KERNEL
+-fbcondecor_helper_SOURCES  += ttf.c ttf.h fbsplash.h
+-fbcondecor_helper_CFLAGS   += -I$(LIBFREETYPE2_SOURCE)/include -I$(LIBZ_SOURCE)
+-fbcondecor_helper_LDADD    += $(top_builddir)/libs/libfreetype.a
++fbcondecor_helper_SOURCES += ttf.c ttf.h
+ endif
+-if CONFIG_KLIBC_SHARED
+-fbcondecor_helper_LDFLAGS  += -shared
+-else
+-fbcondecor_helper_LDFLAGS  += -static
+-endif
+-
+-# Override automake's generation of target rules for building fbcondecor_helper.
+-fbcondecor_helper: $(fbcondecor_helper_LDADD) $(fbcondecor_helper_OBJECTS) $(lib_LTLIBRARIES)
+-	@$(call infmsg,LD,$@)
+-	$(Q)$(MKDIR_P) $(@D)
+-	$(Q)$(KLCC) $(fbcondecor_helper_CFLAGS) $(fbcondecor_helper_LDFLAGS) $(fbcondecor_helper_OBJECTS) $(fbcondecor_helper_LDADD) -o $@
+-	$(Q)$(STRIP) $@
+ 
+-# Override automake's generation of target rules for building fbcondecor_helper object files.
+-fbcondecor_helper-kernel.o:
+-fbcondecor_helper-libfbsplash.o:
+-fbcondecor_helper-libfbsplashrender.o:
+-fbcondecor_helper-fbcon_decor.o:
+-fbcondecor_helper-common.o:
+-fbcondecor_helper-parse.o:
+-fbcondecor_helper-list.o:
+-fbcondecor_helper-render.o:
+-fbcondecor_helper-image.o:
+-fbcondecor_helper-effects.o:
+-fbcondecor_helper-ttf.o:
+-fbcondecor_helper-%.o: %.c
+-	@$(call infmsg,CC,$@)
+-	$(Q)$(MKDIR_P) $(@D)
+-	$(Q)$(KLCC) $(fbcondecor_helper_CPPFLAGS) $(fbcondecor_helper_CFLAGS) $(INCLUDES) -c $< -o $@
++if CONFIG_STATIC_HELPER
++fbcondecor_helper_CFLAGS   = $(AM_CFLAGS) -Os -ffunction-sections -fdata-sections $(HELPER_STATIC_CFLAGS)
++fbcondecor_helper_LDFLAGS  = -all-static -Wl,--gc-sections
++fbcondecor_helper_LDADD    = $(HELPER_STATIC_LIBS)
+ else
+-fbcondecor_helper_SOURCES = \
+-	kernel.c \
+-	libfbsplash.c \
+-	libfbsplashrender.c \
+-	fbcon_decor.c \
+-	common.c \
+-	parse.c \
+-	list.c \
+-	render.c \
+-	image.c \
+-	effects.c \
+-	fbcon_decor.h \
+-	../include/console_decor.h \
+-	../include/fbcondecor.h \
+-	common.h \
+-	render.h \
+-	fbsplash.h
++fbcondecor_helper_CFLAGS   = $(AM_CFLAGS) $(render_cflags)
++fbcondecor_helper_LDADD    = $(render_libs)
+ if CONFIG_TTF_KERNEL
+-fbcondecor_helper_SOURCES  += ttf.c ttf.h
++fbcondecor_helper_CFLAGS  += $(FREETYPE2_CFLAGS)
++fbcondecor_helper_LDADD   += $(FREETYPE2_LIBS)
+ endif
+-fbcondecor_helper_CPPFLAGS = $(AM_CPPFLAGS) -DTARGET_KERNEL
+-fbcondecor_helper_CFLAGS   = $(AM_CFLAGS) $(libfbsplashrender_la_CFLAGS)
+-fbcondecor_helper_LDFLAGS  = $(AM_LDFLAGS)
+-fbcondecor_helper_LDADD    = $(libfbsplashrender_la_LIBADD)
+ endif
+diff --git a/core/src/test/Makefile.am b/core/src/test/Makefile.am
+index d9cf3d7..d8ea65e 100644
+--- a/core/src/test/Makefile.am
++++ b/core/src/test/Makefile.am
+@@ -2,7 +2,7 @@ check_PROGRAMS = test_parser
+ 
+ TESTS = test_parser
+ 
+-test_parser_SOURCES  = test_parser.c ../parse.c
+-test_parser_CPPFLAGS = $(AM_CPPFLAGS) $(libfbsplashrender_la_CFLAGS) -DTARGET_UTIL -I..
+-test_parser_LDFLAGS  = $(AM_LDFLAGS) ../libfbsplashrender.la ../libfbsplash.la
+-
++test_parser_SOURCES  = test_parser.c
++test_parser_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/src -I$(top_builddir)/src -DTARGET_UTIL
++test_parser_LDADD    = ../libfbsplashrender.la ../libfbsplash.la
++test_parser_CFLAGS   = $(JPEG_CFLAGS) $(PNG_CFLAGS) $(FREETYPE2_CFLAGS) $(MNG_CFLAGS)
+-- 
+2.56.0
+

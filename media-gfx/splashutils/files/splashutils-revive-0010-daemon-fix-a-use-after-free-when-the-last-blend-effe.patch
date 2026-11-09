@@ -1,0 +1,97 @@
+From de6fd3af96183ce2a7a0236abab0858adacf6441 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 23:04:42 -0700
+Subject: [PATCH 10/13] daemon: fix a use after free when the last blend effect
+ finishes
+
+When the last object on the effects list finished blending in or out,
+list_del() freed its list item and the loop then read ->next from it,
+crashing fbsplashd (seen with arch-black-spin, which uses blendin()).
+Fetch the next item before possibly deleting the current one.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/src/daemon.c | 32 +++++++++++++++++---------------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
+
+diff --git a/core/src/daemon.c b/core/src/daemon.c
+index 8a89727..e388f11 100644
+--- a/core/src/daemon.c
++++ b/core/src/daemon.c
+@@ -89,7 +89,7 @@ void *thf_anim(void *unused)
+ 			ca = i->p;
+ 			co = container_of(ca);
+ 
+-			if (!co->visible ||
++			if (!co->visible || !ca->mng ||
+ 				(ca->flags & F_ANIM_METHOD_MASK) == F_ANIM_PROPORTIONAL ||
+ 			    ca->status == F_ANIM_STATUS_DONE)
+ 				continue;
+@@ -144,10 +144,14 @@ void *thf_anim(void *unused)
+ 		clock_gettime(CLOCK_MONOTONIC, &tsc);
+ 		rdelay = delay + (tsc.tv_sec - ts.tv_sec)*1000 + (tsc.tv_nsec - ts.tv_nsec)/1000000;
+ 
+-		/* Handle special effects */
++		/* Handle special effects.  Objects that finished blending are
++		 * removed from the list, which frees their list item, so fetch
++		 * the next item first. */
+ 		iprev = NULL;
+-		for (i = theme->fxobjs.head; i != NULL; i = i->next) {
+-loop:		itmp = NULL;
++		for (i = theme->fxobjs.head; i != NULL; i = itmp) {
++			bool done = false;
++
++			itmp = i->next;
+ 			co = i->p;
+ 
+ 			if (co->wait_msecs > 0) {
+@@ -159,28 +163,25 @@ loop:		itmp = NULL;
+ 					if (co->op_step > 0) {
+ 						if (prevo > co->opacity) {
+ 							co->opacity = 0xff;
+-							itmp = i->next;
+-							list_del(&theme->fxobjs, iprev, i);
++							done = true;
+ 						}
+ 					} else {
+ 						if (prevo < co->opacity) {
+ 							co->opacity = 0x0;
+ 							co->visible = false;
+-							itmp = i->next;
+-							list_del(&theme->fxobjs, iprev, i);
++							done = true;
+ 						}
+ 					}
+ 
+ 					co->invalid = true;
+ 					co->wait_msecs = co->op_tstep;
+-
+-					if (itmp) {
+-						i = itmp;
+-						goto loop;
+-					}
+ 				}
+ 			}
+-			iprev = i;
++
++			if (done)
++				list_del(&theme->fxobjs, iprev, i);
++			else
++				iprev = i;
+ 		}
+ 
+ 		/* Don't paint anything if we aren't in silent mode. */
+@@ -199,7 +200,8 @@ loop:		itmp = NULL;
+ 			ca = i->p;
+ 			co = container_of(ca);
+ 
+-			if (!co->visible || (ca->flags & F_ANIM_METHOD_MASK) == F_ANIM_PROPORTIONAL ||
++			if (!co->visible || !ca->mng ||
++			    (ca->flags & F_ANIM_METHOD_MASK) == F_ANIM_PROPORTIONAL ||
+ 			    ca->status == F_ANIM_STATUS_DONE)
+ 				continue;
+ 
+-- 
+2.56.0
+

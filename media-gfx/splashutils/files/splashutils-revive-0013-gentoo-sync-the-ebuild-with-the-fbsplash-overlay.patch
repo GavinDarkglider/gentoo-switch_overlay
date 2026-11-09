@@ -1,0 +1,54 @@
+From 1357fc94c1becbdf6b5890e756ef97ef0b566b62 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 23:06:31 -0700
+Subject: [PATCH 13/13] gentoo: sync the ebuild with the fbsplash overlay
+
+Default font from media-fonts/font-bh-ttf, and fbsplashctl is only built
+statically without USE=mng (libmng has no static archive).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ gentoo/ebuild/splashutils-9999.ebuild | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/gentoo/ebuild/splashutils-9999.ebuild b/gentoo/ebuild/splashutils-9999.ebuild
+index 2341e8f..9f1c3ea 100644
+--- a/gentoo/ebuild/splashutils-9999.ebuild
++++ b/gentoo/ebuild/splashutils-9999.ebuild
+@@ -22,6 +22,7 @@ RDEPEND="
+ 	sys-apps/openrc:=
+ 	gpm? ( sys-libs/gpm )
+ 	mng? ( media-libs/libmng:= )
++	truetype? ( media-fonts/font-bh-ttf )
+ "
+ DEPEND="${RDEPEND}
+ 	media-libs/libjpeg-turbo:=[static-libs]
+@@ -50,6 +51,9 @@ src_configure() {
+ 		$(use_with png)
+ 		$(use_with truetype ttf)
+ 		$(use_with truetype ttf-kernel)
++		# libmng has no static archive to link fbsplashctl against;
++		# the plugin then starts the regular /usr/sbin/fbsplashd.
++		$(use_enable !mng static-binaries)
+ 	)
+ 	econf "${myeconfargs[@]}"
+ }
+@@ -78,6 +82,14 @@ src_install() {
+ 
+ 	keepdir /lib/splash/{cache,proc,sys}
+ 	keepdir /etc/splash
++
++	# Default font for themes that don't name one (Luxi Sans Oblique).
++	if use truetype; then
++		local font
++		font=$(find "${ESYSROOT}"/usr/share/fonts -name luxisri.ttf -print -quit) || die
++		[[ -n ${font} ]] || die "luxisri.ttf not found (media-fonts/font-bh-ttf)"
++		dosym -r "${font#"${ESYSROOT}"}" /etc/splash/luxisri.ttf
++	fi
+ }
+ 
+ pkg_postinst() {
+-- 
+2.56.0
+

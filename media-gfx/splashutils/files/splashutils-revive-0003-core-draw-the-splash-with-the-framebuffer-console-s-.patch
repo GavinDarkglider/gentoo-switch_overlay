@@ -1,0 +1,778 @@
+From d296c67def1ac01e6879f3a9b9a0cf8dc1a421ce Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:17:21 -0700
+Subject: [PATCH 03/13] core: draw the splash with the framebuffer console's
+ rotation
+
+Make splashutils work on rotated consoles (fbcon=rotate:N, the fbcon
+rotate/rotate_all sysfs knobs), e.g. portrait panels used in landscape.
+
+- New fbsplash_get_rotation(): splash=rotate:N if given, otherwise the
+  current fbcon rotation from /sys/class/graphics/fbcon/rotate, otherwise
+  fbcon=rotate:N from the kernel command line.  Stored as config.rotate,
+  appended to fbspl_cfg_t (libfbsplash interface age bumped).
+- struct fb_data gains the rotation and the logical (rotated) resolution.
+  Theme selection (<w>x<h>.cfg), margins, text-box sanitizing and the
+  verbose picture all use the logical resolution, which is what the
+  rotation-aware fbcondecor kernel interface expects: the kernel lays the
+  picture out itself.
+- The silent splash is drawn by a single rotation-aware blitter used by
+  put_img(), paint_rect() and the fades, mapping logical to physical
+  pixels exactly like fbcon (fbcon_cw.c & co.) and writing the
+  framebuffer in physical row order.
+- fade_truecolor() now renders each step into a buffer and blits it,
+  which also fixes its 24bpp reads past the end of the image.
+- fbsplashr_tty_silent_update() requests a theme reload when only the
+  rotation changed.
+- Text boxes are clamped so tx+tw/ty+th fit the screen (the kernel
+  rejects anything else).
+- Fix an out-of-bounds write on an empty /proc/cmdline and a wrong
+  bounds check while parsing BOOT_MSG.
+- New unit test checking the blitter against fbcon's mapping for all
+  rotations at 16/24/32bpp.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/configure.ac            |   2 +-
+ core/src/.dirstamp           |   0
+ core/src/common.c            |  29 +++--
+ core/src/effects.c           | 226 +++++++++++++++++++++++++----------
+ core/src/fbsplash.h.in       |   6 +
+ core/src/libfbsplash.c       |  75 +++++++++++-
+ core/src/libfbsplashrender.c |  15 ++-
+ core/src/render.h            |   8 ++
+ core/src/test/Makefile.am    |  15 ++-
+ core/src/test/test_blit.c    | 108 +++++++++++++++++
+ core/src/util.c              |   4 +-
+ 11 files changed, 404 insertions(+), 84 deletions(-)
+ create mode 100644 core/src/.dirstamp
+ create mode 100644 core/src/test/test_blit.c
+
+diff --git a/core/configure.ac b/core/configure.ac
+index eab17c3..a340dad 100644
+--- a/core/configure.ac
++++ b/core/configure.ac
+@@ -17,7 +17,7 @@
+ 
+ AC_INIT([splashutils], [1.6.0])
+ 
+-AC_SUBST([libfbsplash_version], [1:0:0])
++AC_SUBST([libfbsplash_version], [2:0:1])
+ AC_SUBST([libfbsplashrender_version], [2:0:1])
+ 
+ AM_INIT_AUTOMAKE([1.13 foreign subdir-objects -Wno-portability])
+diff --git a/core/src/.dirstamp b/core/src/.dirstamp
+new file mode 100644
+index 0000000..e69de29
+diff --git a/core/src/common.c b/core/src/common.c
+index 93e111c..a2ab7b8 100644
+--- a/core/src/common.c
++++ b/core/src/common.c
+@@ -114,6 +114,16 @@ int fb_get_settings(int fb)
+ 
+ 	fbd.bytespp = (fbd.var.bits_per_pixel + 7) >> 3;
+ 
++	/* Draw the splash the same way up as the framebuffer console. */
++	fbd.rotate = fbsplash_get_rotation();
++	if (fbd.rotate == FB_ROTATE_CW || fbd.rotate == FB_ROTATE_CCW) {
++		fbd.lxres = fbd.var.yres;
++		fbd.lyres = fbd.var.xres;
++	} else {
++		fbd.lxres = fbd.var.xres;
++		fbd.lyres = fbd.var.yres;
++	}
++
+ 	/* Check if optimized code can be used. We use special optimizations for
+ 	 * 24/32bpp modes in which all color components have a length of 8 bits. */
+ 	if (fbd.bytespp < 3 || fbd.var.blue.length != 8 || fbd.var.green.length != 8 || fbd.var.red.length != 8) {
+@@ -149,23 +159,24 @@ int cfg_check_sanity(stheme_t *theme, u8 mode)
+ 	char *pic;
+ 
+ 	/* Verbose mode needs a config file for the exact video mode that is
+-	 * currently in use. */
+-	if (mode == 'v' && (fbd.var.xres != theme->xres || fbd.var.yres != theme->yres))
++	 * currently in use (as seen through the console rotation). */
++	if (mode == 'v' && (fbd.lxres != theme->xres || fbd.lyres != theme->yres))
+ 		return -1;
+ 
+ 	/* If the user specified invalid values for the text field - correct it.
+-	 * Also setup default values (text field covering the whole screen). */
+-	if (theme->tx > fbd.var.xres)
++	 * Also setup default values (text field covering the whole screen).
++	 * The kernel refuses text fields that don't fit the screen. */
++	if (theme->tx >= fbd.lxres)
+ 		theme->tx = 0;
+ 
+-	if (theme->ty > fbd.var.yres)
++	if (theme->ty >= fbd.lyres)
+ 		theme->ty = 0;
+ 
+-	if (theme->tw > fbd.var.xres || theme->tw == 0)
+-		theme->tw = fbd.var.xres;
++	if (theme->tw == 0 || theme->tx + theme->tw > fbd.lxres)
++		theme->tw = fbd.lxres - theme->tx;
+ 
+-	if (theme->th > fbd.var.yres || theme->th == 0)
+-		theme->th = fbd.var.yres;
++	if (theme->th == 0 || theme->ty + theme->th > fbd.lyres)
++		theme->th = fbd.lyres - theme->ty;
+ 
+ 	if (fbd.var.bits_per_pixel == 8) {
+ 		pic = (mode == 'v') ? theme->pic256 : theme->silentpic256;
+diff --git a/core/src/effects.c b/core/src/effects.c
+index a70c877..a99d2de 100644
+--- a/core/src/effects.c
++++ b/core/src/effects.c
+@@ -20,6 +20,119 @@
+ #define FADEIN_STEPS	64
+ #define FADEIN_STEPS_DC 256
+ 
++/* Copy one pixel of fbd.bytespp bytes. */
++static inline void copy_px(u8 *dst, const u8 *src)
++{
++	switch (fbd.bytespp) {
++	case 4:
++		*(u32 *)dst = *(const u32 *)src;
++		break;
++	case 2:
++		*(u16 *)dst = *(const u16 *)src;
++		break;
++	default:
++		memcpy(dst, src, fbd.bytespp);
++		break;
++	}
++}
++
++/*
++ * Copy the rectangle [x1,x2] x [y1,y2] (inclusive, theme coordinates) of
++ * @src, a theme->xres x theme->yres image, to the framebuffer at @dst.
++ *
++ * The theme is placed at (xmarg, ymarg) on the logical screen, which is
++ * mapped onto the framebuffer according to fbd.rotate, the same way the
++ * kernel's framebuffer console does it.  The framebuffer is written in
++ * physical row order; @src is read with whatever stride that implies.
++ */
++static void blit_rect(stheme_t *theme, u8 *dst, const u8 *src,
++		      int x1, int y1, int x2, int y2)
++{
++	const int bpp = fbd.bytespp, ll = fbd.fix.line_length;
++	const int X = fbd.var.xres, Y = fbd.var.yres;
++	const long sstride = (long)theme->xres * bpp;
++	int sx1, sy1, sx2, sy2, px1, px2, py1, py2, px, py;
++	long step;
++
++	if (!dst)
++		return;
++
++	/* Clip to the theme. */
++	if (x1 < 0)
++		x1 = 0;
++	if (y1 < 0)
++		y1 = 0;
++	if (x2 >= theme->xres)
++		x2 = theme->xres - 1;
++	if (y2 >= theme->yres)
++		y2 = theme->yres - 1;
++	if (x1 > x2 || y1 > y2)
++		return;
++
++	if (fbd.rotate == FB_ROTATE_UR) {
++		int len = (x2 - x1 + 1) * bpp;
++
++		for (py = y1; py <= y2; py++)
++			memcpy(dst + (py + theme->ymarg) * ll + (x1 + theme->xmarg) * bpp,
++			       src + py * sstride + x1 * bpp, len);
++		return;
++	}
++
++	/* Logical screen rectangle ... */
++	sx1 = x1 + theme->xmarg;
++	sx2 = x2 + theme->xmarg;
++	sy1 = y1 + theme->ymarg;
++	sy2 = y2 + theme->ymarg;
++
++	/* ... and the physical rectangle it ends up in. */
++	switch (fbd.rotate) {
++	case FB_ROTATE_CW:		/* (sx,sy) -> (X-1-sy, sx) */
++		px1 = X - 1 - sy2; px2 = X - 1 - sy1;
++		py1 = sx1;         py2 = sx2;
++		break;
++	case FB_ROTATE_UD:		/* (sx,sy) -> (X-1-sx, Y-1-sy) */
++		px1 = X - 1 - sx2; px2 = X - 1 - sx1;
++		py1 = Y - 1 - sy2; py2 = Y - 1 - sy1;
++		break;
++	default:			/* CCW: (sx,sy) -> (sy, Y-1-sx) */
++		px1 = sy1;         px2 = sy2;
++		py1 = Y - 1 - sx2; py2 = Y - 1 - sx1;
++		break;
++	}
++
++	if (px1 < 0 || py1 < 0 || px2 >= X || py2 >= Y)
++		return;
++
++	for (py = py1; py <= py2; py++) {
++		u8 *d = dst + py * ll + px1 * bpp;
++		const u8 *s;
++		int sx, sy;
++
++		/* Theme pixel for (px1, py) and how it moves as px grows. */
++		switch (fbd.rotate) {
++		case FB_ROTATE_CW:
++			sx = py;
++			sy = X - 1 - px1;
++			step = -sstride;
++			break;
++		case FB_ROTATE_UD:
++			sx = X - 1 - px1;
++			sy = Y - 1 - py;
++			step = -bpp;
++			break;
++		default:
++			sx = Y - 1 - py;
++			sy = px1;
++			step = sstride;
++			break;
++		}
++
++		s = src + (sy - theme->ymarg) * sstride + (sx - theme->xmarg) * bpp;
++		for (px = px1; px <= px2; px++, d += bpp, s += step)
++			copy_px(d, s);
++	}
++}
++
+ /*
+  * Copy the data from the background buffer to the framebuffer.
+  * The bg buffer dimensions need not match those of the current
+@@ -27,28 +140,12 @@
+  */
+ void put_img(stheme_t *theme, u8 *dst, u8 *src)
+ {
+-	int y, i;
+-	u8 *to = dst;
+-
+-	to += theme->xmarg * fbd.bytespp + theme->ymarg * fbd.fix.line_length;
+-	i = theme->xres * fbd.bytespp;
+-
+-	for (y = 0; y < theme->yres; y++) {
+-		memcpy(to, src + i*y, i);
+-		to += fbd.fix.line_length;
+-	}
++	blit_rect(theme, dst, src, 0, 0, theme->xres - 1, theme->yres - 1);
+ }
+ 
+ void paint_rect(stheme_t *theme, u8 *dst, u8 *src, int x1, int y1, int x2, int y2)
+ {
+-	u8 *to;
+-	int y, j;
+-
+-	j = (x2 - x1 + 1) * fbd.bytespp;
+-	for (y = y1; y <= y2; y++) {
+-		to = dst + (y + theme->ymarg) * fbd.fix.line_length + (x1 + theme->xmarg) * fbd.bytespp;
+-		memcpy(to, src + (y * theme->xres + x1) * fbd.bytespp, j);
+-	}
++	blit_rect(theme, dst, src, x1, y1, x2, y2);
+ }
+ 
+ void paint_img(stheme_t *theme, u8 *dst, u8 *src)
+@@ -114,8 +211,8 @@ void fade_directcolor(stheme_t *theme, u8 *dst, u8 *image, int fd, char type)
+ void fade_truecolor(stheme_t *theme, u8 *dst, u8 *image, char type)
+ {
+ 	int rlen, glen, blen;
+-	int i, step, h, x, y;
+-	u8 *t, *p, *pic;
++	int i, step, h, n;
++	u8 *t, *p, *pic, *frame;
+ 	int r, g, b, rt, gt, bt;
+ 	int rl8, gl8, bl8;
+ 	int clut[256][FADEIN_STEPS];
+@@ -128,8 +225,12 @@ void fade_truecolor(stheme_t *theme, u8 *dst, u8 *image, char type)
+ 	gl8 = 8 - glen;
+ 	bl8 = 8 - blen;
+ 
+-	t = malloc(theme->xres * theme->yres * 3);
+-	if (!t) {
++	n = theme->xres * theme->yres;
++	t = malloc(n * 3);
++	frame = malloc(n * fbd.bytespp);
++	if (!t || !frame) {
++		free(t);
++		free(frame);
+ 		put_img(theme, dst, image);
+ 		return;
+ 	}
+@@ -138,12 +239,15 @@ void fade_truecolor(stheme_t *theme, u8 *dst, u8 *image, char type)
+ 
+ 	/* Decode the image into a table where each color component
+ 	 * takes exatly one byte */
+-	for (i = 0; i < theme->xres * theme->yres; i++) {
++	for (i = 0; i < n; i++) {
+ 
+ 		if (fbd.bytespp == 2) {
+ 			h = *(u16*)pic;
+ 		} else if (fbd.bytespp == 3) {
+-			h = *(u32*)pic & 0xffffff;
++			if (endianess == little)
++				h = pic[0] | (pic[1] << 8) | (pic[2] << 16);
++			else
++				h = (pic[0] << 16) | (pic[1] << 8) | pic[2];
+ 		} else {
+ 			h = *(u32*)pic;
+ 		}
+@@ -174,58 +278,58 @@ void fade_truecolor(stheme_t *theme, u8 *dst, u8 *image, char type)
+ 
+ 	for (step = 0; step < FADEIN_STEPS; step++) {
+ 
+-		pic = dst + fbd.fix.line_length * theme->ymarg + theme->xmarg * fbd.bytespp;
++		pic = frame;
+ 		p = t;
+ 
+-		for (y = 0; y < theme->yres; y++) {
+-
+-			for (x = 0; x < theme->xres; x++) {
++		for (i = 0; i < n; i++) {
++			r = *p++;
++			g = *p++;
++			b = *p++;
+ 
+-				r = *p; p++;
+-				g = *p; p++;
+-				b = *p; p++;
++			rt = clut[r][step];
++			gt = clut[g][step];
++			bt = clut[b][step];
+ 
+-				rt = clut[r][step];
+-				gt = clut[g][step];
+-				bt = clut[b][step];
+-
+-				if (fbd.bytespp == 2) {
+-					rt >>= rl8;
+-					gt >>= gl8;
+-					bt >>= bl8;
+-				}
++			if (fbd.bytespp == 2) {
++				rt >>= rl8;
++				gt >>= gl8;
++				bt >>= bl8;
++			}
+ 
+-				h = (rt << fbd.var.red.offset) |
+-				    (gt << fbd.var.green.offset) |
+-				    (bt << fbd.var.blue.offset);
+-
+-				if (fbd.bytespp == 2) {
+-					*(u16*)pic = h;
+-					pic += 2;
+-				} else if (fbd.bytespp == 3) {
+-					if (endianess == little) {
+-						*(u16*)pic = h & 0xffff;
+-						pic[2] = (h >> 16) & 0xff;
+-					} else {
+-						*(u16*)pic = (h >> 8) & 0xffff;
+-						pic[2] = h & 0xff;
+-					}
+-					pic += 3;
+-				} else if (fbd.bytespp == 4) {
+-					*(u32*)pic = h;
+-					pic += 4;
++			h = (rt << fbd.var.red.offset) |
++			    (gt << fbd.var.green.offset) |
++			    (bt << fbd.var.blue.offset);
++
++			if (fbd.bytespp == 2) {
++				*(u16*)pic = h;
++			} else if (fbd.bytespp == 3) {
++				if (endianess == little) {
++					pic[0] = h;
++					pic[1] = h >> 8;
++					pic[2] = h >> 16;
++				} else {
++					pic[0] = h >> 16;
++					pic[1] = h >> 8;
++					pic[2] = h;
+ 				}
++			} else {
++				*(u32*)pic = h;
+ 			}
+-
+-			pic += fbd.fix.line_length - theme->xres * fbd.bytespp;
++			pic += fbd.bytespp;
+ 		}
++
++		put_img(theme, dst, frame);
+ 	}
+ 
++	free(frame);
+ 	free(t);
+ }
+ 
+ void fade(stheme_t *theme, u8 *dst, u8 *image, struct fb_cmap cmap, u8 bgnd, int fd, char type)
+ {
++	if (!dst)
++		return;
++
+ 	if (bgnd) {
+ 		if (fork())
+ 			return;
+diff --git a/core/src/fbsplash.h.in b/core/src/fbsplash.h.in
+index 7b8b299..05d176c 100644
+--- a/core/src/fbsplash.h.in
++++ b/core/src/fbsplash.h.in
+@@ -60,12 +60,18 @@ typedef struct
+ 	int progress;		/* current value of progress */
+ 	char verbosity;		/* verbosity level */
+ 	int autoverbose;	/* autoverbose delay in seconds; 0 if disabled */
++
++	/* Console rotation (FB_ROTATE_UR/CW/UD/CCW) to draw the splash with,
++	 * or -1 to follow the framebuffer console.  Appended to keep the
++	 * layout of the fields above. */
++	int rotate;
+ } fbspl_cfg_t;
+ 
+ fbspl_cfg_t* fbsplash_lib_init(fbspl_type_t type);
+ int fbsplash_lib_cleanup(void);
+ int fbsplash_parse_kcmdline(bool sysmsg);
+ void fbsplash_get_res(const char *theme, int *xres, int *yres);
++int fbsplash_get_rotation(void);
+ int fbsplash_profile(const char *fmt, ...);
+ bool fbsplash_is_silent(void);
+ int fbsplash_set_verbose(int old_tty);
+diff --git a/core/src/libfbsplash.c b/core/src/libfbsplash.c
+index 37cce40..b4e8f42 100644
+--- a/core/src/libfbsplash.c
++++ b/core/src/libfbsplash.c
+@@ -62,6 +62,7 @@ static int init_config(fbspl_type_t type)
+ 	config.type = type;
+ 	config.textbox_visible = false;
+ 	config.xservice = NULL;
++	config.rotate = -1;
+ 	fbsplash_acc_theme_set(FBSPL_DEFAULT_THEME);
+ 
+ 	s = getenv("PROGRESS");
+@@ -182,15 +183,15 @@ int fbsplash_parse_kcmdline(bool sysmsg)
+ 
+ 	/* Remove the newline character so that it doesn't get
+ 	 * included in the theme name. */
+-	if (buf[len-1] == '\n') {
+-		buf[len-1] = 0;
++	if (len > 0 && buf[len-1] == '\n') {
++		buf[--len] = 0;
+ 	}
+ 
+ 	if (sysmsg) {
+ 		t = strstr(buf, "BOOT_MSG=\"");
+ 		if (t) {
+ 			t += 10;
+-			for (i = 0; i < len-(t-buf) && buf[i]; i++) {
++			for (i = 0; i < len-(t-buf) && t[i]; i++) {
+ 				if (t[i] == '"' && !quot)
+ 					break;
+ 				if (t[i] == '\\') {
+@@ -254,6 +255,9 @@ int fbsplash_parse_kcmdline(bool sysmsg)
+ 				config.kdmode = KD_GRAPHICS;
+ 			} else if (!strcmp(opt, "profile")) {
+ 				config.profile = true;
++			} else if (!strncmp(opt, "rotate:", 7)) {
++				int rot = strtol(opt+7, NULL, 0);
++				config.rotate = (rot >= 0 && rot <= 3) ? rot : -1;
+ 			}
+ 		}
+ 	}
+@@ -302,6 +306,71 @@ bool fbsplash_is_silent(void)
+ 	}
+ }
+ 
++/*
++ * Look for fbcon=rotate:N on the kernel command line.
++ * Returns -1 if it isn't there.
++ */
++static int kcmdline_fbcon_rotate(void)
++{
++	char buf[1024], *p;
++	FILE *fp;
++	int rot = -1;
++
++	fp = fopen(PATH_PROC "/cmdline", "r");
++	if (!fp)
++		return -1;
++	if (!fgets(buf, sizeof(buf), fp))
++		buf[0] = 0;
++	fclose(fp);
++
++	for (p = buf; (p = strstr(p, "fbcon=")); p++) {
++		char *o = p + 6;
++
++		/* fbcon options are comma separated, the last one wins */
++		while (o && *o && *o != ' ' && *o != '\n') {
++			if (!strncmp(o, "rotate:", 7))
++				rot = strtol(o + 7, NULL, 0);
++			o = strpbrk(o, ", \n");
++			if (o && *o == ',')
++				o++;
++			else
++				break;
++		}
++	}
++
++	return (rot >= 0 && rot <= 3) ? rot : -1;
++}
++
++/**
++ * Get the rotation the splash has to be drawn with so that it matches the
++ * framebuffer console: config.rotate (splash=rotate:N) if set, otherwise
++ * the current fbcon rotation from sysfs, otherwise fbcon=rotate:N from the
++ * kernel command line.
++ *
++ * @return FB_ROTATE_UR (0), FB_ROTATE_CW (1), FB_ROTATE_UD (2) or
++ *         FB_ROTATE_CCW (3).
++ */
++int fbsplash_get_rotation(void)
++{
++	FILE *fp;
++	int rot = -1;
++
++	if (config.rotate >= 0 && config.rotate <= 3)
++		return config.rotate;
++
++	fp = fopen(PATH_SYS "/class/graphics/fbcon/rotate", "r");
++	if (fp) {
++		if (fscanf(fp, "%d", &rot) != 1)
++			rot = -1;
++		fclose(fp);
++	}
++
++	if (rot < 0 || rot > 3)
++		rot = kcmdline_fbcon_rotate();
++
++	return (rot >= 0 && rot <= 3) ? rot : 0;
++}
++
+ /**
+  * Get the resolution that the splash screen will use.
+  *
+diff --git a/core/src/libfbsplashrender.c b/core/src/libfbsplashrender.c
+index 79d6e5b..57025fe 100644
+--- a/core/src/libfbsplashrender.c
++++ b/core/src/libfbsplashrender.c
+@@ -438,8 +438,8 @@ struct fbspl_theme *fbsplashr_theme_load()
+ 		return NULL;
+ 
+ 	st->modes = FBSPL_MODE_SILENT | FBSPL_MODE_VERBOSE;
+-	st->xres = fbd.var.xres;
+-	st->yres = fbd.var.yres;
++	st->xres = fbd.lxres;
++	st->yres = fbd.lyres;
+ 	st->log_lines = 5;
+ 	st->log_cols = 80;
+ 	st->log_cnt = 0;
+@@ -450,8 +450,8 @@ struct fbspl_theme *fbsplashr_theme_load()
+ 
+ 	snprintf(buf, 512, FBSPL_THEME_DIR "/%s/%dx%d.cfg", config.theme, st->xres, st->yres);
+ 
+-	st->xmarg = (fbd.var.xres - st->xres) / 2;
+-	st->ymarg = (fbd.var.yres - st->yres) / 2;
++	st->xmarg = (fbd.lxres - st->xres) / 2;
++	st->ymarg = (fbd.lyres - st->yres) / 2;
+ 
+ 	list_init(st->blit);
+ 	list_init(st->objs);
+@@ -710,6 +710,7 @@ int fbsplashr_tty_silent_update()
+ {
+ 	struct fb_var_screeninfo old_var;
+ 	struct fb_fix_screeninfo old_fix;
++	int old_rotate = fbd.rotate;
+ 	int ret = 0;
+ 
+ 	memcpy(&old_fix, &fbd.fix, sizeof(old_fix));
+@@ -729,6 +730,12 @@ int fbsplashr_tty_silent_update()
+ 
+ 		munmap(fb_mem, old_fix.line_length * old_var.yres);
+ 		fb_mem = fb_mmap(fd_fb);
++		if (fb_mem == MAP_FAILED)
++			fb_mem = NULL;
++		ret = 1;
++	} else if (fbd.rotate != old_rotate) {
++		/* Same mode, but the console was rotated: the theme has to be
++		 * reloaded for the new logical resolution. */
+ 		ret = 1;
+ 	}
+ 
+diff --git a/core/src/render.h b/core/src/render.h
+index 96042f4..ff12cef 100644
+--- a/core/src/render.h
++++ b/core/src/render.h
+@@ -228,9 +228,17 @@ typedef struct {
+ #define BOX_VGRAD  0x40
+ #define BOX_HGRAD  0x20
+ 
++/*
++ * Framebuffer description.  Themes, pictures and all rendering work in
++ * logical coordinates (what the viewer sees, i.e. after the framebuffer
++ * console's rotation); only the blitters in effects.c deal with the
++ * physical layout in var/fix.
++ */
+ struct fb_data {
+ 	struct fb_var_screeninfo   var;
+ 	struct fb_fix_screeninfo   fix;
++	int rotate;				/* FB_ROTATE_* the console is drawn with */
++	int lxres, lyres;		/* logical (rotated) resolution */
+ 	int bytespp;			/* bytes per pixel */
+ 	bool opt;				/* can we use optimized 24/32bpp routines? */
+ 	u8 ro, go, bo;			/* red, green, blue offset */
+diff --git a/core/src/test/Makefile.am b/core/src/test/Makefile.am
+index d8ea65e..fcfc494 100644
+--- a/core/src/test/Makefile.am
++++ b/core/src/test/Makefile.am
+@@ -1,8 +1,15 @@
+-check_PROGRAMS = test_parser
++check_PROGRAMS = test_parser test_blit
+ 
+-TESTS = test_parser
++TESTS = test_parser test_blit
++
++test_cppflags = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/src -I$(top_builddir)/src -DTARGET_UTIL
++test_cflags   = $(JPEG_CFLAGS) $(PNG_CFLAGS) $(FREETYPE2_CFLAGS) $(MNG_CFLAGS)
+ 
+ test_parser_SOURCES  = test_parser.c
+-test_parser_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/src -I$(top_builddir)/src -DTARGET_UTIL
++test_parser_CPPFLAGS = $(test_cppflags)
++test_parser_CFLAGS   = $(test_cflags)
+ test_parser_LDADD    = ../libfbsplashrender.la ../libfbsplash.la
+-test_parser_CFLAGS   = $(JPEG_CFLAGS) $(PNG_CFLAGS) $(FREETYPE2_CFLAGS) $(MNG_CFLAGS)
++
++test_blit_SOURCES    = test_blit.c ../effects.c
++test_blit_CPPFLAGS   = $(test_cppflags)
++test_blit_CFLAGS     = $(test_cflags)
+diff --git a/core/src/test/test_blit.c b/core/src/test/test_blit.c
+new file mode 100644
+index 0000000..662c799
+--- /dev/null
++++ b/core/src/test/test_blit.c
+@@ -0,0 +1,108 @@
++/*
++ * Check the rotation-aware blitter in effects.c against the mapping the
++ * kernel framebuffer console uses (fbcon_cw.c & co., fbcondecor).
++ */
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "common.h"
++#include "render.h"
++
++struct fb_data fbd;
++sendian_t endianess = little;
++
++/* logical screen (sx, sy) -> physical (px, py), as in the kernel */
++static void l2p(int rot, int X, int Y, int sx, int sy, int *px, int *py)
++{
++	switch (rot) {
++	case FB_ROTATE_CW:  *px = X - 1 - sy; *py = sx; break;
++	case FB_ROTATE_UD:  *px = X - 1 - sx; *py = Y - 1 - sy; break;
++	case FB_ROTATE_CCW: *px = sy; *py = Y - 1 - sx; break;
++	default:            *px = sx; *py = sy; break;
++	}
++}
++
++static int run(int rot, int bpp, int X, int Y, int pad, int tw, int th,
++	       int x1, int y1, int x2, int y2)
++{
++	stheme_t theme = { 0 };
++	int lx = (rot & 1) ? Y : X, ly = (rot & 1) ? X : Y;
++	int ll = X * bpp + pad, x, y, err = 0;
++	u8 *src, *dst;
++
++	memset(&fbd, 0, sizeof(fbd));
++	fbd.var.xres = X;
++	fbd.var.yres = Y;
++	fbd.fix.line_length = ll;
++	fbd.bytespp = bpp;
++	fbd.rotate = rot;
++
++	theme.xres = tw;
++	theme.yres = th;
++	theme.xmarg = (lx - tw) / 2;
++	theme.ymarg = (ly - th) / 2;
++
++	src = malloc(tw * th * bpp);
++	dst = malloc(ll * Y);
++	for (y = 0; y < th; y++)
++		for (x = 0; x < tw; x++) {
++			u32 v = 0x01000000 | (y << 12) | x;
++			memcpy(src + (y * tw + x) * bpp, &v, bpp);
++		}
++	memset(dst, 0xee, ll * Y);
++
++	paint_rect(&theme, dst, src, x1, y1, x2, y2);
++
++	/* The blitter clips to the theme; so does the check. */
++	if (x1 < 0) x1 = 0;
++	if (y1 < 0) y1 = 0;
++	if (x2 >= tw) x2 = tw - 1;
++	if (y2 >= th) y2 = th - 1;
++
++	/* Every pixel of the rectangle where the kernel would put it ... */
++	for (y = y1; y <= y2; y++)
++		for (x = x1; x <= x2; x++) {
++			int px, py;
++
++			l2p(rot, X, Y, x + theme.xmarg, y + theme.ymarg, &px, &py);
++			if (memcmp(dst + py * ll + px * bpp, src + (y * tw + x) * bpp, bpp)) {
++				if (err++ < 3)
++					fprintf(stderr, "rot %d bpp %d: theme (%d,%d) not at (%d,%d)\n",
++						rot, bpp, x, y, px, py);
++			}
++			memset(dst + py * ll + px * bpp, 0xee, bpp);
++		}
++
++	/* ... and nothing anywhere else. */
++	for (x = 0; x < ll * Y; x++)
++		if (dst[x] != 0xee) {
++			fprintf(stderr, "rot %d bpp %d: stray write at offset %d\n", rot, bpp, x);
++			err++;
++			break;
++		}
++
++	free(src);
++	free(dst);
++	return err;
++}
++
++int main(void)
++{
++	int rot, bpp, err = 0;
++
++	for (rot = 0; rot < 4; rot++)
++		for (bpp = 2; bpp <= 4; bpp++) {
++			/* whole theme filling a non-square screen */
++			err += run(rot, bpp, 7, 5, 0, (rot & 1) ? 5 : 7, (rot & 1) ? 7 : 5,
++				   0, 0, 10, 10);
++			/* smaller theme centered, padded lines, sub-rectangle */
++			err += run(rot, bpp, 11, 8, 12, (rot & 1) ? 6 : 9, (rot & 1) ? 9 : 6,
++				   1, 2, 4, 4);
++			/* rectangle partly outside the theme gets clipped */
++			err += run(rot, bpp, 11, 8, 4, 5, 5, -3, 3, 9, 20);
++		}
++
++	printf("blitter: %s\n", err ? "FAILED" : "ok");
++	return err ? 1 : 0;
++}
+diff --git a/core/src/util.c b/core/src/util.c
+index 350c0f1..99de3b7 100644
+--- a/core/src/util.c
++++ b/core/src/util.c
+@@ -184,8 +184,8 @@ int util_main(int argc, char **argv)
+ 
+ 	case getres:
+ 	{
+-		int xres = fbd.var.xres;
+-		int yres = fbd.var.yres;
++		int xres = fbd.lxres;
++		int yres = fbd.lyres;
+ 		fbsplash_get_res(config.theme, &xres, &yres);
+ 		printf("%dx%d\n", xres, yres);
+ 		break;
+-- 
+2.56.0
+

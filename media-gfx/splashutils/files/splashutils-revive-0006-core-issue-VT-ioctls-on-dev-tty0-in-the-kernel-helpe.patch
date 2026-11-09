@@ -1,0 +1,40 @@
+From 13f6340535dba62974c6c14c62d7ae65d6977009 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:26:54 -0700
+Subject: [PATCH 06/13] core: issue VT ioctls on /dev/tty0 in the kernel helper
+
+The helper switched to the silent tty through /dev/console, which is
+whatever the last console= option points to.  With a serial console
+listed last VT_ACTIVATE failed with ENOTTY, the silent splash was drawn
+over the verbose console and immediately lost.  Use /dev/tty0 (creating
+it from sysfs if needed) and only fall back to /dev/console.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/src/kernel.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/kernel.c b/core/src/kernel.c
+index 55db367..b56026c 100644
+--- a/core/src/kernel.c
++++ b/core/src/kernel.c
+@@ -127,7 +127,14 @@ noverbose:
+ 	if (!(theme->modes & FBSPL_MODE_SILENT))
+ 		return -1;
+ 
+-	fd_tty0 = open("/dev/console", O_RDWR);
++	/* VT ioctls have to go to a virtual terminal.  /dev/console is
++	 * whatever the last console= option points to (e.g. a serial port). */
++	fd_tty0 = open(PATH_DEV "/tty0", O_RDWR);
++	if (fd_tty0 == -1 &&
++	    !dev_create(PATH_DEV "/tty0", PATH_SYS "/class/tty/tty0/dev"))
++		fd_tty0 = open(PATH_DEV "/tty0", O_RDWR);
++	if (fd_tty0 == -1)
++		fd_tty0 = open(PATH_DEV "/console", O_RDWR);
+ 
+ 	fbsplash_set_silent();
+ 	fbsplashr_tty_silent_init(true);
+-- 
+2.56.0
+

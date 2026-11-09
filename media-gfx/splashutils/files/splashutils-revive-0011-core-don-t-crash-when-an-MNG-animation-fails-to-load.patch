@@ -1,0 +1,86 @@
+From b9fde5c1a3558931b11980d703f8acbff34912ee Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 23:04:42 -0700
+Subject: [PATCH 11/13] core: don't crash when an MNG animation fails to load
+
+fbsplashr_theme_load() and the daemon dereferenced the userdata of
+animations whose file could not be loaded.  Hide such animations and skip
+them everywhere a->mng is used.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/src/libfbsplashrender.c |  2 +-
+ core/src/mng_render.c        | 18 ++++++++++++++----
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/core/src/libfbsplashrender.c b/core/src/libfbsplashrender.c
+index 57025fe..82d4aac 100644
+--- a/core/src/libfbsplashrender.c
++++ b/core/src/libfbsplashrender.c
+@@ -488,7 +488,7 @@ struct fbspl_theme *fbsplashr_theme_load()
+ 		anim *ca = i->p;
+ 		obj *co = container_of(ca);
+ 
+-		if (!co->visible ||
++		if (!co->visible || !ca->mng ||
+ 			(ca->flags & F_ANIM_METHOD_MASK) == F_ANIM_PROPORTIONAL)
+ 			continue;
+ 
+diff --git a/core/src/mng_render.c b/core/src/mng_render.c
+index 268a98a..702e477 100644
+--- a/core/src/mng_render.c
++++ b/core/src/mng_render.c
+@@ -200,7 +200,7 @@ void anim_prerender(stheme_t *theme, anim *a, bool force)
+ {
+ 	obj *o = container_of(a);
+ 
+-	if (!o->visible)
++	if (!o->visible || !a->mng)
+ 		return;
+ 
+ 	if ((a->flags & F_ANIM_METHOD_MASK) == F_ANIM_PROPORTIONAL) {
+@@ -224,12 +224,13 @@ void anim_prerender(stheme_t *theme, anim *a, bool force)
+ void anim_render(stheme_t *theme, anim *a, rect *re, u8* tg)
+ {
+ 	rgbacolor *src;
+-	mng_anim *mng = mng_get_userdata(a->mng);
++	mng_anim *mng;
+ 	obj *o = container_of(a);
+ 	int line;
+ 
+-	if (!o->visible)
++	if (!o->visible || !a->mng)
+ 		return;
++	mng = mng_get_userdata(a->mng);
+ 
+ 	src = (rgbacolor*)mng->canvas;
+ 
+@@ -262,6 +263,9 @@ void anim_render_canvas(anim *a)
+ 	mng_anim *mng;
+ 	obj *o;
+ 
++	if (!a->mng)
++		return;
++
+ 	mng = mng_get_userdata(a->mng);
+ 	mng->wait_msecs = 0;
+ 	memset(&mng->start_time, 0, sizeof(struct timeval));
+@@ -294,7 +298,13 @@ int load_anims(stheme_t *theme)
+ 		anim *a = (anim*)i->p;
+ 		a->mng = mng_load(a->filename, &a->w, &a->h);
+ 		if (!a->mng) {
+-			iprint(MSG_ERROR, "%s: failed to allocate memory for mng\n", __func__);
++			/* Keep going without the animation; everything that
++			 * touches it checks a->mng. */
++			iprint(MSG_ERROR, "%s: failed to load animation '%s'\n", __func__, a->filename);
++			obj *o = container_of(a);
++
++			o->visible = false;
++			a->status = F_ANIM_STATUS_DONE;
+ 			err = -1;
+ 		}
+ 	}
+-- 
+2.56.0
+

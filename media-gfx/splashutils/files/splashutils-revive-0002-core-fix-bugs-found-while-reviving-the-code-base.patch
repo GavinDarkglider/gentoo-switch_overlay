@@ -1,0 +1,768 @@
+From a9931f431e4cf39490595eb32273399711ee2ea1 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:14:10 -0700
+Subject: [PATCH 02/13] core: fix bugs found while reviving the code base
+
+- libfbsplash: pass the fifo command to fputs() instead of using it as a
+  format string.
+- libfbsplashrender: fbsplashr_tty_silent_cleanup() did c_lflag &=
+  (ICANON|ECHO), clearing every other local mode flag of the tty on exit;
+  check mmap() against MAP_FAILED; don't closedir(NULL) or fscanf() a
+  NULL FILE when the input class can't be read; tty fd checks used !fd;
+  off-by-one in fbsplashr_tty_silent_set().
+- effects: the background fade child returned instead of exiting in 8bpp
+  modes, leaving a second copy of the caller running.
+- render: box opacity was forced to 0xff by a leftover ', 1', so
+  blendin()/blendout() never faded boxes.
+- image: '!a & b' precedence bug decided whether to add an alpha channel;
+  is_png() looked at an uninitialized header for files < 8 bytes.
+- ttf: rewrite the UTF-8 decoder, which read past the end of truncated
+  sequences and silently truncated non-BMP characters; use ceilf()
+  instead of a private ceil() (that rounded) in the kernel helper.
+- daemon: bound the %s in the /proc/*/stat scan; check read()/chdir().
+- Use proper #if blocks for WANT_TTF/WANT_MNG ('defined' inside a macro
+  expansion is undefined behaviour) and PATH_SYS/PATH_PROC.
+- Missing declarations/headers (makedev, mount, list_ringadd,
+  obj_visibility_set) that GCC 14 rejects; make arg_task static so the
+  unified fbsplashctl links with -fno-common (GCC 10+ default).
+- fbcondecor_ctl: return a failure exit status when an operation fails,
+  and say why setpic is refused for an inactive console.
+- Uninitialized buffers when fgets()/fscanf() fail.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/misc/blittest.c         |  1 +
+ core/src/common.c            |  7 +++-
+ core/src/common.h            | 19 +++++++--
+ core/src/daemon.c            | 21 +++++-----
+ core/src/daemon_cmd.c        |  4 +-
+ core/src/effects.c           |  2 +
+ core/src/fbcon_decor_ctl.c   | 10 +++--
+ core/src/image.c             |  7 +++-
+ core/src/kernel.c            |  3 +-
+ core/src/libfbsplash.c       | 20 +++++----
+ core/src/libfbsplashrender.c | 51 ++++++++++++++++-------
+ core/src/parse.c             |  2 +
+ core/src/render.c            |  6 ++-
+ core/src/render.h            |  2 +
+ core/src/ttf.c               | 79 +++++++++++++++++++-----------------
+ core/src/util.c              | 12 ++----
+ 16 files changed, 152 insertions(+), 94 deletions(-)
+
+diff --git a/core/misc/blittest.c b/core/misc/blittest.c
+index f72d0fd..362b5ed 100644
+--- a/core/misc/blittest.c
++++ b/core/misc/blittest.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <unistd.h>
+ #include <stdlib.h>
+ #include <sys/mman.h>
+ #include <sys/types.h>
+diff --git a/core/src/common.c b/core/src/common.c
+index 7106867..93e111c 100644
+--- a/core/src/common.c
++++ b/core/src/common.c
+@@ -14,6 +14,7 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <sys/stat.h>
++#include <sys/sysmacros.h>
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <termios.h>
+@@ -44,10 +45,12 @@ int dev_create(char *fn, char *sys)
+ 		return 1;
+ 	}
+ 
+-	read(fd, buf, 256);
++	res = read(fd, buf, sizeof(buf) - 1);
+ 	close(fd);
+ 
+-	buf[255] = 0;
++	if (res <= 0)
++		return 1;
++	buf[res] = 0;
+ 
+ 	sscanf(buf, "%u:%u", &major, &minor);
+ 
+diff --git a/core/src/common.h b/core/src/common.h
+index 8590bb1..3e42c7c 100644
+--- a/core/src/common.h
++++ b/core/src/common.h
+@@ -26,12 +26,13 @@
+ 
+ /* Common paths */
+ #define PATH_DEV	"/dev"
+-#define PATH_PROC	"/proc"
+-#define PATH_SYS	"/sys"
+ 
+ #if defined(TARGET_KERNEL)
+ 	#define PATH_SYS	FBSPLASH_DIR"/sys"
+ 	#define PATH_PROC	FBSPLASH_DIR"/proc"
++#else
++	#define PATH_PROC	"/proc"
++	#define PATH_SYS	"/sys"
+ #endif
+ 
+ /* Useful short-named types */
+@@ -81,7 +82,17 @@ typedef enum { little, big } sendian_t;
+ #define CLAMP(x)		((x) > 255 ? 255 : (x))
+ #define DEBUG(x...)
+ 
+-#define WANT_TTF	((defined(CONFIG_TTF_KERNEL) && defined(TARGET_KERNEL)) || (defined(CONFIG_TTF) && !defined(TARGET_KERNEL)))
+-#define WANT_MNG	(defined(CONFIG_MNG) && !defined(TARGET_KERNEL))
++/* 'defined' inside a macro expansion is undefined behaviour, so spell these out. */
++#if (defined(CONFIG_TTF_KERNEL) && defined(TARGET_KERNEL)) || (defined(CONFIG_TTF) && !defined(TARGET_KERNEL))
++	#define WANT_TTF	1
++#else
++	#define WANT_TTF	0
++#endif
++
++#if defined(CONFIG_MNG) && !defined(TARGET_KERNEL)
++	#define WANT_MNG	1
++#else
++	#define WANT_MNG	0
++#endif
+ 
+ #endif /* __UTIL_H */
+diff --git a/core/src/daemon.c b/core/src/daemon.c
+index eae23ec..8a89727 100644
+--- a/core/src/daemon.c
++++ b/core/src/daemon.c
+@@ -473,7 +473,8 @@ void* thf_switch_ttymon(void *unused)
+ 		int t = 0;
+ 
+ 		fcntl(fd_tty[config.tty_s], F_SETFL, flags & (~O_NDELAY));
+-		read(fd_tty[config.tty_s], &ret, 1);
++		if (read(fd_tty[config.tty_s], &ret, 1) != 1)
++			ret = 0xff;
+ 
+ 		if (ret == '\x1b') {
+ 			fcntl(fd_tty[config.tty_s], F_SETFL, flags | O_NDELAY);
+@@ -565,19 +566,19 @@ static int daemon_check_running(const char *pname)
+ {
+ 	struct dirent **namelist;
+ 	FILE *fp;
+-	char name[128];
++	char name[300];
+ 	char buf[128];
+ 	int n, pid, fpid = 0, mpid = getpid();
+ 	int l = min(strlen(pname), 15);
+ 
+ 	n = scandir("/proc", &namelist, dcr_filter, alphasort);
+ 	if (n < 0)
+-		perror("blah");
++		perror("scandir /proc");
+ 	else {
+ 		while(n--) {
+-			snprintf(name, 128, "/proc/%s/stat", namelist[n]->d_name);
++			snprintf(name, sizeof(name), "/proc/%s/stat", namelist[n]->d_name);
+ 			if ((fp = fopen(name, "r")) != NULL) {
+-				if ((fscanf(fp, "%d (%s)", &pid, buf) == 2) && mpid != pid && !strncmp(buf, pname, l)) {
++				if ((fscanf(fp, "%d (%127s", &pid, buf) == 2) && mpid != pid && !strncmp(buf, pname, l)) {
+ 					fpid = pid;
+ 				}
+ 				fclose(fp);
+@@ -649,7 +650,8 @@ void daemon_start()
+ 	}
+ 
+ 	setsid();
+-	chdir("/");
++	if (chdir("/"))
++		iprint(MSG_WARN, "Failed to chdir to /.\n");
+ 
+ 	/* Make /dev/null stdin, and /dev/console stdout/stderr */
+ 	i = open("/dev/null", O_RDWR);
+@@ -747,11 +749,7 @@ static void usage()
+ 
+ int fbsplashd_main(int argc, char **argv)
+ {
+-	unsigned int c, i;
+-	int err = 0;
+-	int arg_vc = -1;
+-
+-	arg_vc = -1;
++	unsigned int c;
+ 
+ 	fbsplash_lib_init(fbspl_undef);
+ 	fbsplashr_init(false);
+@@ -843,6 +841,7 @@ int fbsplashd_main(int argc, char **argv)
+ 
+ 	invalidate_textbox(theme, config.textbox_visible);
+ 	daemon_start();
++	return 0;
+ }
+ 
+ #ifndef UNIFIED_BUILD
+diff --git a/core/src/daemon_cmd.c b/core/src/daemon_cmd.c
+index de103f4..a3a7fd6 100644
+--- a/core/src/daemon_cmd.c
++++ b/core/src/daemon_cmd.c
+@@ -307,7 +307,7 @@ int cmd_repaint(void **args)
+ out:
+ 	pthread_mutex_unlock(&mtx_paint);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+@@ -426,7 +426,7 @@ int cmd_paint_rect(void **args)
+ out:
+ 
+ 	pthread_mutex_unlock(&mtx_paint);
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+diff --git a/core/src/effects.c b/core/src/effects.c
+index a9fcef7..a70c877 100644
+--- a/core/src/effects.c
++++ b/core/src/effects.c
+@@ -234,6 +234,8 @@ void fade(stheme_t *theme, u8 *dst, u8 *image, struct fb_cmap cmap, u8 bgnd, int
+ 	/* FIXME: We need to handle 8bpp modes */
+ 	if (cmap.red) {
+ 		put_img(theme, dst, image);
++		if (bgnd)
++			exit(0);
+ 		return;
+ 	}
+ 
+diff --git a/core/src/fbcon_decor_ctl.c b/core/src/fbcon_decor_ctl.c
+index 5a3cfd0..ad86d05 100644
+--- a/core/src/fbcon_decor_ctl.c
++++ b/core/src/fbcon_decor_ctl.c
+@@ -37,7 +37,7 @@ static struct option options[] = {
+ 	{ "quiet",  no_argument, NULL, 'q'},
+ };
+ 
+-enum { none, setpic, on, off, setcfg, getcfg, getstate } arg_task;
++static enum { none, setpic, on, off, setcfg, getcfg, getstate } arg_task;
+ 
+ struct cmd {
+ 	char *name;
+@@ -176,8 +176,12 @@ int fbcondecor_main(int argc, char **argv)
+ 		struct vt_stat stat;
+ 
+ 		if (ioctl(fd_tty0, VT_GETSTATE, &stat) != -1) {
+-			if (arg_vc != stat.v_active - 1)
++			if (arg_vc != stat.v_active - 1) {
++				iprint(MSG_ERROR, "The picture can only be set for the active console (%d).\n",
++				       stat.v_active - 1);
++				err = -1;
+ 				goto setpic_out;
++			}
+ 		}
+ 
+ 		err = fbcon_decor_setpic(FBCON_DECOR_IO_ORIG_USER, arg_vc, theme);
+@@ -208,7 +212,7 @@ setpic_out:	break;
+ 	fbsplashr_cleanup();
+ 	fbsplash_lib_cleanup();
+ 
+-	return 0;
++	return err ? 1 : 0;
+ }
+ 
+ #ifndef UNIFIED_BUILD
+diff --git a/core/src/image.c b/core/src/image.c
+index 4fb21a9..38a8b64 100644
+--- a/core/src/image.c
++++ b/core/src/image.c
+@@ -75,7 +75,7 @@ static int load_png(stheme_t *theme, char *filename, u8 **data, struct fb_cmap *
+ 		png_set_strip_alpha(png_ptr);
+ 
+ #ifndef TARGET_KERNEL
+-	if (!(png_get_color_type(png_ptr, info_ptr) & PNG_COLOR_MASK_ALPHA) & want_alpha) {
++	if (!(png_get_color_type(png_ptr, info_ptr) & PNG_COLOR_MASK_ALPHA) && want_alpha) {
+ 		png_set_add_alpha(png_ptr, 0xff, PNG_FILLER_AFTER);
+ 	}
+ #endif
+@@ -168,7 +168,10 @@ static int is_png(char *filename)
+ 	if (!fp)
+ 		return -1;
+ 
+-	fread(header, 1, 8, fp);
++	if (fread(header, 1, 8, fp) != 8) {
++		fclose(fp);
++		return 0;
++	}
+ 	fclose(fp);
+ 
+ 	return !png_sig_cmp(header, 0, 8);
+diff --git a/core/src/kernel.c b/core/src/kernel.c
+index 56a98c2..55db367 100644
+--- a/core/src/kernel.c
++++ b/core/src/kernel.c
+@@ -18,6 +18,8 @@
+ #include <sys/types.h>
+ #include <sys/ioctl.h>
+ #include <sys/mman.h>
++#include <sys/mount.h>
++#include <sys/stat.h>
+ #include <linux/tiocl.h>
+ 
+ #include "common.h"
+@@ -154,7 +156,6 @@ noverbose:
+ 
+ int main(int argc, char **argv)
+ {
+-	char *tmpc;
+ 	int err = 0, i = 5;
+ 	u8 mounts = 0;
+ 
+diff --git a/core/src/libfbsplash.c b/core/src/libfbsplash.c
+index 1774f9d..37cce40 100644
+--- a/core/src/libfbsplash.c
++++ b/core/src/libfbsplash.c
+@@ -174,7 +174,8 @@ int fbsplash_parse_kcmdline(bool sysmsg)
+ 	if (!fp)
+ 		goto fail;
+ 
+-	fgets(buf, 1024, fp);
++	if (!fgets(buf, 1024, fp))
++		buf[0] = 0;
+ 	fclose(fp);
+ 
+ 	len = strlen(buf);
+@@ -495,7 +496,10 @@ int fbsplash_cache_cleanup(char **profile_save)
+ 
+ nosave:
+ 	/* Clear a stale mtab entry that might have been created by the initscripts. */
+-	system("/bin/sed -i -e '\\#"FBSPLASH_CACHEDIR"# d' /etc/mtab");
++	/* /etc/mtab is a symlink to /proc/self/mounts on modern systems. */
++	if (access("/etc/mtab", W_OK) == 0 && system("/bin/sed -i -e '\\#"FBSPLASH_CACHEDIR"# d' /etc/mtab")) {
++		/* best effort */
++	}
+ 
+ 	umount2(what, MNT_DETACH);
+ 	return err;
+@@ -567,8 +571,8 @@ int fbsplash_check_sanity(void)
+ 	if (!fp)
+ 		goto err;
+ 
+-	buf[0] = 0;
+-	fgets(buf, 128, fp);
++	if (!fgets(buf, 128, fp))
++		buf[0] = 0;
+ 	if (strlen(buf) == 0) {
+ 		pclose(fp);
+ 		goto err;
+@@ -612,7 +616,8 @@ int fbsplash_set_evdev(void)
+ 	for (i = 0; i < sizeof(evdev_cmds)/sizeof(char*); i++) {
+ 		fp = popen(evdev_cmds[i], "r");
+ 		if (fp) {
+-			fgets(buf, 128, fp);
++			if (!fgets(buf, 128, fp))
++				buf[0] = 0;
+ 			if ((j = strlen(buf)) > 0) {
+ 				if (buf[j-1] == '\n')
+ 					buf[j-1] = 0;
+@@ -647,7 +652,8 @@ int fbsplash_profile(const char *fmt, ...)
+ 	fp = fopen(PATH_PROC "/uptime", "r");
+ 	if (!fp)
+ 		return -1;
+-	fscanf(fp, "%f", &uptime);
++	if (fscanf(fp, "%f", &uptime) != 1)
++		uptime = 0;
+ 	fclose(fp);
+ 
+ 	fp = fopen(FBSPLASH_PROFILE, "a");
+@@ -693,7 +699,7 @@ int fbsplash_send(const char *fmt, ...)
+ 	vsnprintf(cmd, 256, fmt, ap);
+ 	va_end(ap);
+ 
+-	fprintf(fp_fifo, cmd);
++	fputs(cmd, fp_fifo);
+ 	fbsplash_profile("comm %s", cmd);
+ 	return 0;
+ }
+diff --git a/core/src/libfbsplashrender.c b/core/src/libfbsplashrender.c
+index bebce95..79d6e5b 100644
+--- a/core/src/libfbsplashrender.c
++++ b/core/src/libfbsplashrender.c
+@@ -111,8 +111,10 @@ static int fb_init(int tty, bool create)
+ 	}
+ 
+ 	fb_mem = fb_mmap(fd_fb);
+-	if (!fb_mem)
++	if (fb_mem == MAP_FAILED) {
++		fb_mem = NULL;
+ 		return -1;
++	}
+ 
+ 	return 0;
+ }
+@@ -206,14 +208,19 @@ int fbsplashr_input_init()
+ 	int ev, num, err = -1;
+ 
+ 	input_cls = opendir(INPUT_BASE);
+-	if (input_cls) {
++	if (!input_cls)
++		return -1;
++	{
+ 		while ((entry = readdir(input_cls)) && ev_cnt < INPUT_MAX) {
+ 
+ 			/* Look for all input* files */
+ 			if (!strncmp(entry->d_name, "input", 5)) {
+ 				snprintf(buf, PATH_MAX, INPUT_BASE "/%s/capabilities/ev", entry->d_name);
+ 				fp = fopen(buf, "r");
+-				fscanf(fp, "%x", &ev);
++				if (!fp)
++					continue;
++				if (fscanf(fp, "%x", &ev) != 1)
++					ev = 0;
+ 
+ 				/* Check if the device supports KEY and REP.  It appears that all keyboard
+ 				 * drivers have at least these two capabilities. */
+@@ -264,7 +271,6 @@ unsigned short fbsplashr_input_getkey(bool block)
+ {
+ 	struct timeval timeout = {0, 0};
+ 	struct input_event ev;
+-	unsigned char a;
+ 	int err, i;
+ 	fd_set fds;
+ 
+@@ -326,7 +332,10 @@ void fbsplashr_cleanup()
+ 	TTF_Quit();
+ #endif
+ 
+-	fb_unmap(fb_mem);
++	if (fb_mem) {
++		fb_unmap(fb_mem);
++		fb_mem = NULL;
++	}
+ 
+ 	for (i = 0; i < MAX_NR_CONSOLES; i++) {
+ 		if (fd_tty[i] != -1) {
+@@ -420,7 +429,6 @@ struct fbspl_theme *fbsplashr_theme_load()
+ 	char buf[512];
+ 	stheme_t *st;
+ 	item *i;
+-	int j;
+ 
+ 	if (!config.theme)
+ 		return NULL;
+@@ -522,7 +530,6 @@ struct fbspl_theme *fbsplashr_theme_load()
+ void fbsplashr_theme_free(struct fbspl_theme *theme)
+ {
+ 	item *i, *j;
+-	int k;
+ 
+ 	if (!theme)
+ 		return;
+@@ -588,14 +595,30 @@ void fbsplashr_theme_free(struct fbspl_theme *theme)
+ 	free(theme);
+ }
+ 
++static void vt_write(int fd, const char *s)
++{
++	size_t len = strlen(s);
++
++	while (len) {
++		ssize_t n = write(fd, s, len);
++
++		if (n < 0 && errno == EINTR)
++			continue;
++		if (n <= 0)
++			return;
++		s += n;
++		len -= n;
++	}
++}
++
+ static void vt_cursor_disable(int fd)
+ {
+-	write(fd, "\e[?25l\e[?1c", 11);
++	vt_write(fd, "\e[?25l\e[?1c");
+ }
+ 
+ static void vt_cursor_enable(int fd)
+ {
+-	write(fd, "\e[?25h\e[?0c", 11);
++	vt_write(fd, "\e[?25h\e[?0c");
+ }
+ 
+ /**
+@@ -612,7 +635,7 @@ int fbsplashr_tty_silent_init(bool clear)
+ 		fd_tty[config.tty_s] = tty_open(config.tty_s);
+ 
+ 	fd = fd_tty[config.tty_s];
+-	if (!fd)
++	if (fd < 0)
+ 		return -1;
+ 
+ 	tcgetattr(fd, &w);
+@@ -624,7 +647,7 @@ int fbsplashr_tty_silent_init(bool clear)
+ 
+ 	if (clear) {
+ 		/* Clear display */
+-		write(fd, "\e[H\e[2J", 7);
++		vt_write(fd, "\e[H\e[2J");
+ 	}
+ 
+ 	return 0;
+@@ -642,11 +665,11 @@ int fbsplashr_tty_silent_cleanup()
+ 		fd_tty[config.tty_s] = tty_open(config.tty_s);
+ 
+ 	fd = fd_tty[config.tty_s];
+-	if (!fd)
++	if (fd < 0)
+ 		return -1;
+ 
+ 	tcgetattr(fd, &w);
+-	w.c_lflag &= (ICANON|ECHO);
++	w.c_lflag |= (ICANON|ECHO);
+ 	w.c_cc[VTIME] = 0;
+ 	w.c_cc[VMIN] = 1;
+ 	tcsetattr(fd, TCSANOW, &w);
+@@ -662,7 +685,7 @@ int fbsplashr_tty_silent_cleanup()
+  */
+ int fbsplashr_tty_silent_set(int tty)
+ {
+-	if (tty < 0 || tty > MAX_NR_CONSOLES)
++	if (tty < 0 || tty >= MAX_NR_CONSOLES)
+ 		return -1;
+ 
+ 	if (fd_tty[tty] == -1)
+diff --git a/core/src/parse.c b/core/src/parse.c
+index ad7676d..9c5d1ac 100644
+--- a/core/src/parse.c
++++ b/core/src/parse.c
+@@ -1361,6 +1361,8 @@ int parse_cfg(char *cfgfile, stheme_t *theme)
+ 					parse_text(t);
+ 					break;
+ #endif
++				default:
++					break;
+ 				}
+ 			}
+ 		}
+diff --git a/core/src/render.c b/core/src/render.c
+index b6e2d28..be3756b 100644
+--- a/core/src/render.c
++++ b/core/src/render.c
+@@ -487,7 +487,7 @@ void box_render(stheme_t *theme, box *box, rect *re, u8 *target, u8 opacity)
+ 	int x, y, a, r, g, b, h;
+ 	int add;
+ 	u8 *pic;
+-	float hr, hg, hb, ha, fr, fg, fb, fa;
++	float hr = 0, hg = 0, hb = 0, ha = 0, fr = 0, fg = 0, fb = 0, fa = 0;
+ 	int r1, r2, g1, g2, b1, b2, a1, a2;
+ 	int h1, h2;
+ 
+@@ -568,7 +568,7 @@ void box_render(stheme_t *theme, box *box, rect *re, u8 *target, u8 opacity)
+ 				r = (u8)fr;
+ 			}
+ 
+-			if (opacity == 0xff, 1) {
++			if (opacity == 0xff) {
+ 				put_pixel(a, r, g, b, pic, pic, add);
+ 			} else {
+ 				put_pixel(a * opacity / 255, r, g, b, pic, pic, add);
+@@ -890,6 +890,8 @@ void invalidate_progress(stheme_t *theme)
+ 			break;
+ 		}
+ #endif
++		default:
++			break;
+ 		}
+ 	}
+ }
+diff --git a/core/src/render.h b/core/src/render.h
+index 9e5633f..96042f4 100644
+--- a/core/src/render.h
++++ b/core/src/render.h
+@@ -288,6 +288,7 @@ void render_objs(stheme_t *theme, u8 *target, u8 mode, bool force);
+ void bnd_init(stheme_t *theme);
+ void blit_add(stheme_t *theme, rect *a);
+ void render_add(stheme_t *theme, obj *o, rect *a);
++void obj_visibility_set(stheme_t *theme, obj *o, bool visible);
+ 
+ /* image.c */
+ int load_images(stheme_t *theme, char mode);
+@@ -307,6 +308,7 @@ void daemon_start();
+ void list_add(list *l, void *obj);
+ void list_free(list l, bool free_item);
+ void list_del(list *l, item *prev, item *curr);
++void list_ringadd(list *l, void *obj);
+ 
+ /* effects.c */
+ void paint_rect(stheme_t *theme, u8 *dst, u8 *src, int x1, int y1, int x2, int y2);
+diff --git a/core/src/ttf.c b/core/src/ttf.c
+index e8cefaa..51948fd 100644
+--- a/core/src/ttf.c
++++ b/core/src/ttf.c
+@@ -15,9 +15,7 @@
+  *
+  */
+ 
+-#ifndef TARGET_KERNEL
+ #include <math.h>
+-#endif
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -36,17 +34,6 @@ int boot_msg_width = 0;
+ #define DEFAULT_PTSIZE  18
+ #define NUM_GRAYS       256
+ 
+-#ifdef TARGET_KERNEL
+-int ceil(float a)
+-{
+-	int h = (int)a;
+-	if (a - h >= 0.5)
+-		return h+1;
+-	else
+-		return h;
+-}
+-#endif
+-
+ static void Flush_Glyph(c_glyph* glyph)
+ {
+ 	glyph->stored = 0;
+@@ -119,7 +106,7 @@ static FT_Error Load_Glyph(TTF_Font* font, unsigned short ch, c_glyph* cached, i
+ 			cached->maxx += font->glyph_overhang;
+ 		}
+ 		if(font->style & TTF_STYLE_ITALIC) {
+-			cached->maxx += (int)ceil(font->glyph_italics);
++			cached->maxx += (int)ceilf(font->glyph_italics);
+ 		}
+ 		cached->stored |= CACHED_METRICS;
+ 	}
+@@ -172,7 +159,7 @@ static FT_Error Load_Glyph(TTF_Font* font, unsigned short ch, c_glyph* cached, i
+ 			dst->width += bump;
+ 		}
+ 		if(font->style & TTF_STYLE_ITALIC) {
+-			int bump = (int)ceil(font->glyph_italics);
++			int bump = (int)ceilf(font->glyph_italics);
+ 			dst->pitch += bump;
+ 			dst->width += bump;
+ 		}
+@@ -271,29 +258,40 @@ static FT_Error Find_Glyph(TTF_Font* font, unsigned short ch, int want)
+ 	return retval;
+ }
+ 
++/*
++ * Decode UTF-8 into UCS-2.  Malformed or truncated sequences and characters
++ * outside the BMP (which the glyph cache can't index) become U+FFFD.  Never
++ * reads past @len bytes of @utf8; @unicode must have room for @len + 1 units.
++ */
+ static unsigned short *UTF8_to_UNICODE(unsigned short *unicode, const char *utf8, int len)
+ {
+-	int i, j;
+-	unsigned short ch;
+-
+-	for (i=0, j=0; i < len; ++i, ++j) {
+-		ch = ((const unsigned char *)utf8)[i];
+-		if (ch >= 0xF0) {
+-			ch  =  (unsigned short)(utf8[i]&0x07) << 18;
+-			ch |=  (unsigned short)(utf8[++i]&0x3F) << 12;
+-			ch |=  (unsigned short)(utf8[++i]&0x3F) << 6;
+-			ch |=  (unsigned short)(utf8[++i]&0x3F);
+-		} else
+-		if (ch >= 0xE0) {
+-			ch  =  (unsigned short)(utf8[i]&0x3F) << 12;
+-			ch |=  (unsigned short)(utf8[++i]&0x3F) << 6;
+-			ch |=  (unsigned short)(utf8[++i]&0x3F);
+-		} else
+-		if (ch >= 0xC0) {
+-			ch  =  (unsigned short)(utf8[i]&0x3F) << 6;
+-			ch |=  (unsigned short)(utf8[++i]&0x3F);
+-		}
+-		unicode[j] = ch;
++	const unsigned char *s = (const unsigned char *)utf8;
++	int i = 0, j = 0;
++
++	while (i < len) {
++		unsigned int ch = s[i++];
++		int extra, k;
++
++		if (ch < 0x80)
++			extra = 0;
++		else if (ch >= 0xF0 && ch < 0xF8)
++			extra = 3, ch &= 0x07;
++		else if (ch >= 0xE0)
++			extra = 2, ch &= 0x0F;
++		else if (ch >= 0xC0)
++			extra = 1, ch &= 0x1F;
++		else
++			extra = -1;		/* stray continuation byte */
++
++		for (k = 0; k < extra; k++) {
++			if (i >= len || (s[i] & 0xC0) != 0x80) {
++				extra = -1;
++				break;
++			}
++			ch = (ch << 6) | (s[i++] & 0x3F);
++		}
++
++		unicode[j++] = (extra < 0 || ch > 0xFFFF) ? 0xFFFD : ch;
+ 	}
+ 	unicode[j] = 0;
+ 
+@@ -673,7 +671,10 @@ static char *text_get_output(char *prg)
+ 	if (!buf)
+ 		return NULL;
+ 
+-	pipe(pfds);
++	if (pipe(pfds)) {
++		free(buf);
++		return NULL;
++	}
+ 	pid = fork();
+ 	buf[0] = 0;
+ 
+@@ -684,9 +685,11 @@ static char *text_get_output(char *prg)
+ 		 * with a deadlock. */
+ 		close(1);
+ #endif
+-		dup(pfds[1]);
++		if (dup(pfds[1]) < 0)
++			_exit(1);
+ 		close(pfds[0]);
+ 		execlp("sh", "sh", "-c", prg, NULL);
++		_exit(127);
+ 	} else {
+ 		FD_ZERO(&rfds);
+ 		FD_SET(pfds[0], &rfds);
+diff --git a/core/src/util.c b/core/src/util.c
+index a85fe29..350c0f1 100644
+--- a/core/src/util.c
++++ b/core/src/util.c
+@@ -42,7 +42,7 @@ static struct option options[] = {
+ 	{ "quiet",  no_argument, NULL, 'q'},
+ };
+ 
+-enum { none, getres, paint, setmode, getmode, repaint } arg_task;
++static enum { none, getres, paint, setmode, getmode, repaint } arg_task;
+ 
+ struct cmd {
+ 	char *name;
+@@ -168,18 +168,14 @@ int util_main(int argc, char **argv)
+ 		return 0;
+ 	}
+ 
+-	switch (arg_task) {
+-	/* Only load the theme if it will actually be used. */
+ #ifdef CONFIG_DEPRECATED
+-	case paint:
+-	case repaint:
+-#endif
++	/* Only load the theme if it will actually be used. */
++	if (arg_task == paint || arg_task == repaint) {
+ 		theme = fbsplashr_theme_load();
+ 		if (!theme)
+ 			exit(1);
+-	default:
+-		break;
+ 	}
++#endif
+ 
+ 	if (arg_task != setmode && arg_vc == -1)
+ 		arg_vc = 0;
+-- 
+2.56.0
+

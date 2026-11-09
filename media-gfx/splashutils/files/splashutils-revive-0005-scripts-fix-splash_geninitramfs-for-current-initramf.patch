@@ -1,0 +1,141 @@
+From 9c8c04f0735b8109a39703b8e1fdc21c35a68125 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:20:37 -0700
+Subject: [PATCH 05/13] scripts: fix splash_geninitramfs for current initramfs
+ images
+
+- --append no longer unpacks the image assuming gzip.  The splash files
+  go into an archive of their own that is concatenated to the image,
+  which works with any compression and with multi-segment images such as
+  dracut's (early microcode + main image).
+- When several themes were given without --res, the first theme's
+  resolution list was reused for all others.
+- Copy the libraries of a dynamically linked helper.
+- grep -E instead of the deprecated egrep.
+- Document that --res takes the resolution as seen on a rotated console.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/scripts/splash_geninitramfs.in | 49 +++++++++++++++++++----------
+ 1 file changed, 32 insertions(+), 17 deletions(-)
+
+diff --git a/core/scripts/splash_geninitramfs.in b/core/scripts/splash_geninitramfs.in
+index ff9b75b..bd73a0e 100644
+--- a/core/scripts/splash_geninitramfs.in
++++ b/core/scripts/splash_geninitramfs.in
+@@ -24,8 +24,8 @@ Usage: splash_geninitramfs [options] [--all|theme ...]
+ 
+ Main operation modes:
+   -g, --generate=IMG  generate an initramfs image with all necessary files
+-  -a, --append=IMG    append a theme and helper files (if necessary)
+-                      to an initramfs image
++  -a, --append=IMG    append a theme and helper files to an existing
++                      initramfs image (any compression, e.g. dracut's)
+   -c, --copy=DIR      copy all necessary files into the specified directory;
+                       DIR should point to the root directory of an initramfs
+   -o, --overlay=DIR   include the contents of DIR in the initramfs image
+@@ -34,7 +34,9 @@ Main operation modes:
+ Options:
+   -r, --res=RES   copy data for specific resolutions only; RES is a
+                   comma-separated list of the resolutions for which the images
+-		  are to be copied
++                  are to be copied.  On a rotated console (fbcon=rotate:1/3)
++                  use the resolution as seen on screen, e.g. 1280x720 for a
++                  720x1280 panel rotated into landscape.
+   -v, --verbose   verbose output
+       --no8bpp    ignore 8bpp images (can save a lot of space)
+ EOTB
+@@ -141,12 +143,10 @@ if [ "$mode" != "c" ]; then
+ 	mkdir "${imgdir}"
+ fi
+ 
+-if [ "$mode" == "a" ]; then
+-	printv "o Unpacking $img.."
+-	cp "$img" "${imgdir}"
+-	(cd "${imgdir}"; (gunzip -c "$(basename $img)" 2>/dev/null || cat "$(basename $img)") | cpio -idm --no-absolute-filenames --quiet -H newc)
+-	rm -f "${imgdir}/$(basename $img)"
+-fi
++# --append doesn't unpack the image: the kernel accepts concatenated
++# (individually compressed) cpio archives, so the splash files are put in
++# an archive of their own and appended.  That works whatever compression
++# the original image uses, including multi-segment images (early microcode).
+ 
+ printv "o Creating directory structure.."
+ mkdir -p ${imgdir}/{dev,dev/fb,dev/misc,dev/vc,$themedir,@libdir@/splash/proc,root,sbin,@libdir@/splash/sys}
+@@ -166,9 +166,18 @@ if [ ! -e ${splash_hlp} ]; then
+ fi
+ 
+ printv "o Copying ${splash_hlp}.."
++mkdir -p "${imgdir}@sbindir@"
+ cp "${splash_hlp}" "${imgdir}@sbindir@"
+ ln -sf "${splash_hlp}" "${imgdir}@sbindir@/splash_helper"
+ 
++# A dynamically linked helper (--disable-static-helper) needs its libraries.
++if ldd "${splash_hlp}" >/dev/null 2>&1; then
++	printv "o Copying libraries needed by ${splash_hlp}.."
++	for lib in $(ldd "${splash_hlp}" | grep -o '/[^ ]*'); do
++		cp -pLR --parents "${lib}" "${imgdir}"
++	done
++fi
++
+ res=${res//,/ }
+ 
+ printv "o Copying themes.."
+@@ -178,12 +187,13 @@ for (( i=0 ; i < index ; i++ )) ; do
+ 	printv "  - ${theme}"
+ 
+ 	# check if the user specified which resolutions are accepted
+-	# (default: all res)
+-	if [ -z "$res" ]; then
+-		res=$(cd ${themedir}/${theme} ; ls *cfg | sed -e 's/.cfg//g')
++	# (default: all resolutions the theme supports)
++	theme_res="${res}"
++	if [ -z "${theme_res}" ]; then
++		theme_res=$(cd "${themedir}/${theme}" && ls *.cfg | sed -e 's/\.cfg$//')
+ 	fi
+ 
+-	for j in $res ; do
++	for j in ${theme_res} ; do
+ 		if [ ! -e "${themedir}/${theme}/${j}.cfg" ]; then
+ 			echo "Warning: config file for theme '${theme}', resolution ${j} does not exist!" 1>&2
+ 			continue
+@@ -206,18 +216,18 @@ for (( i=0 ; i < index ; i++ )) ; do
+ 		done
+ 
+ 		icons=`cat "${themedir}/${theme}/${j}.cfg" | \
+-		       egrep -v '^#' | grep 'icon ' | awk '{print $2}'`
++		       grep -Ev '^#' | grep 'icon ' | awk '{print $2}'`
+ 		for icon in ${icons} ; do
+ 			put_item "${icon}"
+ 		done
+ 
+ 		fonts=`cat "${themedir}/${theme}/${j}.cfg" | \
+-		       egrep -v '^#' | grep 'text ' | grep -o '[^ ]\+\.ttf'`
++		       grep -Ev '^#' | grep 'text ' | grep -o '[^ ]\+\.ttf'`
+ 		for font in ${fonts} ; do
+ 			put_item "${font}"
+ 		done
+ 
+-		font=`cat "${themedir}/${theme}/${j}.cfg" | egrep -v '^#' | grep 'text_font='`
++		font=`cat "${themedir}/${theme}/${j}.cfg" | grep -Ev '^#' | grep 'text_font='`
+ 		font=${font#*=}
+ 		if [[ -n "${font}" ]]; then
+ 			put_item "${font}"
+@@ -235,7 +245,12 @@ fi
+ printv "o Creating initramfs image.."
+ if [ "$mode" == "g" ] || [ "$mode" == "a" ]; then
+ 	(cd "${imgdir}" ; find . | cpio --quiet -o -H newc | gzip -9 >../img.cpio.gz)
+-	mv "${workdir}/img.cpio.gz" "${img}"
++	if [ "$mode" == "a" ]; then
++		cat "${img}" "${workdir}/img.cpio.gz" > "${workdir}/full.img" &&
++			mv "${workdir}/full.img" "${img}"
++	else
++		mv "${workdir}/img.cpio.gz" "${img}"
++	fi
+ fi
+ 
+ exit 0
+-- 
+2.56.0
+

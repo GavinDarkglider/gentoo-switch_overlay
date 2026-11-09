@@ -1,0 +1,86 @@
+From 5ff63561125572c68677a5456a23e5572ddfe348 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:27:14 -0700
+Subject: [PATCH 07/13] docs: document rotation support and the 1.6.0 changes
+
+Describe splash=rotate:N, how themes are picked on rotated consoles, and
+the default silent tty (tty16, the docs still said tty8).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/NEWS                   | 26 +++++++++++++++++++++++++-
+ core/docs/kernel_parameters | 19 +++++++++++++++++--
+ 2 files changed, 42 insertions(+), 3 deletions(-)
+
+diff --git a/core/NEWS b/core/NEWS
+index bb7d2d6..d3e4dca 100644
+--- a/core/NEWS
++++ b/core/NEWS
+@@ -1 +1,25 @@
+-# Stub NEWS file to satisfy automake.
++splashutils 1.6.0
++=================
++
++Revival release: builds on current toolchains and works with the 6.x
++fbcondecor kernel patch.
++
++* Rotated consoles: the splash follows the framebuffer console rotation
++  (fbcon=rotate:N or the fbcon sysfs knobs).  Themes are chosen for the
++  resolution as seen on screen and the silent splash is drawn rotated;
++  verbose pictures are rotated by the kernel.  New splash=rotate:N option
++  to override the detected rotation.
++* Bundled 2007 copies of zlib, libpng, libjpeg and freetype and the klibc
++  build are gone.  The kernel helper is linked statically against the
++  system libraries (pkg-config --static); --disable-static-helper links it
++  dynamically and splash_geninitramfs then copies its libraries.
++* splash_geninitramfs --append works with any initramfs compression and
++  with multi-segment images by appending a separate archive.
++* The kernel helper now switches VTs through /dev/tty0, so the silent
++  splash also works with a serial console listed last.
++* OpenRC plugin builds against current OpenRC, starts fbsplashd without a
++  shell, and no longer uses its service list after freeing it.
++* Many bug fixes: a format string bug in the fifo writer, terminal flags
++  wiped on silent tty cleanup, box blend-in/out never fading, UTF-8
++  decoding past the end of strings, fbcondecor_ctl always exiting 0, and
++  more (see the git history).
+diff --git a/core/docs/kernel_parameters b/core/docs/kernel_parameters
+index ed3840a..4ea9728 100644
+--- a/core/docs/kernel_parameters
++++ b/core/docs/kernel_parameters
+@@ -20,8 +20,13 @@ a continuous configuration string. The following options are recognized:
+  - fadein     - Use a 'fade from black' effect to display the silent image.
+  - fadeout    - Use a 'fade to black' effect after the bootup is finished.
+  - theme:foo  - Use theme 'foo'.
+- - tty:n      - Sse the n-th tty as the silent tty. Default silent tty is
+-                tty8.
++ - tty:n      - Use the n-th tty as the silent tty. Default silent tty is
++                tty16.
++ - rotate:n   - Draw the splash rotated by n * 90 degrees clockwise
++                (0-3, same values as fbcon=rotate:n).  By default the
++                splash follows the framebuffer console's rotation, taken
++                from /sys/class/graphics/fbcon/rotate or fbcon=rotate:n,
++                so this is only needed to override it.
+  - kdgraphics - Run in KDGRAPHICS mode. Use of this option is discouraged
+                 but might be necessary when some kernel drivers try to
+                 display messages on the foreground tty despite the 'quiet'
+@@ -42,6 +47,16 @@ A sample full kernel command line:
+   root=/dev/hda5 video=vesafb:1024x768-32@85
+   splash=silent,fadein,theme:linuxrocks,tty:12 console=tty1
+ 
++Rotated consoles
++----------------
++
++On a rotated console (fbcon=rotate:1 or 3, e.g. a portrait panel used in
++landscape orientation) themes are picked for the resolution as seen on the
++screen: a 720x1280 panel rotated by 90 degrees uses the theme's 1280x720.cfg.
++Pictures are designed upright as usual; splashutils and the kernel take
++care of laying them out.  This needs a kernel with the rotation-aware
++fbcondecor patch for the verbose (fbcondecor) part.
++
+ Please note that the default splash mode is 'off'. You have to explicitly
+ specify 'silent' or 'verbose' on the kernel command line in order to get
+ the splash working.
+-- 
+2.56.0
+

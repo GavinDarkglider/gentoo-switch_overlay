@@ -1,0 +1,296 @@
+From 030f50c9d6bb4a212269bf23acd1ba4b219c7d90 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Sun, 8 Nov 2026 17:58:37 -0800
+Subject: [PATCH] core: switch to verbose mode with Vol- too, and watch every
+ key device
+
+Devices without a keyboard (handhelds, tablets, the Nintendo Switch)
+have no F2; Vol- now does what F2 does.  The volume keys are usually a
+device of their own (gpio-keys, "ThinkPad Extra Buttons"), apart from a
+keyboard that may also be plugged in, so:
+
+- fbsplash_set_evdev() finds every input device whose key capabilities
+  include F2 or Vol- (from sysfs) and sends them all, separated by
+  commas; the old guesses stay as the fallback.
+- 'set event dev' takes such a list; the daemon polls up to 8 devices.
+- The default boot messages say "Press F2 or Vol- for verbose mode."
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ core/src/common.h      |  6 +--
+ core/src/daemon.c      | 32 +++++++++++++---
+ core/src/daemon.h      | 10 +++--
+ core/src/daemon_cmd.c  | 23 ++++++++++--
+ core/src/libfbsplash.c | 83 ++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 137 insertions(+), 17 deletions(-)
+
+diff --git a/core/src/common.h b/core/src/common.h
+index 3e42c7c..b046f60 100644
+--- a/core/src/common.h
++++ b/core/src/common.h
+@@ -52,9 +52,9 @@ typedef enum { little, big } sendian_t;
+ #define MSG_INFO		3
+ 
+ #define SYSMSG_DEFAULT  "Initializing the kernel..."
+-#define SYSMSG_BOOTUP	"Booting the system ($progress%)... Press F2 for verbose mode."
+-#define SYSMSG_REBOOT	"Rebooting the system ($progress%)... Press F2 for verbose mode."
+-#define SYSMSG_SHUTDOWN	"Shutting down the system ($progress%)... Press F2 for verbose mode."
++#define SYSMSG_BOOTUP	"Booting the system ($progress%)... Press F2 or Vol- for verbose mode."
++#define SYSMSG_REBOOT	"Rebooting the system ($progress%)... Press F2 or Vol- for verbose mode."
++#define SYSMSG_SHUTDOWN	"Shutting down the system ($progress%)... Press F2 or Vol- for verbose mode."
+ 
+ #define DEFAULT_FONT	"luxisri.ttf"
+ #define TTF_DEFAULT		FBSPL_THEME_DIR"/"DEFAULT_FONT
+diff --git a/core/src/daemon.c b/core/src/daemon.c
+index e388f11..7ea3db0 100644
+--- a/core/src/daemon.c
++++ b/core/src/daemon.c
+@@ -25,6 +25,7 @@
+ #include <dirent.h>
+ #include <time.h>
+ #include <getopt.h>
++#include <poll.h>
+ 
+ #include "common.h"
+ #include "daemon.h"
+@@ -41,7 +42,8 @@ pthread_t th_switchmon, th_sighandler, th_anim;
+ int ctty = CTTY_VERBOSE;
+ 
+ /* File descriptors */
+-int fd_evdev = -1;
++int fd_evdev[EVDEV_MAX];
++int evdev_cnt = 0;
+ #ifdef CONFIG_GPM
+ int fd_gpm = -1;
+ #endif
+@@ -407,13 +409,27 @@ void* thf_sighandler(void *unusued)
+  */
+ void* thf_switch_evdev(void *unused)
+ {
+-	int i, h, oldstate;
+-	size_t rb;
++	int i, d, h, oldstate;
++	ssize_t rb;
+ 	struct input_event ev[8];
++	struct pollfd pfd[EVDEV_MAX];
++
++	for (d = 0; d < evdev_cnt; d++) {
++		pfd[d].fd = fd_evdev[d];
++		pfd[d].events = POLLIN;
++	}
+ 
+ 	while (1) {
+-		rb = read(fd_evdev, ev, sizeof(struct input_event)*8);
+-		if (rb < (int) sizeof(struct input_event))
++		/* poll() is a cancellation point */
++		if (poll(pfd, evdev_cnt, -1) < 0)
++			continue;
++
++		for (d = 0; d < evdev_cnt; d++) {
++		if (!(pfd[d].revents & POLLIN))
++			continue;
++
++		rb = read(pfd[d].fd, ev, sizeof(struct input_event)*8);
++		if (rb < (ssize_t) sizeof(struct input_event))
+ 			continue;
+ 
+ 		for (i = 0; i < (int) (rb / sizeof(struct input_event)); i++) {
+@@ -421,6 +437,9 @@ void* thf_switch_evdev(void *unused)
+ 				continue;
+ 
+ 			switch (ev[i].code) {
++			/* Vol- for devices without a keyboard (handhelds,
++			 * tablets, the Nintendo Switch) */
++			case KEY_VOLUMEDOWN:
+ 			case KEY_F2:
+ 				pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
+ 				pthread_mutex_lock(&mtx_paint);
+@@ -451,6 +470,7 @@ void* thf_switch_evdev(void *unused)
+ 				break;
+ 			}
+ 		}
++		}
+ 	}
+ 
+ 	pthread_exit(NULL);
+@@ -522,7 +542,7 @@ void switchmon_start(int update, int stty)
+ 
+ 	/* Do we have to start a monitor thread? */
+ 	if (update & UPD_MON) {
+-		if (fd_evdev != -1) {
++		if (evdev_cnt > 0) {
+ 			if (pthread_create(&th_switchmon, NULL, &thf_switch_evdev, NULL)) {
+ 				iprint(MSG_ERROR, "Evdev monitor thread creation failed.\n");
+ 				exit(3);
+diff --git a/core/src/daemon.h b/core/src/daemon.h
+index 39bb203..80cb9af 100644
+--- a/core/src/daemon.h
++++ b/core/src/daemon.h
+@@ -40,12 +40,14 @@ extern int tty_s, tty_v;
+ extern int fd_tty_s, fd_tty1, fd_tty0;
+ 
+ /*
+- * Event device on which the daemon listens for F2 keypresses.
+- * The proper device has to be detected by an external program and
++ * Event devices on which the daemon listens for F2 (or Vol-) keypresses.
++ * The proper devices have to be detected by an external program and
+  * then enabled by sending an appropriate command to the splash
+- * daemon.
++ * daemon (several devices separated by commas).
+  */
+-extern int fd_evdev;
++#define EVDEV_MAX 8
++extern int fd_evdev[EVDEV_MAX];
++extern int evdev_cnt;
+ extern char *evdev;
+ 
+ #ifdef CONFIG_GPM
+diff --git a/core/src/daemon_cmd.c b/core/src/daemon_cmd.c
+index a3a7fd6..7cbf9a2 100644
+--- a/core/src/daemon_cmd.c
++++ b/core/src/daemon_cmd.c
+@@ -235,21 +235,36 @@ int cmd_set_tty(void **args)
+ /*
+  * 'set event dev' command handler.
+  *
+- * Sets a new event device to monitor for keypresses.
++ * Sets the event devices to monitor for keypresses: one, or several
++ * separated by commas.
+  */
+ int cmd_set_event_dev(void **args)
+ {
++	char *list, *dev, *save;
++	int fd;
++
++	if (!args[0])
++		return -1;
++
+ 	if (evdev)
+ 		free(evdev);
+ 
+ 	evdev = strdup(args[0]);
+ 
+ 	pthread_cancel(th_switchmon);
++	pthread_join(th_switchmon, NULL);
+ 
+-	if (fd_evdev != -1)
+-		close(fd_evdev);
++	while (evdev_cnt > 0)
++		close(fd_evdev[--evdev_cnt]);
+ 
+-	fd_evdev = open(evdev, O_RDONLY);
++	list = strdup(evdev);
++	for (dev = strtok_r(list, ",\n", &save); dev && evdev_cnt < EVDEV_MAX;
++	     dev = strtok_r(NULL, ",\n", &save)) {
++		fd = open(dev, O_RDONLY);
++		if (fd != -1)
++			fd_evdev[evdev_cnt++] = fd;
++	}
++	free(list);
+ 
+ 	switchmon_start(UPD_MON, config.tty_s);
+ 
+diff --git a/core/src/libfbsplash.c b/core/src/libfbsplash.c
+index b4e8f42..8ed7654 100644
+--- a/core/src/libfbsplash.c
++++ b/core/src/libfbsplash.c
+@@ -661,6 +661,81 @@ err:
+ 	return -1;
+ }
+ 
++/*
++ * Does the input device (an inputN directory in sysfs) have the key?
++ * capabilities/key is a bitmap in hex words, the highest word first.
++ */
++static int input_has_key(const char *dir, int key)
++{
++	char buf[1024], path[PATH_MAX], *words[64], *t, *save;
++	unsigned long w;
++	int n = 0, bits = sizeof(long) * 8, idx;
++	FILE *fp;
++
++	snprintf(path, sizeof(path), "%s/capabilities/key", dir);
++	fp = fopen(path, "r");
++	if (!fp)
++		return 0;
++	if (!fgets(buf, sizeof(buf), fp))
++		buf[0] = 0;
++	fclose(fp);
++
++	for (t = strtok_r(buf, " \n", &save); t && n < 64; t = strtok_r(NULL, " \n", &save))
++		words[n++] = t;
++
++	idx = n - 1 - key / bits;
++	if (idx < 0)
++		return 0;
++	w = strtoul(words[idx], NULL, 16);
++	return (w >> (key % bits)) & 1;
++}
++
++/*
++ * The event devices that have F2 or Vol-, as a "/dev/input/eventN" list
++ * separated by commas, into buf.  Vol- lets devices without a keyboard
++ * (handhelds, the Nintendo Switch) switch to verbose mode.
++ *
++ * @return The number of devices found.
++ */
++static int find_evdevs(char *buf, size_t len)
++{
++	char dir[PATH_MAX];
++	struct dirent *in, *ev;
++	DIR *cls, *d;
++	size_t used = 0;
++	int cnt = 0;
++
++	buf[0] = 0;
++	cls = opendir(PATH_SYS "/class/input");
++	if (!cls)
++		return 0;
++
++	while ((in = readdir(cls))) {
++		if (strncmp(in->d_name, "input", 5))
++			continue;
++		snprintf(dir, sizeof(dir), PATH_SYS "/class/input/%s", in->d_name);
++		if (!input_has_key(dir, KEY_F2) && !input_has_key(dir, KEY_VOLUMEDOWN))
++			continue;
++
++		d = opendir(dir);
++		if (!d)
++			continue;
++		while ((ev = readdir(d))) {
++			if (strncmp(ev->d_name, "event", 5))
++				continue;
++			if (used + strlen(PATH_DEV) + strlen(ev->d_name) + 9 < len) {
++				used += snprintf(buf + used, len - used, "%s" PATH_DEV "/input/%s",
++						cnt ? "," : "", ev->d_name);
++				cnt++;
++			}
++			break;
++		}
++		closedir(d);
++	}
++	closedir(cls);
++	return cnt;
++}
++
+ /**
+  * Try to set the event device for the splash daemon.
+  *
+@@ -679,6 +754,14 @@ int fbsplash_set_evdev(void)
+ 		"/bin/grep -s -m 1 '^H: Handlers=kbd' " PATH_PROC "/bus/input/devices | /bin/grep -o 'event[0-9]\\+'"
+ 	};
+ 
++	char list[1024];
++
++	/* Every device with F2 or Vol- */
++	if (find_evdevs(list, sizeof(list)) > 0) {
++		fbsplash_send("set event dev %s\n", list);
++		return 0;
++	}
++
+ 	/* Try to activate the event device interface so that F2 can
+ 	 * be used to switch from verbose to silent. */
+ 	buf[0] = 0;
+-- 
+2.56.0
+

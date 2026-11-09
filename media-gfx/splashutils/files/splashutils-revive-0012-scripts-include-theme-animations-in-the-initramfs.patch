@@ -1,0 +1,34 @@
+From e46b0719d25886730a4ba88ccaeed8252378c39d Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 23:04:42 -0700
+Subject: [PATCH 12/13] scripts: include theme animations in the initramfs
+
+splash_geninitramfs copied pictures, icons and fonts but not the .mng
+files referenced by 'anim' lines.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/scripts/splash_geninitramfs.in | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/core/scripts/splash_geninitramfs.in b/core/scripts/splash_geninitramfs.in
+index bd73a0e..bb19328 100644
+--- a/core/scripts/splash_geninitramfs.in
++++ b/core/scripts/splash_geninitramfs.in
+@@ -221,6 +221,12 @@ for (( i=0 ; i < index ; i++ )) ; do
+ 			put_item "${icon}"
+ 		done
+ 
++		anims=`cat "${themedir}/${theme}/${j}.cfg" | \
++		       grep -Ev '^#' | grep -E '^[[:space:]]*anim ' | grep -o '[^ ]\+\.mng'`
++		for anim in ${anims} ; do
++			put_item "${anim}"
++		done
++
+ 		fonts=`cat "${themedir}/${theme}/${j}.cfg" | \
+ 		       grep -Ev '^#' | grep 'text ' | grep -o '[^ ]\+\.ttf'`
+ 		for font in ${fonts} ; do
+-- 
+2.56.0
+

@@ -1,0 +1,55 @@
+From 708393040aa01d34972ae8678dd0b0087d0af9c5 Mon Sep 17 00:00:00 2001
+From: gavin_darkglider <rbrown4014@gmail.com>
+Date: Fri, 23 Oct 2026 22:33:50 -0700
+Subject: [PATCH 09/13] core: point FBSPLASH_DAEMON at the daemon that is
+ actually built
+
+With --disable-static-binaries (needed e.g. for MNG support where libmng
+has no static archive) fbsplashd.static isn't installed, but the OpenRC
+plugin still tried to start it.  Use $(sbindir)/fbsplashd in that case.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_013zuE5eXGVUDWEu4YZj7gYa
+---
+ core/src/Makefile.am   | 9 +++++++++
+ core/src/fbsplash.h.in | 2 +-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/Makefile.am b/core/src/Makefile.am
+index bb877c5..9c7f5f7 100644
+--- a/core/src/Makefile.am
++++ b/core/src/Makefile.am
+@@ -38,8 +38,17 @@ if !CONFIG_DEBUG
+ AM_LDFLAGS  = -s
+ endif
+ 
++# The OpenRC plugin starts the statically linked daemon when there is one
++# (it may run before /usr is available), the regular one otherwise.
++if CONFIG_STATIC_BINARIES
++splash_daemon = $(eexecsbindir)/fbsplashd.static
++else
++splash_daemon = $(sbindir)/fbsplashd
++endif
++
+ fbsplash.h: fbsplash.h.in $(top_builddir)/config.h
+ 	$(AM_V_GEN)$(MKDIR_P) $(@D) && $(SED) \
++		-e 's|@daemon[@]|$(splash_daemon)|g' \
+ 		-e 's|@bindir[@]|$(eexecbindir)|g' \
+ 		-e 's|@sbindir[@]|$(eexecsbindir)|g' \
+ 		-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
+diff --git a/core/src/fbsplash.h.in b/core/src/fbsplash.h.in
+index 05d176c..c49d32f 100644
+--- a/core/src/fbsplash.h.in
++++ b/core/src/fbsplash.h.in
+@@ -10,7 +10,7 @@
+ #define FBSPLASH_CACHEDIR	FBSPLASH_DIR"/cache"
+ #define FBSPLASH_PIDFILE	FBSPLASH_CACHEDIR"/daemon.pid"
+ #define FBSPLASH_PROFILE	FBSPLASH_CACHEDIR"/profile"
+-#define FBSPLASH_DAEMON		"@sbindir@/fbsplashd.static"
++#define FBSPLASH_DAEMON		"@daemon@"
+ #define FBSPLASH_FIFO		FBSPLASH_CACHEDIR"/.splash"
+ 
+ #define FBSPL_THEME_DIR		"@themedir@"
+-- 
+2.56.0
+

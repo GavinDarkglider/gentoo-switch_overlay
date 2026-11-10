@@ -65,3 +65,9 @@ media-video/ffmpeg
 
 # 02.09.2026 - bell07 - error: linux/time_types.h: No such file or directory
 >=dev-debug/strace-7.0
+
+# Gavin 2026-11-09 Copies in this repo depend on libglvnd instead of mesa (nothing in
+# them links mesa); see package.unmask. gst-plugins-base must stay at the version
+# the other gst-plugins-* are at: bump the copy with them.
+gui-libs/gtk
+media-libs/gst-plugins-base

@@ -22,6 +22,11 @@ net-misc/moonlight -drm -vaapi -vulkan
 # through libglvnd); mesa is only needed for libgbm, xorg-server's glamor and as a
 # software fallback. Its llvm is only for llvmpipe/AMD and pulls in two LLVM slots.
 media-libs/mesa -llvm
+# Gavin 2026-11-09 No mesa unless something really uses it: NVIDIA's X driver doesn't
+# use glamor, and gtk:4 / gst-plugins-base (copies in this repo) take GL from
+# libglvnd. USE=gbm (sys-apps/nintendo-switch-meta, Wayland/KMS) brings mesa's
+# libgbm back.
+x11-base/xorg-server -glamor
 
 # Gavin 2026-11-01 The Switch has no cellular modem: no ModemManager stack (libmbim,
 # libqmi, libqrtr-glib, mobile-broadband-provider-info) for NetworkManager.

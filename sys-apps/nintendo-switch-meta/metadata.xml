@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+  <use>
+    <flag name="gbm">GBM for EGL on DRM/KMS, as Wayland compositors use it: <pkg>gui-libs/tegra-udrm-gbm</pkg>, a backend for mesa's libgbm that hands over to NVIDIA's libnvgbm</flag>
+  </use>
+</pkgmetadata>

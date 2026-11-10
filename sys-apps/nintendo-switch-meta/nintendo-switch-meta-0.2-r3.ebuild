@@ -5,7 +5,7 @@ EAPI="6"
 KEYWORDS="arm64"
 SLOT="0"
 
-IUSE="alsa +bootstack dock-handler egl elogind initramfs joystick kernel-sources kernel-bin +wifi vulkan X"
+IUSE="alsa +bootstack dock-handler elogind gbm initramfs joystick kernel-sources kernel-bin +wifi vulkan X"
 HOMEPAGE="https://gitlab.com/bell07/gentoo-switch_overlay"
 
 DESCRIPTION="Meta package for all required packages for Nintendo Switch"
@@ -23,8 +23,9 @@ RDEPEND+=" alsa? ( sys-libs/switch-l4t-configs[alsa] )"
 # Script to manage dock / undock
 RDEPEND+=" dock-handler? ( sys-libs/switch-l4t-configs[dock-handler] )"
 
-#EGL DRM/KMS Dependencies
-RDEPEND+=" egl? ( gui-libs/tegra-udrm-gbm )"
+# GBM for EGL on DRM/KMS (Wayland compositors): tegra-udrm-gbm is a backend
+# for mesa's libgbm loader that hands over to NVIDIA's libnvgbm
+RDEPEND+=" gbm? ( gui-libs/tegra-udrm-gbm )"
 
 # Sleep fixes
 RDEPEND+=" elogind? ( sys-libs/gentoo-config-files[elogind] )"

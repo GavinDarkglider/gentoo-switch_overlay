@@ -25,7 +25,6 @@ RDEPEND="
 	gstreamer? ( media-libs/gst-plugins-bad media-libs/gst-plugins-ugly )
 	vulkan? ( media-libs/vulkan-loader )
 	wayland? ( dev-libs/wayland )
-	egl? ( vulkan? ( dev-libs/wayland ) )
 	v4l? ( =media-libs/libv4l-1.18.0[video_cards_tegra] )"
 
 # Todo.... Build gstreamer/v4l stuff from upstream packages, with tegra patches.
@@ -81,14 +80,13 @@ src_prepare() {
 	fi
 
 	#Remove useless egl stuff, we will build upstream with special patches.
-	# libnvvulkan-producer (loaded by the GL and EGL cores) links NVIDIA's
-	# egl-wayland, so that stays with it; -wayland then only drops the
-	# Wayland EGL platform
-	if ! use wayland; then
-		rm -fv ../../share/egl/egl_external_platform.d/nvidia_wayland.json \
-			gstreamer-1.0/libgstnveglglessink.so
-		use egl && use vulkan || rm -v tegra/libnvidia-egl-wayland.so*
-	fi
+	# libnvvulkan-producer (loaded by the GL and EGL cores when needed) is
+	# Vulkan's Wayland window support: its only egl-wayland call is
+	# wlEglInitializeSurfaceExport. It goes with egl-wayland.
+	use wayland   || rm -fv tegra/libnvidia-egl-wayland.so* \
+		tegra/libnvvulkan-producer.so* \
+		../../share/egl/egl_external_platform.d/nvidia_wayland.json \
+		gstreamer-1.0/libgstnveglglessink.so
 
 	rm -v "${S}"/usr/lib/aarch64-linux-gnu/tegra-egl/ld.so.conf
 	eapply_user
@@ -143,7 +141,7 @@ src_install() {
 	dosym libcuda.so.1.1 /usr/lib64/tegra/libcuda.so.1
 	dosym libnvidia-ptxjitcompiler.so.32.3.1 /usr/lib64/tegra/libnvidia-ptxjitcompiler.so.1
 	dosym libdrm_nvdc.so /usr/lib64/libdrm.so.2
-	if use wayland || { use egl && use vulkan; }; then
+	if use wayland; then
 		dosym libnvidia-egl-wayland.so /usr/lib64/tegra/libnvidia-egl-wayland.so.1
 	fi
 

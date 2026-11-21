@@ -2,29 +2,27 @@
 =media-video/ffmpeg-6.1.9999
 #=media-video/ffmpeg-7.0.9999 # Still broken
 
-# Portage sync - modified
-=sys-apps/shadow-4.19.4
-=sys-apps/shadow-4.20.0
-=sys-apps/shadow-4.20.2
-=sys-kernel/installkernel-68-r1
-=sys-kernel/installkernel-69-r1
-=sys-kernel/installkernel-9999
-=sys-libs/glibc-2.40-r11::switch
-=sys-libs/glibc-2.41-r10::switch
-=sys-libs/glibc-2.42-r7::switch
-=sys-libs/glibc-2.43-r2::switch
-=sys-libs/glibc-2.43-r3::switch
-=sys-libs/glibc-2.43-r4::switch
-=sys-libs/glibc-2.44.9999::switch
-=sys-libs/glibc-2.44::switch
-=sys-libs/glibc-2.44-r1::switch
-=sys-libs/glibc-2.44-r2::switch
-=sys-libs/glibc-2.44-r5::switch
-=sys-libs/glibc-9999::switch
-=x11-libs/libdrm-2.4.131
-=x11-libs/libdrm-2.4.134
-=x11-libs/libdrm-9999
-
 # Gavin 2026-11-09 see package.mask
 =gui-libs/gtk-4.18.6-r1::switch
 =media-libs/gst-plugins-base-1.26.11::switch
+
+# Portage sync - modified
+=sys-apps/shadow-4.19.4::switch
+=sys-apps/shadow-4.20.0::switch
+=sys-apps/shadow-4.20.2::switch
+=sys-kernel/installkernel-68-r1::switch
+=sys-kernel/installkernel-70-r1::switch
+=sys-kernel/installkernel-9999::switch
+=sys-libs/glibc-2.40-r11::switch
+=sys-libs/glibc-2.41-r10::switch
+=sys-libs/glibc-2.42-r7::switch
+=sys-libs/glibc-2.43-r4::switch
+=sys-libs/glibc-2.43-r5::switch
+=sys-libs/glibc-2.43-r6::switch
+=sys-libs/glibc-2.44.9999::switch
+=sys-libs/glibc-2.44-r3::switch
+=sys-libs/glibc-2.44-r4::switch
+=sys-libs/glibc-2.44-r5::switch
+=sys-libs/glibc-9999::switch
+=x11-libs/libdrm-2.4.134::switch
+=x11-libs/libdrm-9999::switch

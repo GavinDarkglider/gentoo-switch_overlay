@@ -17,7 +17,7 @@ if [[ ${PV} == 9999 ]]; then
 else
 	SRC_URI="https://github.com/projg2/installkernel-gentoo/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 	S="${WORKDIR}/${PN}-gentoo-${PV}"
-	KEYWORDS="~arm64"
+	KEYWORDS="arm64"
 fi
 
 LICENSE="GPL-2+"

@@ -20,7 +20,7 @@ S="${WORKDIR}/${MY_P}"
 LICENSE="BSD GPL-2"
 # Subslot is for libsubid's SONAME.
 SLOT="0/6"
-KEYWORDS="~arm64"
+KEYWORDS="arm64"
 IUSE="acl audit nls pam selinux skey split-usr su systemd test"
 RESTRICT="!test? ( test )"
 

@@ -109,13 +109,13 @@ fi
 # convenience to our users.
 
 IDEPEND="
-	!compile-locales? ( sys-apps/locale-gen )
+	!compile-locales? ( >=sys-apps/locale-gen-3.5 )
 "
 BDEPEND="
 	${PYTHON_DEPS}
 	>=app-misc/pax-utils-${MIN_PAX_UTILS_VER}
 	sys-devel/bison
-	compile-locales? ( sys-apps/locale-gen )
+	compile-locales? ( >=sys-apps/locale-gen-3.4 )
 	doc? (
 		dev-lang/perl
 		sys-apps/texinfo
@@ -202,9 +202,6 @@ XFAIL_TEST_LIST=(
 
 	# Fails regularly, unreliable
 	tst-valgrind-smoke
-
-	# https://sourceware.org/bugzilla/show_bug.cgi?id=31877 (bug #927973)
-	tst-shstk-legacy-1g
 
 	# https://sourceware.org/bugzilla/show_bug.cgi?id=33239
 	test-double-compoundn
@@ -571,6 +568,9 @@ setup_flags() {
 	#  include/libc-symbols.h:75:3: #error "glibc cannot be compiled without optimization"
 	# https://sourceware.org/glibc/wiki/FAQ#Why_do_I_get:.60.23error_.22glibc_cannot_be_compiled_without_optimization.22.27.2C_when_trying_to_compile_GNU_libc_with_GNU_CC.3F
 	replace-flags -O0 -O1
+
+	# bug #982652 (PR34672)
+	is_hurd && replace-flags -Os -O2
 
 	# Similar issues as with SSP. Can't inject yourself that early.
 	filter-flags '-fsanitize=*'
@@ -1433,26 +1433,10 @@ src_test() {
 
 run_locale_gen() {
 	local fatal=$1 prefix=$2
-	local user_config action config stderr noun ret
-	local -a hasversion_opts localegen_args
+	local action stderr noun ret
+	local -a localegen_args
 
-	if [[ ${EBUILD_PHASE_FUNC} == src_install ]]; then
-		hasversion_opts=( -b )
-	fi
-
-	if has_version "${hasversion_opts[@]}" '>=sys-apps/locale-gen-3'; then
-		localegen_args=( --prefix "${prefix}" )
-	else
-		config="${prefix}/usr/share/i18n/SUPPORTED"
-		user_config="${prefix}/etc/locale.gen"
-		if [[ ${EBUILD_PHASE_FUNC} == src_install ]]; then
-			# For USE=compile-locales, all locales should be built.
-			mkdir -p -- "${prefix}/usr/lib/locale" || die
-		elif locale-gen --list --config "${user_config}" | read -r; then
-			config=${user_config}
-		fi
-		localegen_args=( --config "${config}" --destdir "${prefix}" )
-	fi
+	localegen_args=( --prefix "${prefix}" )
 
 	# bug 736794: we need to be careful with the parallelization... the
 	# number of processors saved in the environment of a binary package may
@@ -1483,6 +1467,42 @@ run_locale_gen() {
 	if (( ret != 0 )); then
 		"${action}" "locale-gen(8) unexpectedly failed during the ${EBUILD_PHASE_FUNC} phase"
 	fi
+}
+
+create_localedef_shim() {
+	local bindir=$1
+	local localedef interp libdir ldso
+
+	# The --library-path option of ld.so(8) splits on colons, with no means
+	# of escaping literal colons in directory names.
+	libdir=${ED}/$(get_libdir)
+	if [[ ${libdir} == *:* ]]; then
+		die "Cannot create the localedef(1) shim for a library directory containing a colon: ${libdir}"
+	fi
+
+	# Extract the pathname of the dynamic linker recorded as the ELF
+	# interpreter from the new instance of the localedef(1) utility.
+	localedef=${ED}/usr/bin/localedef
+	interp=$(scanelf -qF '%i#F' -- "${localedef}") \
+	&& test "${interp}" \
+	|| die "Failed to extract the ELF interpreter pathname from ${localedef}"
+
+	# The ELF interpreter pathname already includes ${EPREFIX}.
+	ldso=${D}${interp}
+
+	mkdir -p -- "${bindir}" || die
+
+	# Create a shim that executes the new instance of localedef(1) with its
+	# matching dynamic linker. Directories specified by --library-path take
+	# precedence over the library cache.
+	cat > "${bindir}"/localedef <<-EOF || die "Failed to write the localedef(1) shim: ${bindir}/localedef"
+	#!${BROOT}/bin/bash
+	# Effect the C locale to avoid loading locale data from the build host.
+	export LC_ALL=C
+	exec ${ldso@Q} --library-path ${libdir@Q} --argv0 localedef ${localedef@Q} "\$@"
+	EOF
+
+	chmod +x -- "${bindir}"/localedef || die
 }
 
 glibc_do_src_install() {
@@ -1740,9 +1760,12 @@ glibc_do_src_install() {
 	# creation of the "factory" symlink in pkg_postinst().
 	rm -f "${ED}"/etc/localtime
 
-	# Generate all locales if this is a native build as locale generation
+	# Compile all locales when requested, but only for native builds.
 	if use compile-locales && ! is_crosscompile; then
-		run_locale_gen 1 "${ED}"
+		# The build host's localedef(1) utility may be too old to
+		# compile the newly supplied set of locales (bug #985583).
+		create_localedef_shim "${T}/bin"
+		PATH=${T}/bin:${PATH} run_locale_gen 1 "${ED}"
 	fi
 }
 
@@ -1781,7 +1804,19 @@ src_install() {
 #
 # If coreutils is built with USE=multicall, some of these files
 # will just be wrapper scripts, not actual ELFs we can test.
+#
+# We allow to skip this sanity check, as insane as that may seem.
+# The one use-case I know of is changing the main ABI in-place;
+# the test runs existing binaries against the default ld.so, which
+# fails then, while the binaries should be executable just fine
+# using one of the other multilib variants that we install.
+#
 glibc_sanity_check() {
+	if [[ ${I_ALLOW_TO_BREAK_MY_SYSTEM} = yes ]] ; then
+		ewarn "Skipping glibc sanity tests. You have been warned. Last 5s to abort."
+		sleep 5
+	else
+
 	cd / #228809
 
 	# We enter ${ED} so to avoid trouble if the path contains
@@ -1816,6 +1851,8 @@ glibc_sanity_check() {
 	done
 
 	popd >/dev/null
+
+	fi
 }
 
 pkg_preinst() {

@@ -12,7 +12,7 @@ TMPFILES_OPTIONAL=1
 EMULTILIB_PKG="true"
 
 # Gentoo patchset (ignored for live ebuilds)
-PATCH_VER=4
+PATCH_VER=5
 
 # gcc mulitilib bootstrap files version
 GCC_BOOTSTRAP_VER=20201208
@@ -20,8 +20,11 @@ GCC_BOOTSTRAP_VER=20201208
 # systemd integration version
 GLIBC_SYSTEMD_VER=20210729
 
-# Minimum kernel version that glibc requires
-MIN_KERN_VER="3.2.0"
+# Minimum kernel version that glibc requires (used with USE=old-kernel)
+MIN_KERN_VER_UPSTREAM="3.2.0"
+
+# Minimum kernel version that Gentoo recommends (oldest in the tree)
+MIN_KERN_VER_GENTOO="6.1.0"
 
 # Minimum pax-utils version needed (which contains any new syscall changes for
 # its seccomp filter!). Please double check this!
@@ -53,7 +56,7 @@ SRC_URI+=" systemd? ( https://gitweb.gentoo.org/proj/toolchain/glibc-systemd.git
 
 LICENSE="LGPL-2.1+ BSD HPND ISC inner-net rc PCRE"
 SLOT="2.2"
-IUSE="audit caps cet clang compile-locales custom-cflags doc gd hash-sysv-compat headers-only +multiarch multilib multilib-bootstrap nscd perl profile selinux sframe +ssp stack-realign +static-libs suid systemd systemtap test vanilla"
+IUSE="audit caps cet clang compile-locales custom-cflags doc gd hash-sysv-compat headers-only +multiarch multilib multilib-bootstrap nscd old-kernel perl profile selinux sframe +ssp stack-realign +static-libs suid systemd systemtap test vanilla"
 
 # Here's how the cross-compile logic breaks down ...
 #  CTARGET - machine that will target the binaries
@@ -212,6 +215,9 @@ XFAIL_TEST_LIST=(
 
 	# Fails only in portage. Needs investigation.
 	tst-setvbuf2
+
+	# https://sourceware.org/PR34433
+	tst-dl-llp-stack
 )
 
 XFAIL_NSPAWN_TEST_LIST=(
@@ -569,6 +575,9 @@ setup_flags() {
 	# https://sourceware.org/glibc/wiki/FAQ#Why_do_I_get:.60.23error_.22glibc_cannot_be_compiled_without_optimization.22.27.2C_when_trying_to_compile_GNU_libc_with_GNU_CC.3F
 	replace-flags -O0 -O1
 
+	# bug #982652 (PR34672)
+	is_hurd && replace-flags -Os -O2
+
 	# Similar issues as with SSP. Can't inject yourself that early.
 	filter-flags '-fsanitize=*'
 
@@ -923,7 +932,13 @@ sanity_prechecks() {
 			die "Found directory (${ESYSROOT}/usr/lib/include) which will break build (bug #833620)!"
 		fi
 
-		if [[ ${CTARGET} == *-linux* ]] ; then
+		if is_linux ; then
+			if use old-kernel ; then
+				MIN_KERN_VER=${MIN_KERN_VER_UPSTREAM}
+			else
+				MIN_KERN_VER=${MIN_KERN_VER_GENTOO}
+			fi
+
 			local run_kv build_kv want_kv
 
 			run_kv=$(g_get_running_KV)
@@ -937,7 +952,7 @@ sanity_prechecks() {
 					eend 1
 					echo
 					eerror "You need a kernel of at least ${want_kv}!"
-					die "Kernel version too low!"
+					die "Kernel version too low! Maybe setting USE=old-kernel helps."
 				fi
 				eend 0
 			fi
@@ -1115,6 +1130,11 @@ glibc_do_configure() {
 
 	[[ $(tc-is-softfloat) == "yes" ]] && myconf+=( --without-fp )
 
+	if use old-kernel ; then
+		MIN_KERN_VER=${MIN_KERN_VER_UPSTREAM}
+	else
+		MIN_KERN_VER=${MIN_KERN_VER_GENTOO}
+	fi
 	myconf+=( --enable-kernel=${MIN_KERN_VER} )
 
 	# Since SELinux support is only required for nscd, only enable it if:
@@ -1631,7 +1651,7 @@ glibc_do_src_install() {
 
 	if is_hurd && has amd64 $(get_install_abis) ; then
 		# First, let's check for sanity
-		if [[ -f "${D}$(alt_prefix)/lib/ld-x86-64.so.1" ]] ; then
+		if [[ -f "${D}/$(alt_prefix)/lib/ld-x86-64.so.1" ]] ; then
 			die "Somehow your amd64 hurd glibc installed /lib/ld-x86-64.so.1 ... this should not happen."
 		fi
 
@@ -1641,7 +1661,7 @@ glibc_do_src_install() {
 
 	if is_hurd && has x86 $(get_install_abis) ; then
 		# First, let's check for sanity
-		if [[ -f "${D}$(alt_prefix)/$(get_abi_LIBDIR x86)/ld.so" ]] ; then
+		if [[ -f "${D}/$(alt_prefix)/$(get_abi_LIBDIR x86)/ld.so" ]] ; then
 			die "Somehow your x86 hurd glibc installed ld.so ... this should not happen."
 		fi
 
@@ -1726,7 +1746,7 @@ glibc_do_src_install() {
 	# creation of the "factory" symlink in pkg_postinst().
 	rm -f "${ED}"/etc/localtime
 
-	# Generate all locales if this is a native build as locale generation
+	# Compile all locales when requested, but only for native builds.
 	if use compile-locales && ! is_crosscompile; then
 		run_locale_gen 1 "${ED}"
 	fi
@@ -1767,7 +1787,19 @@ src_install() {
 #
 # If coreutils is built with USE=multicall, some of these files
 # will just be wrapper scripts, not actual ELFs we can test.
+#
+# We allow to skip this sanity check, as insane as that may seem.
+# The one use-case I know of is changing the main ABI in-place;
+# the test runs existing binaries against the default ld.so, which
+# fails then, while the binaries should be executable just fine
+# using one of the other multilib variants that we install.
+#
 glibc_sanity_check() {
+	if [[ ${I_ALLOW_TO_BREAK_MY_SYSTEM} = yes ]] ; then
+		ewarn "Skipping glibc sanity tests. You have been warned. Last 5s to abort."
+		sleep 5
+	else
+
 	cd / #228809
 
 	# We enter ${ED} so to avoid trouble if the path contains
@@ -1802,6 +1834,8 @@ glibc_sanity_check() {
 	done
 
 	popd >/dev/null
+
+	fi
 }
 
 pkg_preinst() {

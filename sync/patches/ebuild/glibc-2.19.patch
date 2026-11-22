@@ -17,32 +17,3 @@
  	fi
  
  	# Users have had a chance to phase themselves, time to give em the boot
-@@ -743,6 +743,13 @@
- 
- 	# Fix permissions on some of the scripts.
- 	chmod u+x "${S}"/scripts/*.sh
-+
-+	# NSW old kernel. Remove symbols not in old kernel
-+	sed -i \
-+		-e "s:# define STATX_DIOALIGN 0x2000U::g" \
-+		"${S}"/io/bits/statx-generic.h \
-+		|| die "patching statx-generic.h failed"
-+	# NSW old kernel end
- }
- 
- glibc_do_configure() {
-@@ -1090,6 +1097,14 @@
- 
- 	# We'll take care of the cache ourselves
- 	rm -f "${ED}"/etc/ld.so.cache
-+
-+	# NSW old kernel. Remove symbols not in old kernel
-+	# Hacky version, just remove from target file before installation
-+	sed -i \
-+		-e "s:# define STATX_BASIC_STATS 0x07ffU::g" \
-+		"${ED}"/"$(alt_headers)"/bits/statx-generic.h \
-+		|| die "patching statx-generic.h failed"
-+	# NSW old kernel end
- 
- 	# Everything past this point just needs to be done once ...
- 	is_final_abi || return 0

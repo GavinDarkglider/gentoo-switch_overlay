@@ -1,0 +1,15 @@
+--- net-wireless/bluez/bluez-5.76.ebuild
++++ net-wireless/bluez/bluez-5.76.ebuild
+@@ -39,10 +39,10 @@
+ "
+ DEPEND="
+ 	>=dev-libs/glib-2.28:2[${MULTILIB_USEDEP}]
+-	btpclient? ( >=dev-libs/ell-0.39 )
++	btpclient? ( >=dev-libs/ell-0.30 )
+ 	cups? ( net-print/cups:= )
+ 	mesh? (
+-		>=dev-libs/ell-0.39
++		>=dev-libs/ell-0.30
+ 		>=dev-libs/json-c-0.13:=
+ 		sys-libs/readline:0=
+ 	)

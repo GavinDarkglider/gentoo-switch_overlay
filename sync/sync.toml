@@ -1,0 +1,99 @@
+# Configuration for sync/sync_overlay.py
+#
+# All relative paths are resolved against the directory containing this file
+# (the overlay's sync/ directory).  Absolute paths are used as-is.
+#
+# Only packages listed here explicitly or by glob are ever written; pinned and
+# Switch-specific packages are left alone.
+
+version = 1
+
+[paths]
+# The target overlay.  Use --target on the command line to work on a copy.
+target = ".."
+patches = "patches"            # local patches and source files
+unmask = "profiles/nintendo_switch/package.unmask"
+mask = "profiles/nintendo_switch/package.mask"
+
+# A source only needs an explicit path when it is not /var/db/repos/<name>.
+# Undeclared sources used by eclass/sync-set rules are added implicitly.
+# Sources mirror upstream keywords by default; auto_stabilize is opt-in.
+
+[sources.menelkir]
+# Local checkout of a source overlay; keep it up to date before syncing.
+path = "/scripts/switch_gentoo/overlay_sync/menelkir"
+
+[sources.guru]
+# Other overlays get their single release version stabilised.
+auto_stabilize = true
+
+# Known, deliberate differences from a source package.  Keeping them here
+# preserves manual work during syncs.
+
+[[package_options]]
+package = "games-util/joycond"
+# Local fork with hardware-specific patches; not a copy of any upstream ebuild.
+switch_specific = true
+
+[[package_options]]
+package = "app-accessibility/onboard"
+# Auto-stabilises the single release version; keep local metadata.
+preserve_local_files = ["metadata.xml"]
+
+[[package_options]]
+package = "games-emulation/cannonball-libretro"
+# Hand-maintained locally (do not overwrite on sync).
+keyword_override = "~arm64 ~x86"
+preserve_local_files = ["metadata.xml"]
+
+[settings]
+# The first line containing this string is replaced with the generated block;
+# everything above it (manual unmask entries) is preserved verbatim.
+unmask_marker = "# Portage sync"
+# User's current convention: only unmask our own copies (profile-repo-deps).
+unmask_repo_suffix = "::switch"
+
+# Global eclass files that are copied from upstream and locally patched.
+[[eclasses]]
+source = "gentoo"
+file = "kernel-build.eclass"
+patch = "eclass_kernel_build.patch"
+
+[[eclasses]]
+source = "menelkir"
+file = "libretro.eclass"
+
+[[eclasses]]
+source = "menelkir"
+file = "libretro-core.eclass"
+
+# Core system packages that are copied into the overlay and patched for the
+# Switch's 4.9 kernel / boot chain.  Their ebuilds are unmasked by CPV.
+[[sync_sets]]
+name = "system-patched"
+source = "gentoo"
+packages = [
+    "sys-apps/shadow",
+    "sys-kernel/installkernel",
+    "sys-libs/glibc",
+    "x11-libs/libdrm",
+]
+unmask = true
+
+# Libretro/RetroArch packages and rgbds come from a separate overlay.
+# KEYWORDS are rewritten; desmume-libretro also has ebuild/source patches.
+[[sync_sets]]
+name = "libretro-mirrored"
+source = "menelkir"
+include_globs = [
+    "games-emulation/*",
+    "dev-lang/rgbds",
+]
+
+# The local onboard copy matches its source version. Its start-in-tray patch
+# is applied with an explicit eapply because gnome2 and distutils-r1 both call
+# default: a generic PATCHES entry would apply it twice.
+[[sync_sets]]
+name = "desktop-patched"
+source = "guru"
+packages = ["app-accessibility/onboard"]

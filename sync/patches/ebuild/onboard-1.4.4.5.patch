@@ -1,0 +1,12 @@
+--- a/onboard-1.4.4.5.ebuild
++++ b/onboard-1.4.4.5.ebuild
+@@ -58,6 +58,9 @@
+ RESTRICT="mirror test"
+ 
+ src_prepare() {
++	# applied here, once: gnome2 and distutils-r1 both run default, so
++	# PATCHES would be applied twice
++	eapply "${FILESDIR}"/${P}-start-in-tray.patch
+ 	gnome2_src_prepare
+ 	distutils-r1_src_prepare
+ }

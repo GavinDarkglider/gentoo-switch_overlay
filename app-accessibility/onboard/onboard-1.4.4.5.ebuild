@@ -20,7 +20,7 @@ S="${WORKDIR}/${PN}-${MY_PV}"
 # po/* are licensed under BSD 3-clause
 LICENSE="GPL-3+ BSD"
 SLOT="0"
-KEYWORDS="~amd64 arm64"
+KEYWORDS="arm64"
 IUSE="wayland X"
 
 COMMON_DEPEND="app-text/hunspell:=

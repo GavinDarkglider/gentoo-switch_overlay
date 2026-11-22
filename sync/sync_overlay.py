@@ -10,13 +10,13 @@ PATCHES-only ebuild patch files are unnecessary.
 Commands
     classify   list sync-relevant, version-pinned and Switch-specific packages
     sources    show the state of the upstream checkout/repositories (read-only)
-    plan       build a staged copy and show what would change (never writes)
-    sync       build, verify, back up and apply the changes
-    verify     rebuild the expected tree in a temp dir and compare with target
+    plan       stage managed files and show what would change (never writes)
+    sync       build, verify and apply the changes
+    verify     rebuild the expected files and compare with target
 
 Safety: sources are only read; the target is only touched by `sync`, after all
-patches have applied successfully, and a full backup is written first.  Use
---target to work on a copy while testing.
+patches have applied successfully.  Only managed files are staged; the target
+is not copied.  Use --target to select a different checkout.
 """
 
 from __future__ import annotations
@@ -638,8 +638,11 @@ def sync_eclass(cfg: Config, rule: EclassRule, stage: Path) -> str:
 
 
 def generate_unmask(cfg: Config, stage: Path, cp_list: Iterable[str]) -> str:
+    source = cfg.target / cfg.unmask
     path = stage / cfg.unmask
-    text = path.read_text(errors="replace")
+    if not source.is_file():
+        raise SyncError(f"unmask file not found: {source}")
+    text = source.read_text(errors="replace")
     lines = text.splitlines(keepends=True)
     out: list[str] = []
     found = False
@@ -657,21 +660,22 @@ def generate_unmask(cfg: Config, stage: Path, cp_list: Iterable[str]) -> str:
             break
         out.append(line)
     if not found:
-        raise SyncError(f"unmask marker {cfg.unmask_marker!r} not found in {path}")
+        raise SyncError(f"unmask marker {cfg.unmask_marker!r} not found in {source}")
     new_text = "".join(out)
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(new_text)
     return new_text
 
 
 # ---------------------------------------------------------------------------
-# staging, diffing, applying
+# staged files, diffing, applying
 # ---------------------------------------------------------------------------
 
 
 @dataclass
 class SyncPlan:
     workdir: Path
-    stage: Path
+    stage: Path  # sparse tree of managed files, not a copy of the target
     changes: dict[str, list[str]]
     transformations: list[str]
     notes: list[str]
@@ -729,19 +733,36 @@ def file_snapshot(root: Path) -> dict[str, tuple[int, str]]:
     return result
 
 
-def compute_changes(cfg: Config, stage: Path, synced: list[str]) -> dict[str, list[str]]:
-    allowed: set[str] = set()
-    for cp in synced:
-        allowed.add(cp)
+def staged_roots(cfg: Config, stage: Path, synced: list[str]) -> list[str]:
+    """Paths whose target files are replaced by staged files."""
+    roots = list(synced)
     for rule in cfg.eclasses:
-        allowed.add(f"eclass/{rule.file}")
-    allowed.add(cfg.unmask.as_posix())
+        rel = f"eclass/{rule.file}"
+        if (stage / rel).is_file():
+            roots.append(rel)
+    if (stage / cfg.unmask).is_file():
+        roots.append(cfg.unmask.as_posix())
+    return roots
+
+
+def compute_changes(cfg: Config, stage: Path, synced: list[str]) -> dict[str, list[str]]:
+    roots = staged_roots(cfg, stage, synced)
+
+    def managed(rel: str) -> bool:
+        return any(rel == root or rel.startswith(root + "/") for root in roots)
 
     before = file_snapshot(cfg.target)
-    after = file_snapshot(stage)
+    after = dict(before)
+    for rel in list(after):
+        if managed(rel):
+            del after[rel]
+    for rel, meta in file_snapshot(stage).items():
+        if managed(rel):
+            after[rel] = meta
+
     changes: dict[str, list[str]] = {"added": [], "modified": [], "removed": []}
     for rel in sorted(set(before) | set(after)):
-        if not any(rel == root or rel.startswith(root + "/") for root in allowed):
+        if not managed(rel):
             continue
         if rel not in before:
             changes["added"].append(rel)
@@ -756,12 +777,8 @@ def build_plan(cfg: Config, workdir: Path) -> SyncPlan:
     check_target(cfg)
     expected_package_sets(cfg)  # validate explicit package entries
     stage = workdir / "overlay"
-    shutil.copytree(
-        cfg.target,
-        stage,
-        ignore=shutil.ignore_patterns(*COPY_EXCLUDE_NAMES),
-        symlinks=False,
-    )
+    # Only files produced by this run are staged; the target is read in place.
+    stage.mkdir(parents=True, exist_ok=True)
     transformations: list[str] = []
     notes: list[str] = []
     synced: list[str] = []
@@ -846,13 +863,7 @@ def print_plan(plan: SyncPlan, target: Path) -> None:
         print(f"note: {note}")
 
 
-def backup_target(target: Path) -> Path:
-    backup = Path(tempfile.mkdtemp(prefix="switch-overlay-backup-"))
-    shutil.copytree(target, backup / "overlay", ignore=shutil.ignore_patterns(".git"))
-    return backup
-
-
-def apply_plan(cfg: Config, plan: SyncPlan, backup: Path) -> None:
+def apply_plan(cfg: Config, plan: SyncPlan) -> None:
     for rel in plan.changes["removed"]:
         p = cfg.target / rel
         if p.is_file():
@@ -878,7 +889,6 @@ def apply_plan(cfg: Config, plan: SyncPlan, backup: Path) -> None:
             Path(tmp_name).unlink(missing_ok=True)
 
     print(f"applied {plan.total_changes} file change(s) to {cfg.target}")
-    print(f"backup: {backup}")
 
 
 # ---------------------------------------------------------------------------
@@ -974,8 +984,42 @@ def newer_copies(
     ]
 
 
+PACKAGE_CELL_RE = re.compile(r"^[a-z0-9-]+/[A-Za-z0-9._+-]+$")
+
+
+def read_package_descriptions(readme: Path) -> dict[str, str]:
+    """Read the Package/Description table from the overlay README."""
+    if not readme.is_file():
+        return {}
+    descriptions: dict[str, str] = {}
+    in_table = False
+    for line in readme.read_text(errors="replace").splitlines():
+        if not line.lstrip().startswith("|"):
+            in_table = False
+            continue
+        cells = [
+            cell.strip().strip("`") for cell in line.strip().strip("|").split("|")
+        ]
+        if len(cells) < 2:
+            in_table = False
+            continue
+        if not in_table:
+            if cells[0].lower() == "package" and cells[1].lower() in (
+                "description",
+                "purpose",
+            ):
+                in_table = True
+            continue
+        if all(set(cell) <= set("-: ") for cell in cells):
+            continue
+        if PACKAGE_CELL_RE.match(cells[0]):
+            descriptions[cells[0]] = cells[1]
+    return descriptions
+
+
 def classify(cfg: Config) -> dict[str, list[dict[str, str]]]:
     check_target(cfg)
+    descriptions = read_package_descriptions(cfg.target / "README.md")
     target_packages = list_packages(cfg.target)
     source_packages = {name: list_packages(root) for name, root in cfg.sources.items()}
     local_packages = local_overlay_packages(cfg.sources.values())
@@ -1007,12 +1051,9 @@ def classify(cfg: Config) -> dict[str, list[dict[str, str]]]:
             continue
 
         if cp in switch_specific:
+            reason = descriptions.get(cp, "local fork with hardware-specific patches")
             groups["switch-unique"].append(
-                {
-                    "package": cp,
-                    "reason": "local fork with hardware-specific patches "
-                    "(configured switch-specific)",
-                }
+                {"package": cp, "reason": reason + " (configured switch-specific)"}
             )
             continue
 
@@ -1052,7 +1093,9 @@ def classify(cfg: Config) -> dict[str, list[dict[str, str]]]:
         groups["switch-unique"].append(
             {
                 "package": cp,
-                "reason": "not found in configured sources or /var/db/repos overlays",
+                "reason": descriptions.get(
+                    cp, "not found in configured sources or /var/db/repos overlays"
+                ),
             }
         )
     return groups
@@ -1191,7 +1234,7 @@ def main() -> int:
         help="path to sync.toml (default: next to this script)",
     )
     parser.add_argument(
-        "--target", type=Path, help="override the target overlay (use a copy for tests)"
+        "--target", type=Path, help="use a different target overlay checkout"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -1212,7 +1255,7 @@ def main() -> int:
     p_sync = sub.add_parser("sync", help="apply the synchronisation")
     p_sync.add_argument("--yes", action="store_true", help="do not ask for confirmation")
 
-    sub.add_parser("verify", help="compare target against freshly staged result")
+    sub.add_parser("verify", help="compare target against expected synced files")
 
     args = parser.parse_args()
     try:
@@ -1264,8 +1307,7 @@ def main() -> int:
                 if answer.strip().lower() not in ("y", "yes"):
                     print("Aborted")
                     return 1
-            backup = backup_target(cfg.target)
-            apply_plan(cfg, plan, backup)
+            apply_plan(cfg, plan)
             return 0
         finally:
             shutil.rmtree(work, ignore_errors=True)

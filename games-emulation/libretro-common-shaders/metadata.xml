@@ -2,9 +2,14 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="person">
-		<email>dmenelkir@gmail.com</email>
-		<name>Daniel Menelkir</name>
+		<email>ykonotopov@gnome.org</email>
+		<name>Yuri Konotopov</name>
 	</maintainer>
-	<longdescription lang="en">Collection of commonly used Cg shaders
-	</longdescription>
+	<maintainer type="project">
+		<email>proxy-maint@gentoo.org</email>
+		<name>Proxy Maintainers</name>
+	</maintainer>
+	<upstream>
+		<remote-id type="github">libretro/common-shaders</remote-id>
+	</upstream>
 </pkgmetadata>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>dmenelkir@gmail.com</email>
+		<name>Daniel Menelkir</name>
+	</maintainer>
+	<longdescription lang="en">
+		Meta package for RetroArch, its support data and Libretro cores on the Nintendo Switch.
+		RetroArch and the common overlays, shaders, database, info files and joypad
+		autoconfiguration are always installed. The cores themselves are selected with
+		USE flags: "recommended" pulls one well-supported core per console, "others"
+		installs the remaining alternative cores. Enable both to install every core.
+		Individual cores can also be installed directly without this meta package.
+	</longdescription>
+	<use>
+		<flag name="recommended">
+			Install one recommended Libretro core per console (best implementation for the
+			Switch: Azahar, bsnes, DeSmuME, Dolphin, DOSBox-Pure, Flycast, Genesis Plus GX,
+			Beetle PC-FX, Beetle Saturn, mGBA, Mupen64Plus-Next, Nestopia, PCSX-ReARMed,
+			SameBoy and ScummVM).
+		</flag>
+		<flag name="others">
+			Install the remaining Libretro cores that are alternatives or variants of the
+			recommended ones (e.g. bnes, FCEUmm, DOSBox, Picodrive, Snes9x, VBA-M,
+			YabaSanshiro and TwentyFortyEight). No overlap with "recommended".
+		</flag>
+	</use>
+</pkgmetadata>

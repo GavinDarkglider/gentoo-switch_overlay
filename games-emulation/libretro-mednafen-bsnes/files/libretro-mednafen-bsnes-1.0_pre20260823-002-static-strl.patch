@@ -1,0 +1,17 @@
+# Reason: nall strl.hpp definitions clash with glibc/libretro-common; make them TU-local gnu_inline.
+--- a/mednafen/snes/src/lib/nall/string/strl.hpp
++++ b/mednafen/snes/src/lib/nall/string/strl.hpp
+@@ -5,5 +5,5 @@
+ 
+ //return = strlen(src)
+-size_t strlcpy(char *dest, const char *src, size_t length) {
++static inline __attribute__((gnu_inline)) size_t strlcpy(char *dest, const char *src, size_t length) {
+   char *d = dest;
+   const char *s = src;
+@@ -23,5 +23,5 @@
+ 
+ //return = strlen(src) + min(length, strlen(dest))
+-size_t strlcat(char *dest, const char *src, size_t length) {
++static inline __attribute__((gnu_inline)) size_t strlcat(char *dest, const char *src, size_t length) {
+   char *d = dest;
+   const char *s = src;

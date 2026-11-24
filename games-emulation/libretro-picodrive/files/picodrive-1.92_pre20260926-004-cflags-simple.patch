@@ -1,0 +1,12 @@
+# Reason: exported CFLAGS plus "CFLAGS +=" makes a self-referencing variable in picodrive makefile.
+--- a/Makefile.libretro
++++ b/Makefile.libretro
+@@ -24,6 +24,6 @@
+ CXX ?= g++
+ AS ?= as
+ CC_AS ?= $(CC)
+-CFLAGS ?=
++CFLAGS := $(CFLAGS)
+ 
+ # Include root directory
+ CFLAGS += -I$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))

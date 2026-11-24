@@ -1,3 +1,4 @@
+# Reason: Switch-specific installkernel layout.
 --- installkernel/installkernel
 +++ installkernel/installkernel
 @@ -363,6 +363,25 @@

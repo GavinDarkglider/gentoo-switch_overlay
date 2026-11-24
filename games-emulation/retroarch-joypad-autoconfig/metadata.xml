@@ -2,9 +2,15 @@
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="person">
-		<email>dmenelkir@gmail.com</email>
-		<name>Daniel Menelkir</name>
+		<email>ykonotopov@gnome.org</email>
+		<name>Yuri Konotopov</name>
 	</maintainer>
-	<longdescription lang="en">
-	</longdescription>
+	<maintainer type="project">
+		<email>proxy-maint@gentoo.org</email>
+		<name>Proxy Maintainers</name>
+	</maintainer>
+	<upstream>
+		<bugs-to>https://github.com/libretro/retroarch-joypad-autoconfig/issues</bugs-to>
+		<remote-id type="github">libretro/retroarch-joypad-autoconfig</remote-id>
+	</upstream>
 </pkgmetadata>

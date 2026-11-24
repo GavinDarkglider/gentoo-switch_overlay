@@ -1,0 +1,12 @@
+# Reason: new source includes platform/libpicofe/plat.h from the source root and ships lzma-19.00.
+--- a/Makefile.libretro
++++ b/Makefile.libretro
+@@ -28,6 +28,8 @@
+ 
+ # Include root directory
+ CFLAGS += -I$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
++CFLAGS += -I$(shell pwd)
++CFLAGS += -Ipico/cd/libchdr/deps/lzma-19.00/include
+ 
+ #libretro includes
+ CFLAGS += -I platform/libretro/libretro-common/include

@@ -1,3 +1,4 @@
+# Reason: evdev compatibility with the 4.9 kernel.
 diff '-bpurNx*~' a/src/manette-device.c b/src/manette-device.c
 --- a/src/manette-device.c	2020-09-12 15:47:47.000000000 +0200
 +++ b/src/manette-device.c	2021-03-16 05:02:47.491416594 +0100

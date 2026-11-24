@@ -1,3 +1,4 @@
+# Reason: Switch/L4T specific DRM handling.
 --- x11-libs/libdrm/libdrm-2.4.125.ebuild
 +++ x11-libs/libdrm/libdrm-2.4.125.ebuild
 @@ -63,3 +65,10 @@

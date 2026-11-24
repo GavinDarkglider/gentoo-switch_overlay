@@ -1,3 +1,4 @@
+# Reason: Old-kernel/Xwayland compatibility.
 --- portage-git/x11-base/xwayland/xwayland-22.1.1.ebuild	2022-10-16 16:33:55.889967467 +0200
 +++ overlays/switch_overlay/x11-base/xwayland/xwayland-22.1.1.ebuild	2022-10-08 19:40:55.071939382 +0200
 @@ -9,7 +9,7 @@

@@ -1,0 +1,14 @@
+# Reason: -mfpmath=sse is x86-only and breaks arm64 builds.
+--- a/Makefile
++++ b/Makefile
+@@ -600,8 +600,10 @@
+ endif
+ 
+ ifeq ($(HAVE_SSE),1)
++ifneq (,$(filter x86_64 x86 i686 amd64,$(ARCH)))
+ 	FLAGS += -mfpmath=sse
+ endif
++endif
+ 
+ ifeq ($(DEBUG), 1)
+ 	ifneq (,$(findstring msvc,$(platform)))

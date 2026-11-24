@@ -490,6 +490,33 @@ def manifest_dist_lines(src: Path) -> str:
     )
 
 
+def merge_manifest_dist(upstream: str, local: Path) -> str:
+    """Merge DIST entries entry by entry, keeping any hash already local.
+
+    Upstream archives are occasionally regenerated, so a stored upstream hash
+    can be stale.  A local hash is therefore authoritative; entries that only
+    exist upstream are added.  Local entries without an upstream counterpart
+    belong to a dropped version and are removed.  Hashes are never recomputed.
+    """
+    def entries(text: str) -> dict[str, str]:
+        result: dict[str, str] = {}
+        for line in text.splitlines():
+            if not line.startswith("DIST "):
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            result[parts[1]] = line
+        return result
+
+    up = entries(upstream)
+    loc = entries(local.read_text(errors="replace")) if local.is_file() else {}
+    # Only versions still present upstream are kept; a stale local entry would
+    # describe a distfile whose ebuild has already been dropped.
+    merged = {name: loc.get(name, line) for name, line in up.items()}
+    return "".join(f"{line}\n" for line in merged.values())
+
+
 def copy_package_source(src: Path, dst: Path) -> None:
     if dst.exists():
         shutil.rmtree(dst)
@@ -611,9 +638,36 @@ def sync_package(
 
     # thin-manifests = true: only DIST entries are required, so this works
     # completely offline and without calling `ebuild ... manifest`.
+    # Merge DIST entries one by one: an already stored (local) hash is kept,
+    # missing entries are taken from upstream.  Hashes are never recomputed.
+    local_manifest = cfg.target / cp / "Manifest"
+    manifest_text = merge_manifest_dist(up_manifest, local_manifest)
+    if local_manifest.is_file():
+        up_entries = {
+            line.split()[1]: line
+            for line in up_manifest.splitlines()
+            if line.startswith("DIST ")
+        }
+        loc_entries = {
+            line.split()[1]: line
+            for line in local_manifest.read_text(errors="replace").splitlines()
+            if line.startswith("DIST ")
+        }
+        kept = sum(
+            1 for n, line in loc_entries.items()
+            if n in up_entries and up_entries[n] != line
+        )
+        added = sum(1 for n in up_entries if n not in loc_entries)
+        dropped = sum(1 for n in loc_entries if n not in up_entries)
+        if kept:
+            applied.append(f"{cp}/Manifest: kept {kept} local DIST hash(es)")
+        if added:
+            applied.append(f"{cp}/Manifest: added {added} upstream DIST entr(ies)")
+        if dropped:
+            applied.append(f"{cp}/Manifest: dropped {dropped} obsolete DIST entr(ies)")
     manifest = dst / "Manifest"
-    if up_manifest:
-        manifest.write_text(up_manifest)
+    if manifest_text:
+        manifest.write_text(manifest_text)
     else:
         manifest.unlink(missing_ok=True)
 
@@ -686,13 +740,28 @@ class SyncPlan:
         return sum(len(v) for v in self.changes.values())
 
 
-def expected_package_sets(cfg: Config) -> dict[str, SyncSet]:
-    """Map CP -> rule for all packages that this config manages."""
+def expected_package_sets(
+    cfg: Config, target_packages: Iterable[str] | None = None
+) -> dict[str, SyncSet]:
+    """Map CP -> rule for all packages that this config manages.
+
+    Globbed sets only select packages that already exist in the target, so
+    pass the target package list when the caller needs the full mapping
+    (for example ``check-patches <package>``).
+    """
     result: dict[str, SyncSet] = {}
+    # Explicit entries take precedence over glob matches.
     for rules in cfg.sync_sets:
         for cp in rules.packages:
             if cp in result:
                 raise SyncError(f"package {cp} configured twice")
+            result[cp] = rules
+    for rules in cfg.sync_sets:
+        for cp in target_packages or ():
+            if cp in result or not any(
+                fnmatch.fnmatch(cp, pattern) for pattern in rules.include_globs
+            ):
+                continue
             result[cp] = rules
     return result
 
@@ -713,8 +782,8 @@ def resolve_set_packages(
             if cp in rules.packages:
                 raise SyncError(f"{rules.name}: source package missing: {cp}")
             continue  # Switch-only package in a globbed category
-        if cp not in target_packages:
-            continue  # upstream package not present in the overlay -> no new packages
+        if cp not in target_packages and cp not in rules.packages:
+            continue  # globbed upstream package not present in the overlay
         selected.append(cp)
     return selected
 
@@ -1020,6 +1089,10 @@ def read_package_descriptions(readme: Path) -> dict[str, str]:
 def classify(cfg: Config) -> dict[str, list[dict[str, str]]]:
     check_target(cfg)
     descriptions = read_package_descriptions(cfg.target / "README.md")
+    retroarch_descriptions = read_package_descriptions(
+        cfg.target / "RETROARCH-README.md"
+    )
+    retroarch = set(retroarch_descriptions)
     target_packages = list_packages(cfg.target)
     source_packages = {name: list_packages(root) for name, root in cfg.sources.items()}
     local_packages = local_overlay_packages(cfg.sources.values())
@@ -1036,13 +1109,22 @@ def classify(cfg: Config) -> dict[str, list[dict[str, str]]]:
 
     known = set(target_packages) | all_upstream
     masked = masked_package_comments(cfg.target / cfg.mask, known)
-    switch_specific = {
+    # The README's "locally maintained packages" table is the source of truth
+    # for switch-specific packages; explicit config is still accepted for
+    # packages that cannot be listed there yet.
+    switch_specific = set(descriptions) | {
         cp for cp, opt in cfg.package_options.items() if opt.switch_specific
     }
     groups: dict[str, list[dict[str, str]]] = {
-        "sync": [], "pinned": [], "unmanaged": [], "switch-unique": []
+        "sync": [], "retroarch": [], "pinned": [], "unmanaged": [],
+        "switch-unique": []
     }
     for cp in sorted(target_packages):
+        if cp in retroarch:
+            groups["retroarch"].append(
+                {"package": cp, "reason": retroarch_descriptions[cp]}
+            )
+            continue
         if cp in managed:
             rules = managed[cp]
             groups["sync"].append(
@@ -1051,10 +1133,11 @@ def classify(cfg: Config) -> dict[str, list[dict[str, str]]]:
             continue
 
         if cp in switch_specific:
-            reason = descriptions.get(cp, "local fork with hardware-specific patches")
-            groups["switch-unique"].append(
-                {"package": cp, "reason": reason + " (configured switch-specific)"}
+            reason = descriptions.get(
+                cp,
+                "local fork with hardware-specific patches (configured switch-specific)",
             )
+            groups["switch-unique"].append({"package": cp, "reason": reason})
             continue
 
         own_versions = package_versions(target_packages[cp])
@@ -1107,6 +1190,7 @@ def print_classification(groups: dict[str, list[dict[str, str]]], fmt: str) -> N
         return
     titles = {
         "sync": "SYNC-RELEVANT (copied from upstream, local changes reapplied)",
+        "retroarch": "RETROARCH (frontend, cores and support files, built from source)",
         "pinned": "VERSION-PINNED (pinned version and mask reason)",
         "unmanaged": "UNMANAGED (old version, no mask, no sync - review)",
         "switch-unique": "SWITCH-SPECIFIC (not found in configured sources or /var/db/repos)",
@@ -1149,8 +1233,8 @@ def check_ebuild_patches(cfg: Config, packages: list[str]) -> int:
     patch named after that ebuild version is needed.
     """
     check_target(cfg)
-    expected = expected_package_sets(cfg)
     target_packages = list_packages(cfg.target)
+    expected = expected_package_sets(cfg, target_packages)
     skipped = {name for name, _ in missing_sources(cfg)}
 
     if packages:

@@ -1,0 +1,8 @@
+# Reason: keep bundled SFML 2.1 and let CMake find the cross test root libraries.
+--- a/libretro-dolphin-0.0.1_pre20250517-r1.ebuild
++++ b/libretro-dolphin-0.0.1_pre20250517-r1.ebuild
+@@ -73,0 +74 @@
++	[SFML]=ZLIB
+@@ -114,0 +116,2 @@
++		-DCMAKE_PREFIX_PATH=/cross_root/usr
++		-DCMAKE_FIND_ROOT_PATH=/usr/aarch64-unknown-linux-gnu\;/cross_root

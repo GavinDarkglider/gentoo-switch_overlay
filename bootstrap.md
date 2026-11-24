@@ -290,7 +290,7 @@ source /etc/profile
 
 adjust profile symlink
 ```sh
-eselect profile set switch:nintendo_switch/17.0
+eselect profile set switch:nintendo_switch/23.0
 ```
 
 At the first Insatll distcc inside chroot to speed-up the compiling

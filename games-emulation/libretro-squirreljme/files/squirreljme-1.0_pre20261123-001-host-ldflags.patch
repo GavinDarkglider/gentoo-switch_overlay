@@ -1,0 +1,51 @@
+# Reason: host utility make must not inherit cross LDFLAGS pointing at the target sysroot.
+--- a/nanocoat/cmake/utils.cmake
++++ b/nanocoat/cmake/utils.cmake
+@@ -147,7 +147,9 @@
+ 			execute_process(
+ 				COMMAND "${CMAKE_COMMAND}" "-E" "env"
++					"LDFLAGS="
+ 					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 					"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+ 					"--" "${hostMake}"
++					"LDFLAGS="
+ 					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 					"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+@@ -157,7 +159,9 @@
+ 			execute_process(
+ 				COMMAND "${CMAKE_COMMAND}" "-E" "env"
++					"LDFLAGS="
+ 					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 					"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+ 					"${hostMake}"
++					"LDFLAGS="
+ 					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 					"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+@@ -190,9 +194,11 @@
+ 				execute_process(
+ 					COMMAND "${CMAKE_COMMAND}" "-E" "env"
+-						"OUTPUT_DIR=${sjmeUtilDir_${name}}"
++						"LDFLAGS="
++					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 						"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+ 						"CC=${hostCompiler}"
+ 						"--" "${hostMake}"
+-						"OUTPUT_DIR=${sjmeUtilDir_${name}}"
++						"LDFLAGS="
++					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 						"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+ 						"CC=${hostCompiler}"
+@@ -202,9 +208,11 @@
+ 				execute_process(
+ 					COMMAND "${CMAKE_COMMAND}" "-E" "env"
+-						"OUTPUT_DIR=${sjmeUtilDir_${name}}"
++						"LDFLAGS="
++					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 						"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+ 						"CC=${hostCompiler}"
+ 						"${hostMake}"
+-						"OUTPUT_DIR=${sjmeUtilDir_${name}}"
++						"LDFLAGS="
++					"OUTPUT_DIR=${sjmeUtilDir_${name}}"
+ 						"HOST_EXE_SUFFIX=${CMAKE_HOST_EXECUTABLE_SUFFIX}"
+ 						"CC=${hostCompiler}"

@@ -77,7 +77,7 @@ Should be more simple than it probably is. This is still very much experimental,
 Mainly stuff that is needed to run l4t on the switch with as much hardware support as possible. A few other things I might decide I want to run on my switch.
 Look through the overlay, and see what is there.
 
-Packages fall into several groups: synchronised upstream copies, version-pinned packages, unmanaged local copies and packages maintained only here. Run `python3 sync/sync_overlay.py classify` for the live breakdown and the reasons.
+Packages fall into several groups: synchronised upstream copies, version-pinned packages, unmanaged local copies and packages maintained only here. Run `python3 sync/sync_overlay.py classify` for the live breakdown and the reasons. RetroArch and Libretro cores are documented in [RETROARCH-README.md](RETROARCH-README.md) and reported as RETROARCH by `classify`.
 
 ### Locally maintained packages
 

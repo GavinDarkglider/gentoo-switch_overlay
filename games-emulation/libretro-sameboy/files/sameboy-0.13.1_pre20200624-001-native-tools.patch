@@ -1,0 +1,11 @@
+# Reason: Build pb12 with a host compiler during cross builds.
+--- a/Makefile
++++ b/Makefile
+@@ -23,3 +23,7 @@
+ PB12_COMPRESS := build/pb12$(EXESUFFIX)
++$(PB12_COMPRESS): override CC = host-cc
++$(PB12_COMPRESS): override NATIVE_CC = host-cc
++$(PB12_COMPRESS): override CFLAGS = -O2 -Wno-unused-result
++$(PB12_COMPRESS): override LDFLAGS =
+ 
+ ifeq ($(PLATFORM),Darwin)

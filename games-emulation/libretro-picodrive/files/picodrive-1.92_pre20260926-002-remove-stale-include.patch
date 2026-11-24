@@ -1,0 +1,11 @@
+# Reason: upstream removed platform/libpicofe/plat.h; the include is stale.
+--- a/platform/libretro/libretro.c
++++ b/platform/libretro/libretro.c
+@@ -44,7 +44,6 @@
+ #include <platform/common/upscale.h>
+ #endif
+ #include <platform/common/emu.h>
+-#include <platform/libpicofe/plat.h> // need this for PXMAKE in readpng :-/
+ 
+ #ifdef _3DS
+ #include "3ds/3ds_utils.h"

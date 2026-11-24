@@ -41,6 +41,7 @@ patches are always read from this `sync/` directory, not from that checkout.
   reference an undeclared source use that default implicitly.
 - Empty sections and option blocks containing only defaults are omitted.
 - `sync_sets` define packages or globs, their source and optional unmasking.
+  Explicit packages may be new; globs only select packages already in the target.
 - `eclasses` define eclass files to copy and optionally patch.
 - `package_options` hold deliberate exceptions: `keyword_override`,
   `preserve_local_files` and `switch_specific`.

@@ -1,0 +1,16 @@
+# Copyright 1999-2022 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+LIBRETRO_COMMIT_SHA="2b2c5ee3fd8e1a3884e20ed424fd9bfbc51cbb3d"
+
+inherit vcs-snapshot
+
+DESCRIPTION="Glsl shaders converted by hand from libretro's glsl-shaders repo"
+HOMEPAGE="https://github.com/libretro/glsl-shaders"
+SRC_URI="https://github.com/libretro/glsl-shaders/archive/${LIBRETRO_COMMIT_SHA}.tar.gz -> ${P}.tar.gz"
+
+LICENSE="MIT"
+SLOT="0"
+KEYWORDS="arm64"

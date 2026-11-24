@@ -1,3 +1,4 @@
+# Reason: Switch-specific bluetooth configuration for the 4.9 kernel.
 diff -Naur bluez-5.64/configure.ac bluez-5.64-2/configure.ac
 --- bluez/configure.ac.bak
 +++ bluez/configure.ac

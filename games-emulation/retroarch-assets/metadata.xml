@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="person">
-		<email>dmenelkir@gmail.com</email>
-		<name>Daniel Menelkir</name>
+		<email>amverweij@gmail.com</email>
+		<name>Bram Verweij</name>
 	</maintainer>
 	<use>
 		<flag name="materialui">Enable materialui assets</flag>
@@ -11,6 +11,7 @@
 		<flag name="rgui">Enable rgui assets</flag>
 		<flag name="xmb">Enable xmb assets</flag>
 	</use>
-	<longdescription lang="en">
-	</longdescription>
+	<upstream>
+		<remote-id type="github">libretro/retroarch-assets</remote-id>
+	</upstream>
 </pkgmetadata>

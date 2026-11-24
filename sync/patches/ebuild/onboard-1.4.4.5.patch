@@ -1,3 +1,4 @@
+# Reason: Keep the local metadata for the stabilised single release.
 --- a/onboard-1.4.4.5.ebuild
 +++ b/onboard-1.4.4.5.ebuild
 @@ -58,6 +58,9 @@

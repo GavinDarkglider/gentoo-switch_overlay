@@ -1,0 +1,13 @@
+# Reason: bundled libretro-common in mame2010 lacks path_default_slash(), needed on aarch64 builds.
+--- a/src/osd/retro/retromain.c
++++ b/src/osd/retro/retromain.c
+@@ -21,6 +21,9 @@
+ #include "rendersw.c"
+ 
+ #include "../../precompile/mameini_boilerplate.h"
++
++/* This bundled libretro-common lacks path_default_slash(); provide the POSIX variant. */
++static const char *path_default_slash(void) { return "/"; }
+ 
+ #define PLAYER1_PRESS(button) input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_##button)
+ #define PLAYER2_PRESS(button) input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_##button)

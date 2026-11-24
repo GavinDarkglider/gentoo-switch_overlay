@@ -19,10 +19,6 @@ mask = "profiles/nintendo_switch/package.mask"
 # Undeclared sources used by eclass/sync-set rules are added implicitly.
 # Sources mirror upstream keywords by default; auto_stabilize is opt-in.
 
-[sources.menelkir]
-# Local checkout of a source overlay; keep it up to date before syncing.
-path = "/scripts/switch_gentoo/overlay_sync/menelkir"
-
 [sources.guru]
 # Other overlays get their single release version stabilised.
 auto_stabilize = true
@@ -40,12 +36,6 @@ package = "app-accessibility/onboard"
 # Auto-stabilises the single release version; keep local metadata.
 preserve_local_files = ["metadata.xml"]
 
-[[package_options]]
-package = "games-emulation/cannonball-libretro"
-# Hand-maintained locally (do not overwrite on sync).
-keyword_override = "~arm64 ~x86"
-preserve_local_files = ["metadata.xml"]
-
 [settings]
 # The first line containing this string is replaced with the generated block;
 # everything above it (manual unmask entries) is preserved verbatim.
@@ -57,15 +47,7 @@ unmask_repo_suffix = "::switch"
 [[eclasses]]
 source = "gentoo"
 file = "kernel-build.eclass"
-patch = "eclass_kernel_build.patch"
-
-[[eclasses]]
-source = "menelkir"
-file = "libretro.eclass"
-
-[[eclasses]]
-source = "menelkir"
-file = "libretro-core.eclass"
+patch = "eclass_kernel_build-1.patch"
 
 # Core system packages that are copied into the overlay and patched for the
 # Switch's 4.9 kernel / boot chain.  Their ebuilds are unmasked by CPV.
@@ -80,14 +62,13 @@ packages = [
 ]
 unmask = true
 
-# Libretro/RetroArch packages and rgbds come from a separate overlay.
-# KEYWORDS are rewritten; desmume-libretro also has ebuild/source patches.
+# Additional cores that are maintained in Guru rather than in this overlay.
 [[sync_sets]]
-name = "libretro-mirrored"
-source = "menelkir"
-include_globs = [
-    "games-emulation/*",
-    "dev-lang/rgbds",
+name = "libretro-guru"
+source = "guru"
+packages = [
+    "games-emulation/azahar",
+    "games-emulation/libretro-dolphin",
 ]
 
 # The local onboard copy matches its source version. Its start-in-tray patch

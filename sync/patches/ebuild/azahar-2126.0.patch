@@ -1,0 +1,24 @@
+# Reason: build the libretro core via USE=libretro while keeping the standalone frontend optional.
+--- a/azahar-2126.0.ebuild
++++ b/azahar-2126.0.ebuild
+@@ -19 +19 @@
+-IUSE="cpu_flags_x86_sse4_2 test"
++IUSE="+libretro cpu_flags_x86_sse4_2 test"
+@@ -79,0 +80 @@
++	[libretro-common]=Zlib
+@@ -97,0 +99,4 @@
++	if ! use libretro; then
++		unset 'KEEP_BUNDLED[libretro-common]'
++	fi
++
+@@ -116,0 +122 @@
++		-DENABLE_LIBRETRO=$(usex libretro)
+@@ -139,0 +146,8 @@
++
++	if use libretro; then
++		local core="${BUILD_DIR}/bin/${CMAKE_BUILD_TYPE}/azahar_libretro.so"
++		[[ -f ${core} ]] || die "azahar_libretro.so not found at ${core}"
++		insinto "/usr/$(get_libdir)/libretro"
++		doins "${core}"
++	fi
++

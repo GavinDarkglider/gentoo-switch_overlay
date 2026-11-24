@@ -1,3 +1,4 @@
+# Reason: Switch-specific account defaults.
 --- shadow-4.14.2.ebuild.orig
 +++ shadow-4.14.2.ebuild
 @@ -72,6 +72,7 @@

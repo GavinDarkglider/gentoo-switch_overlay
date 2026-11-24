@@ -1,3 +1,4 @@
+# Reason: Old-kernel compatibility and L4T boot-chain adjustments.
 --- a/glibc-2.43-r4.ebuild
 +++ b/glibc-2.43-r4.ebuild
 @@ -869,11 +869,11 @@

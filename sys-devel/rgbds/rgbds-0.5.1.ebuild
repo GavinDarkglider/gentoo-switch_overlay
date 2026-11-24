@@ -1,0 +1,49 @@
+# Copyright 1999-2021 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+inherit toolchain-funcs
+
+DESCRIPTION="Rednex Game Boy Development System"
+HOMEPAGE="https://rednex.github.io/rgbds/"
+SRC_URI="https://github.com/rednex/${PN}/releases/download/v${PV}/${P}.tar.gz"
+S="${WORKDIR}/${PN}"
+
+LICENSE="MIT"
+SLOT="0"
+KEYWORDS="arm64"
+IUSE=""
+
+RDEPEND="
+	media-libs/libpng:0=
+	sys-libs/zlib:=
+"
+DEPEND="${RDEPEND}
+	app-alternatives/yacc
+	sys-devel/flex
+	virtual/pkgconfig
+"
+
+src_prepare() {
+	default
+	sed -i -e 's/--static//g' Makefile || die
+}
+
+src_compile() {
+	emake \
+		CC=$(tc-getCC) \
+		CFLAGS="${CFLAGS}" \
+		Q= \
+		VERSION_STRING=${PV} || die
+}
+
+src_install() {
+	emake \
+		DESTDIR="${D}" \
+		PREFIX=/usr \
+		Q= \
+		STRIP= \
+		mandir=/usr/share/man \
+		install || die
+}

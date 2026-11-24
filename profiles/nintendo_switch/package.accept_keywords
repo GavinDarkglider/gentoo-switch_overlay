@@ -24,3 +24,10 @@ media-gfx/splash-themes-livecd ~arm64
 media-gfx/splash-themes-livedvd ~arm64
 media-gfx/splash-themes-gentoo ~arm64
 media-gfx/fbsplash-theme-natural-gentoo ~arm64
+
+# Libretro cores pulled in by retroarch-meta directly from the Gentoo repo
+games-emulation/snes9x ~arm64
+games-emulation/libretro-bnes ~arm64
+games-emulation/libretro-fceumm ~arm64
+games-emulation/libretro-snes9x ~arm64
+games-emulation/libretro-twentyfortyeight ~arm64

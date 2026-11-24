@@ -1,3 +1,4 @@
+# Reason: Install the Switch boot stack with the local layout.
 --- sys-kernel/installkernel/installkernel-68-r1.ebuild
 +++ sys-kernel/installkernel/installkernel-68-r1.ebuild
 @@ -22,7 +22,7 @@

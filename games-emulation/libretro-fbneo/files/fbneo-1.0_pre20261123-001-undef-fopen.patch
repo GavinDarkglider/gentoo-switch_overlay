@@ -1,0 +1,27 @@
+# Reason: libretro-common remaps stdio (FILE/fopen) to its RFILE VFS, conflicting with FBNeo file access in burn_artwork.cpp (aarch64 build).
+--- a/burn_artwork.cpp
++++ b/burn_artwork.cpp
+@@ -30,6 +30,23 @@
+ #include <utility>
+ #include <algorithm>
+ #include <math.h>
++
++/* libretro-common remaps stdio to its RFILE VFS; this file uses real FILE*. */
++#undef FILE
++#undef fopen
++#undef fclose
++#undef fprintf
++#undef ftell
++#undef fseek
++#undef fread
++#undef fgets
++#undef fgetc
++#undef fwrite
++#undef fputc
++#undef fflush
++#undef ferror
++#undef feof
++#undef fscanf
+ 
+ INT32 __cdecl ZipLoadOneFile(char* arcName, const char* fileName, void** Dest, INT32* pnWrote);
+ 

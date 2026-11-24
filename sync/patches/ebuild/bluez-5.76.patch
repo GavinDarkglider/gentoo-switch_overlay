@@ -1,3 +1,4 @@
+# Reason: Switch-specific bluetooth configuration for the 4.9 kernel.
 --- net-wireless/bluez/bluez-5.76.ebuild
 +++ net-wireless/bluez/bluez-5.76.ebuild
 @@ -39,10 +39,10 @@

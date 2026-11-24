@@ -10,6 +10,7 @@
 =sys-apps/shadow-4.19.4::switch
 =sys-apps/shadow-4.20.0::switch
 =sys-apps/shadow-4.20.2::switch
+=sys-apps/shadow-4.20.4::switch
 =sys-kernel/installkernel-68-r1::switch
 =sys-kernel/installkernel-70-r1::switch
 =sys-kernel/installkernel-9999::switch

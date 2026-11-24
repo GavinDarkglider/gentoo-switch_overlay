@@ -1,3 +1,4 @@
+# Reason: Old-kernel compatibility and L4T boot-chain adjustments.
 --- a/glibc-2.31-r7.ebuild
 +++ b/glibc-2.31-r7.ebuild
 @@ -608,11 +608,11 @@

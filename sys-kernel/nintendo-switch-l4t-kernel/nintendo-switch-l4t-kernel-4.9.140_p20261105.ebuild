@@ -146,10 +146,12 @@ _check_symlink() {
 	FILE="$1"
 	if [[ -h "${EROOT}${FILE}" && ! -e "${EROOT}${FILE}" ]] ; then
 		einfo "fix broken symlink ${FILE}"
-		NEWTARGET="$(ls -1 "$FILE"-* 2>/dev/null | tail -n1)"
+		# the newest copy another kernel version left, in the system (EROOT),
+		# not on the computer it was built on
+		NEWTARGET="$(ls -1v "${EROOT}${FILE}"-* 2>/dev/null | tail -n1)"
 		rm "${EROOT}${FILE}"
 		if [[ -n "${NEWTARGET}" ]]; then
-			ln -v -s "$(basename "${NEWTARGET}")"-"${ver}" "${EROOT}${FILE}"
+			ln -v -s "$(basename "${NEWTARGET}")" "${EROOT}${FILE}"
 		fi
 	fi
 }

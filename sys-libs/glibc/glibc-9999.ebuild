@@ -1082,6 +1082,11 @@ src_prepare() {
 
 	cd "${S}" || die
 
+	# Firefox needs MFD_HUGETLB to be undefined so it uses its own
+	# fallback; glibc defines it even though the Switch kernel does not
+	# provide it consistently.
+	sed -i '/#  define MFD_HUGETLB 4U/d' sysdeps/unix/sysv/linux/bits/mman-shared.h || die
+
 	# NSW old kernel. Remove symbols not in old kernel
 	sed -i \
 		-e "s:# define STATX_DIOALIGN 0x2000U::g" \

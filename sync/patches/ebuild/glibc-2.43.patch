@@ -1,6 +1,6 @@
-# Reason: Old-kernel compatibility and L4T boot-chain adjustments.
---- a/glibc-2.43-r4.ebuild
-+++ b/glibc-2.43-r4.ebuild
+# Reason: Old-kernel compatibility and L4T boot-chain adjustments; plus remove MFD_HUGETLB define so Firefox uses its fallback.
+--- a/glibc-2.43-r6.ebuild
++++ b/glibc-2.43-r6.ebuild
 @@ -869,11 +869,11 @@
  			[[ ${I_ALLOW_TO_BREAK_MY_SYSTEM} = yes ]] || die "Aborting to save your system."
  		fi
@@ -18,10 +18,15 @@
  	fi
  
  	if [[ ${CTARGET} == i386-* ]] ; then
-@@ -1075,6 +1075,13 @@
+@@ -1075,6 +1075,18 @@
  	chmod u+x "${S}"/scripts/*.sh
  
  	cd "${S}" || die
++
++	# Firefox needs MFD_HUGETLB to be undefined so it uses its own
++	# fallback; glibc defines it even though the Switch kernel does not
++	# provide it consistently.
++	sed -i '/#  define MFD_HUGETLB 4U/d' sysdeps/unix/sysv/linux/bits/mman-shared.h || die
 +
 +	# NSW old kernel. Remove symbols not in old kernel
 +	sed -i \
@@ -32,7 +37,7 @@
  }
  
  # src_configure
-@@ -1518,6 +1525,14 @@
+@@ -1518,6 +1530,14 @@
  
  	# We'll take care of the cache ourselves
  	rm -f "${ED}"/etc/ld.so.cache

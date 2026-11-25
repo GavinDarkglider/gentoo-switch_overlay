@@ -44,6 +44,11 @@ src_install() {
 
 pkg_postinst() {
 	udev_reload
+	if [[ -z ${REPLACING_VERSIONS} ]]; then
+		elog "Joy-Cons pair and work as controllers only while joycond runs:"
+		elog "  OpenRC:  rc-update add joycond default"
+		elog "  systemd: systemctl enable joycond"
+	fi
 }
 
 pkg_postrm() {

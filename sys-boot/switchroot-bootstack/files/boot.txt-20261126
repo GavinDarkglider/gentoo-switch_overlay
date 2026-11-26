@@ -577,10 +577,12 @@ else
 fi
 
 # The boot splash (splashutils), on the console's screen: theme from the
-# ini (splash_theme=, a folder in /etc/splash), none with no console.
+# ini (splash_theme=, a folder in /etc/splash), on live boots the Gentoo
+# live DVD's by default; none with no console.
 # The console needs no fbcon=rotate: the display controller turns the
 # panel to landscape, and the console with it.
 setenv splashargs ""
+if test ${live} = 1 && test -z "${splash_theme}"; then setenv splash_theme livedvd-12.0; fi
 if test ${fbconsole} != 9 && test -n "${splash_theme}"; then
     setenv splashargs "splash=silent,theme:${splash_theme} console=tty1"
 fi

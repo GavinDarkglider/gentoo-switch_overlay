@@ -6,6 +6,5 @@ r2p_action=normal
 id=SWR-GLI
 fbconsole=0
 live=1
-splash_theme=livedvd-12.0
 icon=switchroot/gentoo/icon_gentoo_hue.bmp
 logopath=switchroot/gentoo/icon_gentoo.bmp

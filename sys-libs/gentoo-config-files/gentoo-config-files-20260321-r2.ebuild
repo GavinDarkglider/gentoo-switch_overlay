@@ -33,6 +33,9 @@ PATCHES=(
 	# install the error screen as /fatal.raw, and the tar, gzip, timeout
 	# and date the hooks run
 	"${FILESDIR}"/65NintendoSwitch-install-what-the-hooks-use.patch
+	# MACs: the kernel takes them from the device tree; the firmware file
+	# edits stay as a fallback on live boots only
+	"${FILESDIR}"/65NintendoSwitch-firmware-macs-on-live-boots-only.patch
 )
 
 src_install() {

@@ -1,0 +1,23 @@
+diff --git a/dracut/65NintendoSwitch/pre-pivot.sh b/dracut/65NintendoSwitch/pre-pivot.sh
+index 57dbdb6..44aa523 100755
+--- a/dracut/65NintendoSwitch/pre-pivot.sh
++++ b/dracut/65NintendoSwitch/pre-pivot.sh
+@@ -213,6 +213,10 @@ EOF
+ fi
+ fi
+ 
++# The kernel sets both MACs from the device tree, where boot.scr puts
++# them. Editing the firmware files is only a fallback for live boots,
++# where the edit lands in the RAM overlay, not in a package's files.
++if getargbool 0 rd.live.image; then
+ # Set btmac in firmware
+ if [[ ${BT_MAC_ADDR} == *":"* ]]; then
+   BT_MAC_ADDR=$( echo ${BT_MAC_ADDR} | tr -d ':' )
+@@ -248,6 +252,7 @@ if [[ -f /sysroot/lib/firmware/brcm/brcmfmac4356A3-pcie.txt ]]; then
+ 		echo "WIFI address patched";
+ 	fi
+ fi
++fi
+ 
+ # Patch bluez config to enable fast connect, required or joycon wont connect
+ sed -i 's/#FastConnectable = false/FastConnectable = true/' /sysroot/etc/bluetooth/main.conf

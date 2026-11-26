@@ -59,6 +59,8 @@ media-video/ffmpeg
 >=gui-libs/gtk-4.20
 >=dev-cpp/gtkmm-4.20
 >=gui-libs/libadwaita-1.8.6
+>=sys-apps/baobab-50
+>=media-sound/pavucontrol-6.1
 
 # 02.09.2026 - bell07 - error: ‘AMDGPU_INFO_SENSOR’ undeclared
 >=app-misc/fastfetch-2.65.2

@@ -6,6 +6,7 @@
 		<name>gavin_darkglider</name>
 	</maintainer>
 	<use>
+		<flag name="dracut">Install the gensplash dracut module (from dracut 056), so initramfs images get the silent splash; needs fbcondecor, whose kernel helper draws it</flag>
 		<flag name="fbcondecor">Support the fbcondecor kernel patch (verbose console backgrounds)</flag>
 		<flag name="mng">Support MNG animations in themes</flag>
 		<flag name="theme-livecd">Install the Gentoo LiveCD themes 2004.3 to 2007.0 (media-gfx/splash-themes-livecd)</flag>

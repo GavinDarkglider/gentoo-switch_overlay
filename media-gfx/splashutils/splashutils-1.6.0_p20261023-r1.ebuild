@@ -15,7 +15,9 @@ EGIT_COMMIT="57c3487581fa380bdc03300f0492502b54725024"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64"
-IUSE="+fbcondecor gpm mng +png +theme-livecd +theme-livedvd +truetype"
+IUSE="dracut +fbcondecor gpm mng +png +theme-livecd +theme-livedvd +truetype"
+# the initramfs splash is drawn by the kernel helper, built with fbcondecor
+REQUIRED_USE="dracut? ( fbcondecor )"
 
 # The kernel helper runs from the initramfs before anything else is
 # available, so it is linked statically.  freetype's own optional
@@ -23,6 +25,7 @@ IUSE="+fbcondecor gpm mng +png +theme-livecd +theme-livedvd +truetype"
 # when enabled; configure checks that the static link works.
 RDEPEND="
 	sys-apps/openrc:=
+	dracut? ( sys-kernel/dracut )
 	gpm? ( sys-libs/gpm )
 	mng? ( media-libs/libmng:= )
 	truetype? ( media-fonts/font-bh-ttf )
@@ -99,6 +102,15 @@ src_install() {
 	insinto /etc/conf.d
 	newins "${WORKDIR}/${P}/gentoo/splash.conf" splash
 
+	if use dracut; then
+		# dracut 056's gensplash module (dracut-ng dropped it) and the
+		# initramfs functions it uses
+		insinto /usr/share/splashutils
+		doins "${WORKDIR}/${P}/gentoo/initrd.splash"
+		exeinto /usr/lib/dracut/modules.d/50gensplash
+		doexe "${FILESDIR}"/dracut/50gensplash/*.sh
+	fi
+
 	keepdir /lib/splash/{cache,proc,sys}
 	keepdir /etc/splash
 
@@ -116,6 +128,13 @@ pkg_postinst() {
 	elog "console rotation (fbcon=rotate:N).  Verbose (fbcondecor) backgrounds"
 	elog "need a kernel with the rotation-aware fbcondecor patch."
 	elog
-	elog "To add the helper and a theme to an existing initramfs (e.g. from"
-	elog "dracut):  splash_geninitramfs -a /boot/initramfs-<version>.img <theme>"
+	if use dracut; then
+		elog "dracut adds the splash to every initramfs it makes (module"
+		elog "gensplash): the theme from SPLASH_THEME in /etc/conf.d/splash with"
+		elog "--hostonly, otherwise all of them.  Boot with splash=silent,theme:<name>."
+	else
+		elog "To add the helper and a theme to an existing initramfs (e.g. from"
+		elog "dracut):  splash_geninitramfs -a /boot/initramfs-<version>.img <theme>"
+		elog "or rebuild with USE=dracut."
+	fi
 }

@@ -6,10 +6,12 @@ ETYPE="sources"
 
 KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/l4t-community/kernel/l4t-kernel-4.9"
-IUSE="debug fbcondecor +splash"
+IUSE="debug fbcondecor live +splash"
 
 # fbcondecor needs splashutils to draw anything; -splash leaves it out
 RDEPEND="fbcondecor? ( splash? ( media-gfx/splashutils[fbcondecor(+)] ) )"
+# the live initramfs, built before the kernel and built into it
+DEPEND="live? ( sys-kernel/nintendo-switch-live-initramfs )"
 
 KV_LOCALVERSION="-l4t-gentoo-dist"
 
@@ -91,6 +93,26 @@ src_prepare() {
 
 	if use fbcondecor; then
 		echo "CONFIG_FB_CON_DECOR=y" >> arch/arm64/configs/tegra_linux_defconfig || die
+	fi
+
+	if use live; then
+		# the initramfs in the kernel, and what it needs built in (it has no
+		# modules): the FAT partition, the squashfs on it, a tmpfs over it
+		local cpio="${ESYSROOT}"/usr/share/nintendo-switch-live-initramfs/live-initramfs.cpio
+		[[ -f ${cpio} ]] || die "${cpio} is missing"
+		cat >> arch/arm64/configs/tegra_linux_defconfig <<-EOF || die
+			CONFIG_BLK_DEV_INITRD=y
+			CONFIG_INITRAMFS_SOURCE="${cpio}"
+			CONFIG_INITRAMFS_COMPRESSION_GZIP=y
+			CONFIG_BLK_DEV_LOOP=y
+			CONFIG_SQUASHFS=y
+			CONFIG_SQUASHFS_XZ=y
+			CONFIG_OVERLAY_FS=y
+			CONFIG_FAT_FS=y
+			CONFIG_VFAT_FS=y
+			CONFIG_NLS_CODEPAGE_437=y
+			CONFIG_NLS_ISO8859_1=y
+		EOF
 	fi
 
 	emake ARCH=arm64 tegra_linux_defconfig

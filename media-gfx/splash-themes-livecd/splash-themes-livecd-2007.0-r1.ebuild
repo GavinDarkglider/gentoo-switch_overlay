@@ -21,7 +21,7 @@ S="${WORKDIR}"
 
 LICENSE="Artistic GPL-2 BitstreamVera"
 SLOT="0"
-KEYWORDS="~amd64 ~arm64 ~x86"
+KEYWORDS="~amd64 arm64 ~x86"
 RESTRICT="binchecks strip"
 
 RDEPEND="media-gfx/splashutils[png(+)]"

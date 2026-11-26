@@ -14,7 +14,7 @@ EGIT_COMMIT="57c3487581fa380bdc03300f0492502b54725024"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~arm64"
+KEYWORDS="~amd64 arm64"
 IUSE="dracut +fbcondecor gpm mng +png +theme-livecd +theme-livedvd +truetype"
 # the initramfs splash is drawn by the kernel helper, built with fbcondecor
 REQUIRED_USE="dracut? ( fbcondecor )"

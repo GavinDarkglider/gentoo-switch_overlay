@@ -14,7 +14,7 @@ SRC_URI="${CROS_MIRROR}/${P}.tar.bz2"
 
 LICENSE="Artistic GPL-2 BitstreamVera"
 SLOT="0"
-KEYWORDS="~amd64 ~arm64 ~x86"
+KEYWORDS="~amd64 arm64 ~x86"
 RESTRICT="binchecks strip"
 
 RDEPEND="media-gfx/splashutils[png(+),truetype(+)]"

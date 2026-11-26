@@ -1,0 +1,17 @@
+diff --git a/dracut/65NintendoSwitch/module-setup.sh b/dracut/65NintendoSwitch/module-setup.sh
+index 24a0206..e7f7782 100755
+--- a/dracut/65NintendoSwitch/module-setup.sh
++++ b/dracut/65NintendoSwitch/module-setup.sh
+@@ -18,7 +18,11 @@ inst /bin/head /bin/head
+ inst /bin/grep /bin/grep
+ inst /sbin/resize2fs /sbin/resize2fs
+ inst /usr/bin/awk /bin/awk
+-inst $moddir/fatal.raw /
++# the error screen pre-pivot.sh shows (inst needs the file name)
++inst "$moddir/fatal.raw" /fatal.raw
++# what the hooks run besides the above: tar (and gzip) unpacks
++# modules.tar.gz/update.tar.gz, timeout waits on volume up, date logs
++inst_multiple tar gzip timeout date
+ inst_hook pre-udev 65 "$moddir/pre-udev.sh"
+ inst_hook pre-pivot 65 "$moddir/pre-pivot.sh"
+ }

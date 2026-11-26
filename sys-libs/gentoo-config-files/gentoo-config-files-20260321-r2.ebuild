@@ -30,6 +30,9 @@ PATCHES=(
 	# take the nx-plat.dtimg that make dtbs builds (pack one only when missing),
 	# and name the uImage after the kernel version
 	"${FILESDIR}"/80-switch-kernel-dts-use-kernel-dtimg.patch
+	# install the error screen as /fatal.raw, and the tar, gzip, timeout
+	# and date the hooks run
+	"${FILESDIR}"/65NintendoSwitch-install-what-the-hooks-use.patch
 )
 
 src_install() {

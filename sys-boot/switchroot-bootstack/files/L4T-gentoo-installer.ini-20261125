@@ -1,0 +1,11 @@
+[L4T Gentoo installer]
+l4t=1
+mainline=0
+boot_prefixes=/switchroot/gentoo-installer/
+r2p_action=normal
+id=SWR-GLI
+fbconsole=0
+bootargs_extra=fbcon=rotate:3
+live=1
+icon=switchroot/gentoo/icon_gentoo_hue.bmp
+logopath=switchroot/gentoo/icon_gentoo.bmp

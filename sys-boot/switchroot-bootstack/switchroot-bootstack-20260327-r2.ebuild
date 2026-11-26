@@ -1,6 +1,7 @@
 EAPI=8
 KEYWORDS="arm64"
 SLOT="0"
+IUSE="live"
 
 HOMEPAGE="https://switchroot.org/ https://gitlab.com/switchroot/bootstack"
 DESCRIPTION="Switchroot bootstack files, all made from source"
@@ -22,7 +23,7 @@ RDEPEND="
 "
 
 src_compile() {
-	mkimage -A arm -T script -O linux -d "${FILESDIR}"/boot.txt-20260327 "${S}"/boot.scr \
+	mkimage -A arm -T script -O linux -d "${FILESDIR}"/boot.txt-20261125 "${S}"/boot.scr \
 		|| die "mkimage failed"
 }
 
@@ -34,4 +35,14 @@ src_install() {
 	doins "${S}"/boot.scr
 	doins "${S}"/assets/Hekate-Icons/gentoo/icon_gentoo.bmp
 	doins "${S}"/assets/Hekate-Icons/gentoo/icon_gentoo_hue.bmp
+
+	if use live; then
+		# the installer: the same boot.scr, live=1 in its ini. Its packaging
+		# puts the kernel (initramfs built in), nx-plat.dtimg and
+		# rootfs.squashfs into the same folder
+		insinto "${SDCARD_DESTDIR}"/bootloader/ini
+		newins "${FILESDIR}"/L4T-gentoo-installer.ini-20261125 L4T-gentoo-installer.ini
+		insinto "${SDCARD_DESTDIR}"/switchroot/gentoo-installer
+		doins "${S}"/boot.scr
+	fi
 }

@@ -44,5 +44,8 @@ src_install() {
 		newins "${FILESDIR}"/L4T-gentoo-installer.ini-20261126 L4T-gentoo-installer.ini
 		insinto "${SDCARD_DESTDIR}"/switchroot/gentoo-installer
 		doins "${S}"/boot.scr
+		# how Porthole makes the live SD card image of the system
+		insinto /usr/share/porthole/images
+		newins "${FILESDIR}"/porthole-image-live-20261126.conf switch-live.conf
 	fi
 }

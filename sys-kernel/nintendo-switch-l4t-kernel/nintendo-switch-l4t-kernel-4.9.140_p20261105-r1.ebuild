@@ -82,6 +82,11 @@ PATCHES=(
 	# iSCSI initiator: build fix (CTCaer PR #10) and build it as modules
 	"${FILESDIR}"/20-iscsi-fix-libiscsi_tcp-build.patch
 	"${FILESDIR}"/21-arm64-tegra_linux_defconfig-enable-iscsi-tcp.patch
+	# MAC addresses from the device tree (/chosen nvidia,bluetooth-mac and
+	# nvidia,wifi-mac, which boot.scr sets), as Lakka does: no firmware
+	# files edited
+	"${FILESDIR}"/22-Bluetooth-hci_bcm-mac-address-from-device-tree.patch
+	"${FILESDIR}"/23-brcmfmac-mac-address-from-device-tree.patch
 )
 
 src_unpack() {

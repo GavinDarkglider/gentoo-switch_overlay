@@ -6,9 +6,10 @@
 		<name>GavinDarkglider</name>
 	</maintainer>
 	<use>
-		<flag name="live">Also the installer's boot files: L4T-gentoo-installer.ini (live=1)
+		<flag name="livecd">Also the live image's boot files: L4T-gentoo-installer.ini (live=1)
 			and boot.scr in switchroot/gentoo-installer, which boots a squashfs
 			from there with a kernel that has its initramfs built in
-			(<pkg>sys-kernel/nintendo-switch-l4t-kernel</pkg>[live])</flag>
+			(<pkg>sys-kernel/nintendo-switch-l4t-kernel</pkg>[livecd]), and Porthole's
+			recipe for making the live SD card image</flag>
 	</use>
 </pkgmetadata>

@@ -13,13 +13,13 @@
 	</longdescription>
 	<use>
 		<flag name="fbcondecor">Framebuffer console decorations (a background picture on the
-			consoles, set by media-gfx/splashutils), with fbcon rotation support;
-			on in tegra_linux_defconfig</flag>
-		<flag name="live">Build the live initramfs (<pkg>sys-kernel/nintendo-switch-live-initramfs</pkg>)
+			consoles, set by media-gfx/splashutils, which comes with it: the boot
+			splash too; Vol- or F2 shows the boot messages), with fbcon rotation
+			support; on in tegra_linux_defconfig</flag>
+		<flag name="livecd">Build the live initramfs (<pkg>sys-kernel/nintendo-switch-live-initramfs</pkg>)
 			into the kernel, with the drivers it needs (FAT, loop, squashfs, overlayfs):
-			one file boots the installer's squashfs from the SD card, as Lakka does</flag>
-		<flag name="splash">With USE=fbcondecor, pull in media-gfx/splashutils (the boot splash and
-			console backgrounds; Vol- or F2 shows the boot messages)</flag>
+			one file boots the live image's squashfs from the SD card, as Lakka does.
+			With USE=fbcondecor, the initramfs has the boot splash</flag>
 	</use>
 	<upstream>
 		<remote-id type="gitlab">l4t-community/kernel/l4t-kernel-4.9</remote-id>

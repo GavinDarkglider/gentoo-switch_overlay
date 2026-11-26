@@ -6,12 +6,12 @@ ETYPE="sources"
 
 KEYWORDS="-* arm64"
 HOMEPAGE="https://gitlab.com/l4t-community/kernel/l4t-kernel-4.9"
-IUSE="debug fbcondecor live +splash"
+IUSE="debug fbcondecor livecd"
 
-# fbcondecor needs splashutils to draw anything; -splash leaves it out
-RDEPEND="fbcondecor? ( splash? ( media-gfx/splashutils[fbcondecor(+)] ) )"
+# fbcondecor needs splashutils to draw anything
+RDEPEND="fbcondecor? ( media-gfx/splashutils[fbcondecor(+)] )"
 # the live initramfs, built before the kernel and built into it
-DEPEND="live? ( sys-kernel/nintendo-switch-live-initramfs )"
+DEPEND="livecd? ( sys-kernel/nintendo-switch-live-initramfs[fbcondecor(-)=] )"
 
 KV_LOCALVERSION="-l4t-gentoo-dist"
 
@@ -113,7 +113,7 @@ src_prepare() {
 		echo "CONFIG_FB_CON_DECOR=y" >> arch/arm64/configs/tegra_linux_defconfig || die
 	fi
 
-	if use live; then
+	if use livecd; then
 		# the initramfs in the kernel, and what it needs built in (it has no
 		# modules): the FAT partition, the squashfs on it, a tmpfs over it
 		local cpio="${ESYSROOT}"/usr/share/nintendo-switch-live-initramfs/live-initramfs.cpio

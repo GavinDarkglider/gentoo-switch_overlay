@@ -1,7 +1,7 @@
 EAPI=8
 KEYWORDS="arm64"
 SLOT="0"
-IUSE="live"
+IUSE="livecd"
 
 HOMEPAGE="https://switchroot.org/ https://gitlab.com/switchroot/bootstack"
 DESCRIPTION="Switchroot bootstack files, all made from source"
@@ -36,7 +36,7 @@ src_install() {
 	doins "${S}"/assets/Hekate-Icons/gentoo/icon_gentoo.bmp
 	doins "${S}"/assets/Hekate-Icons/gentoo/icon_gentoo_hue.bmp
 
-	if use live; then
+	if use livecd; then
 		# the installer: the same boot.scr, live=1 in its ini. Its packaging
 		# puts the kernel (initramfs built in), nx-plat.dtimg and
 		# rootfs.squashfs into the same folder

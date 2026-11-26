@@ -9,12 +9,14 @@
 		The initramfs of the Switch's live images (the installer): dracut's
 		dmsquash-live boots a squashfs from the SD card's FAT partition with a
 		tmpfs over it, plus the Switch's own dracut module. Made with dracut
-		--no-kernel, before the kernel, which builds it in with USE=live (as
+		--no-kernel, before the kernel, which builds it in with USE=livecd (as
 		Lakka does). It holds no kernel modules: that kernel has the drivers
 		it needs built in.
 	</longdescription>
 	<use>
-		<flag name="splash">The silent boot splash in the initramfs (gensplash, from
-			<pkg>media-gfx/splashutils</pkg>[dracut])</flag>
+		<flag name="fbcondecor">The silent boot splash in the initramfs (gensplash, from
+			<pkg>media-gfx/splashutils</pkg>[dracut]), with the live DVD theme
+			(<pkg>media-gfx/splash-themes-livedvd</pkg>); the kernel's USE=fbcondecor
+			must match</flag>
 	</use>
 </pkgmetadata>

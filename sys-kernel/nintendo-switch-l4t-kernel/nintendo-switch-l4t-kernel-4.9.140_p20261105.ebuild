@@ -19,6 +19,19 @@ DESCRIPTION="Nintendo Switch kernel (L4T 4.9, the L4T community tree)"
 
 inherit kernel-build git-r3
 
+# The initramfs is made by installkernel's dracut (or ugrd) plugin, inside
+# the Switch system (on the Switch, or in an emulator of it: Porthole does
+# that), and boot.scr needs one: the system needs that generator whatever
+# USE=initramfs says. kernel-install's own USE=initramfs (on by default)
+# only adds it as IDEPEND, which a cross build puts on the computer it
+# builds on; the Switch profile turns it off for that reason.
+RDEPEND+="
+	|| (
+		sys-kernel/installkernel[dracut(-)]
+		sys-kernel/installkernel[ugrd(-)]
+	)
+"
+
 # The L4T community (Azkali) L4T 4.9 tree: fedora-dev, with the heads of
 # nvidia linux-6.0.0 and the nx device trees, which rotate the panel to
 # landscape in the display controller (Xorg sees a 1280x720 panel) and turn

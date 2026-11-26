@@ -39,3 +39,9 @@ net-libs/libqmi -qrtr
 # Gavin 2026-11-01 app-crypt/pinentry[gtk] (the desktop's password prompt) needs
 # app-crypt/gcr:4[gtk]; the base profile has gtk off for it.
 app-crypt/gcr gtk
+
+# kernel-install's USE=initramfs (on by default) only makes installkernel
+# with dracut an install-time dependency, which a cross build puts on the
+# computer building it. The kernel itself depends on it inside the system,
+# where installkernel's dracut plugin makes the initramfs either way.
+sys-kernel/nintendo-switch-l4t-kernel -initramfs

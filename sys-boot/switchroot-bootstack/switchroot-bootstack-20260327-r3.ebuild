@@ -23,7 +23,7 @@ RDEPEND="
 "
 
 src_compile() {
-	mkimage -A arm -T script -O linux -d "${FILESDIR}"/boot.txt-20261125 "${S}"/boot.scr \
+	mkimage -A arm -T script -O linux -d "${FILESDIR}"/boot.txt-20261126 "${S}"/boot.scr \
 		|| die "mkimage failed"
 }
 

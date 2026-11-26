@@ -462,10 +462,37 @@ fi
 # Set serial number.
 if test -n ${device_serial};   then fdt set / serial-number ${device_serial}; fi
 
-# Set default bt mac. initramfs will/can change it.
-if test -n ${device_bt_mac};   then fdt set /chosen nvidia,bluetooth-mac ${device_bt_mac}; fi
+# Set the bt mac (the kernel's hci_bcm reads it, Lakka's patch): the host
+# mac the Joy-Cons were paired with in Horizon (hekate's joycon_mac.bin),
+# else the device's own. initramfs will/can change it.
+setenv host_mac_addr 0xff
+if load mmc ${devnum}:${distro_bootpart_orig} 0x90000000 /switchroot/joycon_mac.bin; then
+    # left Joy-Con paired
+    if itest.b *0x90000000 == 0x01; then setenv host_mac_addr 0x90000007; fi
+    # right Joy-Con paired
+    if itest.b *0x9000001d == 0x02; then setenv host_mac_addr 0x90000024; fi
+fi
+if itest ${host_mac_addr} != 0xff; then
+    setenv bt_mac ""
+    setenv sep ""
+    for i in 0 1 2 3 4 5; do
+        setexpr x ${host_mac_addr} + ${i}
+        setexpr.b b *${x}
+        # setexpr prints no leading zero
+        if itest ${b} <= f; then
+            setenv bt_mac "${bt_mac}${sep}0${b}"
+        else
+            setenv bt_mac "${bt_mac}${sep}${b}"
+        fi
+        setenv sep ":"
+    done
+    echo Joy-Con host BT MAC: ${bt_mac}
+    fdt set /chosen nvidia,bluetooth-mac ${bt_mac}
+elif test -n ${device_bt_mac}; then
+    fdt set /chosen nvidia,bluetooth-mac ${device_bt_mac}
+fi
 
-# Set default wifi mac. initramfs will/can change it.
+# Set the wifi mac (the kernel's brcmfmac reads it, Lakka's patch).
 if test -n ${device_wifi_mac}; then fdt set /chosen nvidia,wifi-mac ${device_wifi_mac}; fi
 
 # Overwrite IMU mount-matrix to identity until fixed in device tree

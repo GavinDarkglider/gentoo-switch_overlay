@@ -24,8 +24,14 @@ DEPEND="
 	sys-fs/lvm2
 	sys-libs/gentoo-config-files[initramfs]
 	|| ( sys-libs/jetson-tx1-drivers[firmware] sys-firmware/jetson-tx1-firmware )
-	splash? ( media-gfx/splashutils[dracut] )
+	splash? (
+		media-gfx/splashutils[dracut]
+		media-gfx/splash-themes-livedvd
+	)
 "
+# the live DVD theme, boot.scr's default on live boots: in the initramfs
+# (dracut puts every installed theme in) and in the system for after it
+RDEPEND="splash? ( media-gfx/splash-themes-livedvd )"
 
 pkg_setup() {
 	if [[ ${MERGE_TYPE} != binary ]] && tc-is-cross-compiler; then

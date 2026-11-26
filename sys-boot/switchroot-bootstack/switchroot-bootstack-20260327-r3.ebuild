@@ -29,7 +29,7 @@ src_compile() {
 
 src_install() {
 	insinto "${SDCARD_DESTDIR}"/bootloader/ini
-	newins "${FILESDIR}"/L4T-gentoo.ini-20260327 L4T-gentoo.ini
+	newins "${FILESDIR}"/L4T-gentoo.ini-20261126 L4T-gentoo.ini
 
 	insinto "${SDCARD_DESTDIR}"/switchroot/gentoo
 	doins "${S}"/boot.scr
@@ -41,7 +41,7 @@ src_install() {
 		# puts the kernel (initramfs built in), nx-plat.dtimg and
 		# rootfs.squashfs into the same folder
 		insinto "${SDCARD_DESTDIR}"/bootloader/ini
-		newins "${FILESDIR}"/L4T-gentoo-installer.ini-20261125 L4T-gentoo-installer.ini
+		newins "${FILESDIR}"/L4T-gentoo-installer.ini-20261126 L4T-gentoo-installer.ini
 		insinto "${SDCARD_DESTDIR}"/switchroot/gentoo-installer
 		doins "${S}"/boot.scr
 	fi

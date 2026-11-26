@@ -5,7 +5,6 @@ boot_prefixes=/switchroot/gentoo/
 r2p_action=normal
 id=SWR-GEN
 fbconsole=0
-bootargs_extra=fbcon=rotate:3
 gentoo_bootpart=2
 gentoo_boot_dir=/boot
 icon=switchroot/gentoo/icon_gentoo_hue.bmp

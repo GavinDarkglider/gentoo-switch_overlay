@@ -8,7 +8,7 @@ test -n ${rootfstype}           || setenv rootfstype ext4
 test -n ${rootfs_fw}            || setenv rootfs_fw /lib/firmware/
 test -n ${rootlabel_retries}    || setenv rootlabel_retries 1
 test -n ${auto_rootdev_disable} || setenv auto_rootdev_disable 0
-test -n ${fbconsole}            || setenv fbconsole 9
+test -n ${fbconsole}            || setenv fbconsole 0
 test -n ${uart_port}            || setenv uart_port 0
 test -n ${earlycon}             || setenv earlycon 0
 test -n ${r2p_action}           || setenv r2p_action bootloader
@@ -32,6 +32,7 @@ test -n ${ddr200_enable}        || setenv ddr200_enable 0
 test -n ${cgroups_v1}           || setenv cgroups_v1 0
 test -n ${live}                 || setenv live 0
 test -n ${live_image}           || setenv live_image rootfs.squashfs
+test -n ${splash_theme}         || setenv splash_theme ""
 test -n ${cpu_uv}               || setenv cpu_uv 0
 test -n ${cpu_hmin}             || setenv cpu_hmin 0
 test -n ${extreme_oc}           || setenv extreme_oc 0
@@ -324,7 +325,8 @@ if test ${mainline} = 0; then
     # Set default tegra_fbmem
     setenv tegra_fbmem 0x400000
 
-    # Get display panel handle.
+    # Get display panel handle. Ids come from env_set_hex(): lowercase and
+    # unpadded, ie 0x0FE1 is fe1.
     if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x/dsi/panel-i-720p-6-2 phandle
     elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x/dsi/panel-a-720p-6-2 phandle
     elif test ${display_id} = 10;   then echo Display is JDI 6.2; fdt get value DHANDLE /host1x/dsi/panel-j-720p-6-2 phandle
@@ -334,14 +336,16 @@ if test ${mainline} = 0; then
     elif test ${display_id} = 2050; then echo Display is SAM 7.0
     elif test ${display_id} = 10e0; then echo Display is RR 5.5 720p; fdt get value DHANDLE /host1x/dsi/panel-rr-720p-5-5 phandle
     elif test ${display_id} = 10e1; then echo Display is RR 5.5 1080p; fdt get value DHANDLE /host1x/dsi/panel-rr-1080p-5-5 phandle; fdt set /host1x/dc@54200000 nvidia,fbmem-size <0x800000>; setenv tegra_fbmem 0x800000
-    elif test ${display_id} = 0fe0; then echo Display is RR IPS 7.0 720p; fdt get value DHANDLE /host1x/dsi/panel-rr-ips-720p-7-0 phandle
-    elif test ${display_id} = 0fe1; then echo Display is RR IPS 7.0 1080p; fdt get value DHANDLE /host1x/dsi/panel-rr-ips-1080p-7-0 phandle; fdt set /host1x/dc@54200000 nvidia,fbmem-size <0x800000>; setenv tegra_fbmem 0x800000
+    elif test ${display_id} = fe0;  then echo Display is RR IPS 7.0 720p model ${display_model}; fdt get value DHANDLE /host1x/dsi/panel-rr-ips-720p-7-0 phandle
+    elif test ${display_id} = fe1;  then echo Display is RR IPS 7.0 1080p model ${display_model}; fdt get value DHANDLE /host1x/dsi/panel-rr-ips-1080p-7-0 phandle; fdt set /host1x/dc@54200000 nvidia,fbmem-size <0x800000>; setenv tegra_fbmem 0x800000
     elif test ${display_id} = 20e0; then echo Display is RR OLED 7.0 720p; fdt get value DHANDLE /host1x/dsi/panel-rr-720p-7-0 phandle
     elif test ${display_id} = 20e1; then echo Display is RR OLED 7.0 1080p; fdt get value DHANDLE /host1x/dsi/panel-rr-1080p-7-0 phandle; fdt set /host1x/dc@54200000 nvidia,fbmem-size <0x800000>; setenv tegra_fbmem 0x800000
     else echoe Unknown Display ID: ${display_id}!; fi
 
-    # Set new active display panel handle.
-    if test -n "${DHANDLE}" -a ${sku} != 3; then echo Setting Display panel; fdt set /host1x/dsi nvidia,active-panel <$DHANDLE>; fi
+    # Set new active display panel handle. No sku gating: the stock Aula
+    # panel (2050) never sets DHANDLE, and Retro Remake panels on Aula
+    # (20e0/20e1) need theirs like on any other sku.
+    if test -n "${DHANDLE}"; then echo Setting Display panel; fdt set /host1x/dsi nvidia,active-panel <$DHANDLE>; fi
 fi
 
 
@@ -572,15 +576,24 @@ else
     setenv rootargs "root=/dev/${rootdev} rootfstype=${rootfstype} rw"
 fi
 
+# The boot splash (splashutils), on the console's screen: theme from the
+# ini (splash_theme=, a folder in /etc/splash), none with no console.
+# The console needs no fbcon=rotate: the display controller turns the
+# panel to landscape, and the console with it.
+setenv splashargs ""
+if test ${fbconsole} != 9 && test -n "${splash_theme}"; then
+    setenv splashargs "splash=silent,theme:${splash_theme} console=tty1"
+fi
+
 # Common kernel cmdline
 setenv bootargs_extra ${bootargs_extra} "${rootargs} \
     firmware_class.path=${rootfs_fw} access=m2 \
     rootlabel=${id} rootlabel_retries=${rootlabel_retries} \
-    swr_dir=${boot_dir} display_id=${display_id} \
+    swr_dir=${boot_dir} display_id=${display_id} display_model=${display_model} \
     boot_m=${devnum} boot_p=${distro_bootpart_orig} \
     fbcon=map:${fbconsole} consoleblank=0 \
     pmc_r2p.enabled=1 pmc_r2p.action=${r2p_action} \
-    pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list} splash rhgb"
+    pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list} ${splashargs}"
 
 # Set kernel cdmline.
 if test ${mainline} = 1; then

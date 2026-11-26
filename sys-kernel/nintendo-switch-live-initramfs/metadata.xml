@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>rbrown4014@yahoo.com</email>
+		<name>GavinDarkglider</name>
+	</maintainer>
+	<longdescription>
+		The initramfs of the Switch's live images (the installer): dracut's
+		dmsquash-live boots a squashfs from the SD card's FAT partition with a
+		tmpfs over it, plus the Switch's own dracut module. Made with dracut
+		--no-kernel, before the kernel, which builds it in with USE=live (as
+		Lakka does). It holds no kernel modules: that kernel has the drivers
+		it needs built in.
+	</longdescription>
+	<use>
+		<flag name="splash">The silent boot splash in the initramfs (gensplash, from
+			<pkg>media-gfx/splashutils</pkg>[dracut])</flag>
+	</use>
+</pkgmetadata>

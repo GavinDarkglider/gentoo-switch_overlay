@@ -73,3 +73,7 @@ media-video/ffmpeg
 # the other gst-plugins-* are at: bump the copy with them.
 gui-libs/gtk
 media-libs/gst-plugins-base
+
+# 26.11.2026 - bell07 - link fails: undefined reference to drmModeGetConnectorTypeName
+# (target libdrm.so.2 resolves to libdrm_nvdc.so, which lacks this symbol); 2.54.2 still builds
+>=net-libs/webkit-gtk-2.54.3

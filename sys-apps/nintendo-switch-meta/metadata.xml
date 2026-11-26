@@ -2,6 +2,17 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
   <use>
+    <flag name="alsa">ALSA UCM profile for the Switch's sound card (<pkg>sys-libs/switch-l4t-configs</pkg>[alsa])</flag>
+    <flag name="bootstack">The SD card boot files, built from source: bl31, U-Boot, boot.scr and the hekate ini (<pkg>sys-boot/switchroot-bootstack</pkg>)</flag>
+    <flag name="dock-handler">Script that switches the display and audio when the Switch is docked or undocked (<pkg>sys-libs/switch-l4t-configs</pkg>[dock-handler])</flag>
+    <flag name="elogind">Sleep fixes for elogind (<pkg>sys-libs/gentoo-config-files</pkg>[elogind])</flag>
     <flag name="gbm">GBM for EGL on DRM/KMS, as Wayland compositors use it: <pkg>gui-libs/tegra-udrm-gbm</pkg>, a backend for mesa's libgbm that hands over to NVIDIA's libnvgbm</flag>
+    <flag name="initramfs">dracut and the Switch's dracut module, to make the initramfs (<pkg>sys-libs/gentoo-config-files</pkg>[initramfs])</flag>
+    <flag name="joystick">Joy-Con support (<pkg>games-util/joycond</pkg>)</flag>
+    <flag name="kernel-bin">Build and install the Switch kernel, its modules and boot files (<pkg>sys-kernel/nintendo-switch-l4t-kernel</pkg>)</flag>
+    <flag name="kernel-sources">Install the Switch kernel sources, merged with NVIDIA's, to build a kernel yourself (<pkg>sys-kernel/nintendo-switch-l4t-sources</pkg>)</flag>
+    <flag name="vulkan">Vulkan presentation layer for the Tegra display (<pkg>media-libs/vk_layer_tegra_dc_present</pkg>)</flag>
+    <flag name="wifi">The Wi-Fi chip's settings file (NVRAM) that its firmware needs (<pkg>sys-libs/switch-l4t-configs</pkg>[brcm])</flag>
+    <flag name="X">Xorg with the NVIDIA driver, its configuration and the onscreen keyboard (<pkg>app-accessibility/onboard</pkg>)</flag>
   </use>
 </pkgmetadata>
